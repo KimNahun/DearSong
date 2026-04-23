@@ -8,10 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		DE81DCFB2F9A676A0045FDC5 /* PersonalColorDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = DE81DCFA2F9A676A0045FDC5 /* PersonalColorDesignSystem */; };
+		DE01AA0005AA05AA0005AA05 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = DE01AA0004AA04AA0004AA04 /* Supabase */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		DE81DCC92F9A60D40045FDC5 /* DearSong.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DearSong.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DE01AA0001AA01AA0001AA01 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		DE01AA0002AA02AA0002AA02 /* DearSong.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DearSong.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -28,6 +31,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DE81DCFB2F9A676A0045FDC5 /* PersonalColorDesignSystem in Frameworks */,
+				DE01AA0005AA05AA0005AA05 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -37,6 +41,8 @@
 		DE81DCC02F9A60D40045FDC5 = {
 			isa = PBXGroup;
 			children = (
+				DE01AA0001AA01AA0001AA01 /* Secrets.xcconfig */,
+				DE01AA0002AA02AA0002AA02 /* DearSong.entitlements */,
 				DE81DCCB2F9A60D40045FDC5 /* DearSong */,
 				DE81DCCA2F9A60D40045FDC5 /* Products */,
 			);
@@ -71,6 +77,7 @@
 			name = DearSong;
 			packageProductDependencies = (
 				DE81DCFA2F9A676A0045FDC5 /* PersonalColorDesignSystem */,
+				DE01AA0004AA04AA0004AA04 /* Supabase */,
 			);
 			productName = DearSong;
 			productReference = DE81DCC92F9A60D40045FDC5 /* DearSong.app */;
@@ -102,6 +109,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				DE81DCF92F9A676A0045FDC5 /* XCRemoteSwiftPackageReference "PersonalColorDesignSystem" */,
+				DE01AA0003AA03AA0003AA03 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DE81DCCA2F9A60D40045FDC5 /* Products */;
@@ -136,6 +144,7 @@
 /* Begin XCBuildConfiguration section */
 		DE81DCD22F9A60DB0045FDC5 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DE01AA0001AA01AA0001AA01 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -187,7 +196,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -200,6 +209,7 @@
 		};
 		DE81DCD32F9A60DB0045FDC5 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DE01AA0001AA01AA0001AA01 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -245,7 +255,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -260,11 +270,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = DearSong.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = AHW642SXDF;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSAppleMusicUsageDescription = "곡 검색과 앨범 커버 표시를 위해 Apple Music 카탈로그에 접근합니다.";
+				INFOPLIST_KEY_SupabaseAnonKey = "$(SUPABASE_ANON_KEY)";
+				INFOPLIST_KEY_SupabaseURL = "$(SUPABASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -292,11 +306,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = DearSong.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = AHW642SXDF;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSAppleMusicUsageDescription = "곡 검색과 앨범 커버 표시를 위해 Apple Music 카탈로그에 접근합니다.";
+				INFOPLIST_KEY_SupabaseAnonKey = "$(SUPABASE_ANON_KEY)";
+				INFOPLIST_KEY_SupabaseURL = "$(SUPABASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -351,6 +369,14 @@
 				kind = branch;
 			};
 		};
+		DE01AA0003AA03AA0003AA03 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -358,6 +384,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DE81DCF92F9A676A0045FDC5 /* XCRemoteSwiftPackageReference "PersonalColorDesignSystem" */;
 			productName = PersonalColorDesignSystem;
+		};
+		DE01AA0004AA04AA0004AA04 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DE01AA0003AA03AA0003AA03 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

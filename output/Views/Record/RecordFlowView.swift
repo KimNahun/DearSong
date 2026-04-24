@@ -15,7 +15,7 @@ struct RecordFlowView: View {
 
     var body: some View {
         ZStack {
-            PGradientBackground()
+            AppBackground()
 
             VStack(spacing: 0) {
                 // 네비게이션 바
@@ -47,7 +47,7 @@ struct RecordFlowView: View {
                 Button(action: { viewModel.goToPreviousStep() }) {
                     Image(systemName: "chevron.left")
                         .font(.pTitle(17))
-                        .foregroundStyle(Color.pTextPrimary)
+                        .foregroundStyle(.primary)
                         .frame(width: 44, height: 44)
                 }
                 .accessibilityLabel("이전 단계")
@@ -60,12 +60,12 @@ struct RecordFlowView: View {
             VStack(spacing: PSpacing.xs) {
                 Text(stepTitle)
                     .font(.pTitle(17))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .foregroundStyle(.primary)
 
                 HStack(spacing: PSpacing.xs) {
                     ForEach(0..<3, id: \.self) { index in
                         Circle()
-                            .fill(index == viewModel.currentStep.rawValue ? Color.pAccentPrimary : Color.pGlassBorder)
+                            .fill(index == viewModel.currentStep.rawValue ? Color.pAccentPrimary : Color(.systemGray5))
                             .frame(width: 6, height: 6)
                     }
                 }
@@ -76,7 +76,7 @@ struct RecordFlowView: View {
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
                     .font(.pTitle(17))
-                    .foregroundStyle(Color.pTextSecondary)
+                    .foregroundStyle(.secondary)
                     .frame(width: 44, height: 44)
             }
             .accessibilityLabel("기록 작성 취소")

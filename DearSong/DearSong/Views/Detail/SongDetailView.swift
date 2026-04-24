@@ -16,7 +16,7 @@ struct SongDetailView: View {
 
     var body: some View {
         ZStack {
-            // 배경: 앨범 아트워크 블러
+            // 배경: 크림 베이스 + 옵셔널 아트워크 (저불투명도)
             backgroundView
 
             ScrollView {
@@ -108,15 +108,15 @@ struct SongDetailView: View {
     @ViewBuilder
     private var backgroundView: some View {
         ZStack {
-            PGradientBackground()
+            AppBackground()
             if let urlString = groupedSong.artworkUrl, let url = URL(string: urlString) {
                 AsyncImage(url: url) { phase in
                     if case .success(let image) = phase {
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .blur(radius: 40)
-                            .opacity(0.3)
+                            .blur(radius: 60)
+                            .opacity(0.08)
                             .ignoresSafeArea()
                     }
                 }
@@ -133,13 +133,13 @@ struct SongDetailView: View {
             VStack(spacing: PSpacing.xs) {
                 Text(groupedSong.songTitle)
                     .font(.pTitle(20))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
                     .accessibilityLabel("곡 제목: \(groupedSong.songTitle)")
 
                 Text(groupedSong.artistName)
                     .font(.pBody(15))
-                    .foregroundStyle(Color.pTextSecondary)
+                    .foregroundStyle(.secondary)
                     .accessibilityLabel("아티스트: \(groupedSong.artistName)")
             }
         }

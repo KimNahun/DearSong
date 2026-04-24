@@ -23,7 +23,7 @@ struct AddEntryView: View {
 
     var body: some View {
         ZStack {
-            PGradientBackground()
+            AppBackground()
 
             VStack(spacing: 0) {
                 // 헤더
@@ -80,11 +80,11 @@ struct AddEntryView: View {
             VStack(alignment: .leading, spacing: PSpacing.xxs) {
                 Text(memory.songTitle)
                     .font(.pTitle(17))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
                 Text("\(yearString)년 · \(memory.artistName)")
                     .font(.pCaption(12))
-                    .foregroundStyle(Color.pTextSecondary)
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
 
@@ -93,7 +93,7 @@ struct AddEntryView: View {
             Button(action: onDismiss) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.pTitle(22))
-                    .foregroundStyle(Color.pTextTertiary)
+                    .foregroundStyle(Color(.tertiaryLabel))
                     .frame(width: 44, height: 44)
             }
             .accessibilityLabel("닫기")
@@ -110,16 +110,16 @@ struct AddEntryView: View {
                 VStack(alignment: .leading, spacing: PSpacing.xs) {
                     Text(entry.text)
                         .font(.pBody(14))
-                        .foregroundStyle(Color.pTextPrimary)
+                        .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)
 
                     Text(formattedDate(entry.writtenAt))
                         .font(.pCaption(11))
-                        .foregroundStyle(Color.pTextTertiary)
+                        .foregroundStyle(Color(.tertiaryLabel))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(PSpacing.md)
-                .background(Color.pGlassFill)
+                .background(Color(.secondarySystemGroupedBackground))
                 .clipShape(RoundedRectangle(cornerRadius: PRadius.sm))
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("이전 기록: \(entry.text)")
@@ -133,15 +133,15 @@ struct AddEntryView: View {
 
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: PRadius.md)
-                    .fill(Color.pGlassFill)
+                    .fill(AppTheme.cardBackground)
                     .overlay(
                         RoundedRectangle(cornerRadius: PRadius.md)
-                            .stroke(isTextEditorFocused ? Color.pAccentPrimary : Color.pGlassBorder, lineWidth: PBorder.thin)
+                            .stroke(isTextEditorFocused ? Color.pAccentPrimary : Color(.systemGray5), lineWidth: PBorder.thin)
                     )
 
                 TextEditor(text: $viewModel.entryText)
                     .font(.pBody(15))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .foregroundStyle(.primary)
                     .scrollContentBackground(.hidden)
                     .background(.clear)
                     .frame(minHeight: 120)
@@ -152,7 +152,7 @@ struct AddEntryView: View {
                 if viewModel.entryText.isEmpty {
                     Text("오늘 이 곡을 다시 들으며 느낀 점을 적어보세요.")
                         .font(.pBody(15))
-                        .foregroundStyle(Color.pTextTertiary)
+                        .foregroundStyle(Color(.tertiaryLabel))
                         .padding(PSpacing.lg)
                         .allowsHitTesting(false)
                 }

@@ -36,10 +36,10 @@ struct AlbumArtworkView: View {
 
     private var artworkPlaceholder: some View {
         ZStack {
-            Color.pGlassFill
+            Color(.secondarySystemGroupedBackground)
             Image(systemName: "music.note")
                 .font(.pBody(size * 0.35))
-                .foregroundStyle(Color.pTextTertiary)
+                .foregroundStyle(Color(.tertiaryLabel))
         }
     }
 }

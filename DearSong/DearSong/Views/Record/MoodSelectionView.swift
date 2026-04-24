@@ -18,7 +18,7 @@ struct MoodSelectionView: View {
             // 안내 텍스트
             Text("이 곡을 들었을 때의 감정을 선택하세요")
                 .font(.pBody(14))
-                .foregroundStyle(Color.pTextSecondary)
+                .foregroundStyle(.secondary)
                 .padding(.vertical, PSpacing.sm)
                 .padding(.horizontal, PSpacing.lg)
 
@@ -61,11 +61,11 @@ struct MoodSelectionView: View {
             VStack(alignment: .leading, spacing: PSpacing.xxs) {
                 Text(song.title)
                     .font(.pBodyMedium(14))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
                 Text(song.artistName)
                     .font(.pCaption(12))
-                    .foregroundStyle(Color.pTextSecondary)
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
 
@@ -73,7 +73,7 @@ struct MoodSelectionView: View {
         }
         .padding(.horizontal, PSpacing.lg)
         .padding(.vertical, PSpacing.sm)
-        .background(Color.pGlassFill)
+        .background(Color(.secondarySystemGroupedBackground))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("선택된 곡: \(song.title), \(song.artistName)")
     }
@@ -88,11 +88,11 @@ struct MoodSelectionView: View {
             VStack(alignment: .leading, spacing: PSpacing.xxs) {
                 Text(viewModel.manualSongTitle)
                     .font(.pBodyMedium(14))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
                 Text(viewModel.manualArtistName)
                     .font(.pCaption(12))
-                    .foregroundStyle(Color.pTextSecondary)
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
 
@@ -100,7 +100,7 @@ struct MoodSelectionView: View {
         }
         .padding(.horizontal, PSpacing.lg)
         .padding(.vertical, PSpacing.sm)
-        .background(Color.pGlassFill)
+        .background(Color(.secondarySystemGroupedBackground))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("선택된 곡: \(viewModel.manualSongTitle), \(viewModel.manualArtistName)")
     }

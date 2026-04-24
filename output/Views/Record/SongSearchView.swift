@@ -67,7 +67,7 @@ struct SongSearchView: View {
                 Spacer()
                 Text("검색 결과가 없어요")
                     .font(.pBody(15))
-                    .foregroundStyle(Color.pTextSecondary)
+                    .foregroundStyle(.secondary)
 
                 Button("직접 입력하기") {
                     viewModel.isManualInput = true
@@ -82,7 +82,7 @@ struct SongSearchView: View {
                 Spacer()
                 Text("검색어를 입력하면\n곡을 찾아드려요")
                     .font(.pBody(15))
-                    .foregroundStyle(Color.pTextTertiary)
+                    .foregroundStyle(Color(.tertiaryLabel))
                     .multilineTextAlignment(.center)
                 Spacer()
             }
@@ -111,12 +111,12 @@ struct SongSearchView: View {
                 VStack(alignment: .leading, spacing: PSpacing.xs) {
                     Text(song.title)
                         .font(.pBodyMedium(15))
-                        .foregroundStyle(Color.pTextPrimary)
+                        .foregroundStyle(.primary)
                         .lineLimit(1)
 
                     Text(song.artistName)
                         .font(.pBody(13))
-                        .foregroundStyle(Color.pTextSecondary)
+                        .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
 

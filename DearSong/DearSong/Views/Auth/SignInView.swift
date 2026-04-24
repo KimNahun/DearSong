@@ -10,7 +10,7 @@ struct SignInView: View {
 
     var body: some View {
         ZStack {
-            PGradientBackground()
+            AppBackground()
 
             VStack(spacing: PSpacing.xxxl) {
                 Spacer()
@@ -31,11 +31,11 @@ struct SignInView: View {
                     VStack(spacing: PSpacing.xs) {
                         Text("DearSong")
                             .font(.pDisplay(40))
-                            .foregroundStyle(Color.pTextPrimary)
+                            .foregroundStyle(.primary)
 
                         Text("노래에 감정을 기록하는 음악 다이어리")
                             .font(.pBody(14))
-                            .foregroundStyle(Color.pTextSecondary)
+                            .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                     }
                 }
@@ -58,14 +58,14 @@ struct SignInView: View {
                             }
                         }
                     }
-                    .signInWithAppleButtonStyle(.white)
+                    .signInWithAppleButtonStyle(.black)
                     .frame(height: 50)
                     .cornerRadius(PRadius.md)
                     .accessibilityLabel("Apple로 로그인")
 
                     Text("Apple ID로 안전하게 로그인하세요")
                         .font(.pCaption(12))
-                        .foregroundStyle(Color.pTextTertiary)
+                        .foregroundStyle(Color(.tertiaryLabel))
                 }
                 .padding(.horizontal, PSpacing.xl)
                 .padding(.bottom, PSpacing.huge)

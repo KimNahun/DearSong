@@ -21,7 +21,7 @@ struct SongCollectionView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                PGradientBackground()
+                AppBackground()
 
                 Group {
                     if viewModel.isLoading && viewModel.groupedSongs.isEmpty {
@@ -52,7 +52,7 @@ struct SongCollectionView: View {
                         Task { await authViewModel.signOut() }
                     }
                     .font(.pBody(14))
-                    .foregroundStyle(Color.pTextSecondary)
+                    .foregroundStyle(.secondary)
                     .accessibilityLabel("로그아웃")
                 }
             }
@@ -125,7 +125,7 @@ struct SongCollectionView: View {
 
                 Image(systemName: "plus")
                     .font(.pTitle(22))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .foregroundStyle(.white)
             }
         }
         .frame(width: 56, height: 56)

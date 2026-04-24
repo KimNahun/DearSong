@@ -12,67 +12,66 @@ struct TimelineEntryView: View {
     }
 
     var body: some View {
-        GlassCard {
-            VStack(alignment: .leading, spacing: PSpacing.md) {
-                // 년도 헤더
-                HStack {
-                    VStack(alignment: .leading, spacing: PSpacing.xs) {
-                        Text(yearString)
-                            .font(.pTitle(17))
-                            .foregroundStyle(Color.pTextPrimary)
-                            .accessibilityLabel("\(yearString)년")
+        VStack(alignment: .leading, spacing: PSpacing.md) {
+            // 년도 헤더
+            HStack {
+                VStack(alignment: .leading, spacing: PSpacing.xs) {
+                    Text(yearString)
+                        .font(.pTitle(17))
+                        .foregroundStyle(.primary)
+                        .accessibilityLabel("\(yearString)년")
 
-                        if let location = memory.location, !location.isEmpty {
-                            HStack(spacing: PSpacing.xs) {
-                                Image(systemName: "mappin.circle")
-                                    .font(.pCaption(12))
-                                    .foregroundStyle(Color.pAccentSecondary)
-                                Text(location)
-                                    .font(.pCaption(12))
-                                    .foregroundStyle(Color.pTextSecondary)
-                            }
-                            .accessibilityElement(children: .combine)
-                            .accessibilityLabel("장소: \(location)")
-                        }
-                    }
-
-                    Spacer()
-
-                    Button(action: onAddEntry) {
-                        Image(systemName: "plus.circle")
-                            .font(.pTitle(17))
-                            .foregroundStyle(Color.pAccentPrimary)
-                    }
-                    .frame(minWidth: 44, minHeight: 44)
-                    .accessibilityLabel("이 시기에 새 기록 추가")
-                }
-
-                PDivider()
-
-                // 감정 태그
-                if !memory.moodTags.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
+                    if let location = memory.location, !location.isEmpty {
                         HStack(spacing: PSpacing.xs) {
-                            ForEach(memory.moodTags, id: \.self) { tag in
-                                PChip(tag)
-                                    .accessibilityLabel("감정: \(tag)")
-                            }
+                            Image(systemName: "mappin.circle")
+                                .font(.pCaption(12))
+                                .foregroundStyle(Color.pAccentSecondary)
+                            Text(location)
+                                .font(.pCaption(12))
+                                .foregroundStyle(.secondary)
                         }
-                        .padding(.horizontal, PSpacing.xs)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("장소: \(location)")
                     }
                 }
 
-                // 텍스트 엔트리들
-                if !memory.entries.isEmpty {
-                    VStack(alignment: .leading, spacing: PSpacing.sm) {
-                        ForEach(memory.entries) { entry in
-                            entryRow(entry)
+                Spacer()
+
+                Button(action: onAddEntry) {
+                    Image(systemName: "plus.circle")
+                        .font(.pTitle(17))
+                        .foregroundStyle(Color.pAccentPrimary)
+                }
+                .frame(minWidth: 44, minHeight: 44)
+                .accessibilityLabel("이 시기에 새 기록 추가")
+            }
+
+            PDivider()
+
+            // 감정 태그
+            if !memory.moodTags.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: PSpacing.xs) {
+                        ForEach(memory.moodTags, id: \.self) { tag in
+                            PChip(tag)
+                                .accessibilityLabel("감정: \(tag)")
                         }
+                    }
+                    .padding(.horizontal, PSpacing.xs)
+                }
+            }
+
+            // 텍스트 엔트리들
+            if !memory.entries.isEmpty {
+                VStack(alignment: .leading, spacing: PSpacing.sm) {
+                    ForEach(memory.entries) { entry in
+                        entryRow(entry)
                     }
                 }
             }
-            .padding(PSpacing.lg)
         }
+        .padding(PSpacing.lg)
+        .cardStyle()
     }
 
     @ViewBuilder
@@ -80,18 +79,18 @@ struct TimelineEntryView: View {
         VStack(alignment: .leading, spacing: PSpacing.xs) {
             Text(entry.text)
                 .font(.pBody(14))
-                .foregroundStyle(Color.pTextPrimary)
+                .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityLabel("기록: \(entry.text)")
 
             Text(formattedDate(entry.writtenAt))
                 .font(.pCaption(11))
-                .foregroundStyle(Color.pTextTertiary)
+                .foregroundStyle(Color(.tertiaryLabel))
                 .accessibilityLabel("작성일: \(formattedDate(entry.writtenAt))")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(PSpacing.sm)
-        .background(Color.pGlassFill)
+        .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: PRadius.sm))
     }
 

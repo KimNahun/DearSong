@@ -13,7 +13,7 @@ struct EntryWriteView: View {
 
     var body: some View {
         ZStack {
-            // 배경: 앨범 아트워크 블러
+            // 배경: 크림 베이스 + 옵셔널 아트워크 (저불투명도)
             artworkBackground
 
             VStack(spacing: 0) {
@@ -53,15 +53,15 @@ struct EntryWriteView: View {
     @ViewBuilder
     private var artworkBackground: some View {
         ZStack {
-            PGradientBackground()
+            AppBackground()
             if let urlString = viewModel.effectiveArtworkURL, let url = URL(string: urlString) {
                 AsyncImage(url: url) { phase in
                     if case .success(let image) = phase {
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .blur(radius: 50)
-                            .opacity(0.2)
+                            .blur(radius: 60)
+                            .opacity(0.06)
                             .ignoresSafeArea()
                     }
                 }
@@ -71,39 +71,38 @@ struct EntryWriteView: View {
     }
 
     private var summaryCard: some View {
-        GlassCard {
-            HStack(spacing: PSpacing.md) {
-                AlbumArtworkView(
-                    urlString: viewModel.effectiveArtworkURL,
-                    size: 52,
-                    cornerRadius: PRadius.xs
-                )
+        HStack(spacing: PSpacing.md) {
+            AlbumArtworkView(
+                urlString: viewModel.effectiveArtworkURL,
+                size: 52,
+                cornerRadius: PRadius.xs
+            )
 
-                VStack(alignment: .leading, spacing: PSpacing.xs) {
-                    Text(viewModel.effectiveSongTitle)
-                        .font(.pBodyMedium(15))
-                        .foregroundStyle(Color.pTextPrimary)
-                        .lineLimit(1)
-                    Text(viewModel.effectiveArtistName)
-                        .font(.pBody(13))
-                        .foregroundStyle(Color.pTextSecondary)
-                        .lineLimit(1)
+            VStack(alignment: .leading, spacing: PSpacing.xs) {
+                Text(viewModel.effectiveSongTitle)
+                    .font(.pBodyMedium(15))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                Text(viewModel.effectiveArtistName)
+                    .font(.pBody(13))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
 
-                    // 선택된 감정 태그들
-                    if !viewModel.selectedMoodTags.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: PSpacing.xs) {
-                                ForEach(Array(viewModel.selectedMoodTags).sorted(), id: \.self) { tag in
-                                    PChip(tag)
-                                }
+                // 선택된 감정 태그들
+                if !viewModel.selectedMoodTags.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: PSpacing.xs) {
+                            ForEach(Array(viewModel.selectedMoodTags).sorted(), id: \.self) { tag in
+                                PChip(tag)
                             }
                         }
                     }
                 }
-                Spacer()
             }
-            .padding(PSpacing.md)
+            Spacer()
         }
+        .padding(PSpacing.md)
+        .cardStyle()
         .accessibilityElement(children: .combine)
         .accessibilityLabel("선택: \(viewModel.effectiveSongTitle), \(viewModel.effectiveArtistName)")
     }
@@ -112,19 +111,19 @@ struct EntryWriteView: View {
         VStack(alignment: .leading, spacing: PSpacing.sm) {
             Text("이 곡과 함께했던 순간")
                 .font(.pTitle(17))
-                .foregroundStyle(Color.pTextPrimary)
+                .foregroundStyle(.primary)
 
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: PRadius.md)
-                    .fill(Color.pGlassFill)
+                    .fill(AppTheme.cardBackground)
                     .overlay(
                         RoundedRectangle(cornerRadius: PRadius.md)
-                            .stroke(isTextEditorFocused ? Color.pAccentPrimary : Color.pGlassBorder, lineWidth: PBorder.thin)
+                            .stroke(isTextEditorFocused ? Color.pAccentPrimary : Color(.systemGray5), lineWidth: PBorder.thin)
                     )
 
                 TextEditor(text: $viewModel.entryText)
                     .font(.pBody(15))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .foregroundStyle(.primary)
                     .scrollContentBackground(.hidden)
                     .background(.clear)
                     .frame(minHeight: 140)
@@ -135,7 +134,7 @@ struct EntryWriteView: View {
                 if viewModel.entryText.isEmpty {
                     Text("이 노래를 들었을 때 어떤 감정이었나요?\n그때의 기억을 자유롭게 적어보세요.")
                         .font(.pBody(15))
-                        .foregroundStyle(Color.pTextTertiary)
+                        .foregroundStyle(Color(.tertiaryLabel))
                         .padding(PSpacing.lg)
                         .allowsHitTesting(false)
                 }
@@ -151,7 +150,7 @@ struct EntryWriteView: View {
             VStack(alignment: .leading, spacing: PSpacing.sm) {
                 Text("들었던 시기")
                     .font(.pTitle(17))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .foregroundStyle(.primary)
 
                 PDropdownButton(
                     placeholder: "년도 선택",
@@ -168,7 +167,7 @@ struct EntryWriteView: View {
             VStack(alignment: .leading, spacing: PSpacing.sm) {
                 Text("들었던 장소 (선택)")
                     .font(.pTitle(17))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .foregroundStyle(.primary)
 
                 PTextField(placeholder: "예: 학교 옥상, 버스 안, 카페...", text: $viewModel.location)
                     .accessibilityLabel("들었던 장소 입력 (선택 사항)")

@@ -24,7 +24,7 @@ struct DearSongApp: App {
     private var rootView: some View {
         if authViewModel.isLoading {
             ZStack {
-                PGradientBackground()
+                AppBackground()
             }
             .pLoadingOverlay(isLoading: .constant(true), message: "로딩 중...")
             .ignoresSafeArea()

@@ -12,11 +12,16 @@ final class SupabaseClientProvider: Sendable {
         let urlString = Bundle.main.infoDictionary?["SupabaseURL"] as? String ?? ""
         let key = Bundle.main.infoDictionary?["SupabaseAnonKey"] as? String ?? ""
 
-        let url = URL(string: urlString) ?? URL(string: "https://placeholder.supabase.co")!
+        guard let url = URL(string: urlString), !urlString.isEmpty else {
+            fatalError("SupabaseURL is invalid or missing. Check Secrets.xcconfig and Info.plist.")
+        }
+        guard !key.isEmpty else {
+            fatalError("SupabaseAnonKey is missing. Check Secrets.xcconfig and Info.plist.")
+        }
 
         self.client = SupabaseClient(
             supabaseURL: url,
-            supabaseKey: key.isEmpty ? "placeholder" : key
+            supabaseKey: key
         )
     }
 }

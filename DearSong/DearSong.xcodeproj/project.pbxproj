@@ -13,6 +13,7 @@
 
 /* Begin PBXFileReference section */
 		DE81DCC92F9A60D40045FDC5 /* DearSong.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DearSong.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DE02BB0001BB01BB0001BB01 /* DearSongTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DearSongTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE01AA0001AA01AA0001AA01 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		DE01AA0002AA02AA0002AA02 /* DearSong.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DearSong.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -21,6 +22,11 @@
 		DE81DCCB2F9A60D40045FDC5 /* DearSong */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = DearSong;
+			sourceTree = "<group>";
+		};
+		DE02BB0002BB02BB0002BB02 /* DearSongTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = DearSongTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -35,6 +41,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DE02BB0003BB03BB0003BB03 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -45,6 +58,7 @@
 				DE01AA0002AA02AA0002AA02 /* DearSong.entitlements */,
 				DE81DCCB2F9A60D40045FDC5 /* DearSong */,
 				DE81DCCA2F9A60D40045FDC5 /* Products */,
+				DE02BB0002BB02BB0002BB02 /* DearSongTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -52,6 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				DE81DCC92F9A60D40045FDC5 /* DearSong.app */,
+				DE02BB0001BB01BB0001BB01 /* DearSongTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -83,6 +98,27 @@
 			productReference = DE81DCC92F9A60D40045FDC5 /* DearSong.app */;
 			productType = "com.apple.product-type.application";
 		};
+		DE02BB0006BB06BB0006BB06 /* DearSongTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DE02BB000BBB0BBB000BBB0B /* Build configuration list for PBXNativeTarget "DearSongTests" */;
+			buildPhases = (
+				DE02BB0004BB04BB0004BB04 /* Sources */,
+				DE02BB0003BB03BB0003BB03 /* Frameworks */,
+				DE02BB0005BB05BB0005BB05 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DE02BB0007BB07BB0007BB07 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				DE02BB0002BB02BB0002BB02 /* DearSongTests */,
+			);
+			name = DearSongTests;
+			productName = DearSongTests;
+			productReference = DE02BB0001BB01BB0001BB01 /* DearSongTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -95,6 +131,10 @@
 				TargetAttributes = {
 					DE81DCC82F9A60D40045FDC5 = {
 						CreatedOnToolsVersion = 26.1.1;
+					};
+					DE02BB0006BB06BB0006BB06 = {
+						CreatedOnToolsVersion = 26.1.1;
+						TestTargetID = DE81DCC82F9A60D40045FDC5;
 					};
 				};
 			};
@@ -117,12 +157,20 @@
 			projectRoot = "";
 			targets = (
 				DE81DCC82F9A60D40045FDC5 /* DearSong */,
+				DE02BB0006BB06BB0006BB06 /* DearSongTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		DE81DCC72F9A60D40045FDC5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE02BB0005BB05BB0005BB05 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -139,7 +187,32 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DE02BB0004BB04BB0004BB04 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXContainerItemProxy section */
+		DE02BB0008BB08BB0008BB08 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DE81DCC12F9A60D40045FDC5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DE81DCC82F9A60D40045FDC5;
+			remoteInfo = DearSong;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		DE02BB0007BB07BB0007BB07 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DE81DCC82F9A60D40045FDC5 /* DearSong */;
+			targetProxy = DE02BB0008BB08BB0008BB08 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		DE81DCD22F9A60DB0045FDC5 /* Debug */ = {
@@ -337,6 +410,46 @@
 			};
 			name = Release;
 		};
+		DE02BB0009BB09BB0009BB09 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = AHW642SXDF;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nahun.DearSongTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DearSong.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DearSong";
+			};
+			name = Debug;
+		};
+		DE02BB000ABB0ABB000ABB0A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = AHW642SXDF;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nahun.DearSongTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DearSong.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DearSong";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -354,6 +467,15 @@
 			buildConfigurations = (
 				DE81DCD52F9A60DB0045FDC5 /* Debug */,
 				DE81DCD62F9A60DB0045FDC5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DE02BB000BBB0BBB000BBB0B /* Build configuration list for PBXNativeTarget "DearSongTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE02BB0009BB09BB0009BB09 /* Debug */,
+				DE02BB000ABB0ABB000ABB0A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -9,7 +9,7 @@
  * 환경변수:
  *   HARNESS_PROJECT_ROOT - xcodeproj가 있는 프로젝트 루트
  *   HARNESS_BUILD_COMMAND - 빌드 명령어 (없으면 스킵)
- *   HARNESS_SIMULATOR - 시뮬레이터 (기본: 'platform=iOS Simulator,name=iPhone 16')
+ *   HARNESS_SIMULATOR - 시뮬레이터 (기본: 'platform=iOS Simulator,name=iPhone 17 Pro')
  */
 
 const { execSync } = require('child_process');

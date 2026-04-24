@@ -1,12 +1,11 @@
 import SwiftUI
-import PersonalColorDesignSystem
 
 // MARK: - AlbumArtworkView
 
 struct AlbumArtworkView: View {
     let urlString: String?
-    let size: CGFloat
-    var cornerRadius: CGFloat = PRadius.md
+    let size: CGFloat?
+    var cornerRadius: CGFloat = AppTheme.cornerRadiusSm
 
     var body: some View {
         Group {
@@ -15,7 +14,6 @@ struct AlbumArtworkView: View {
                     switch phase {
                     case .empty:
                         artworkPlaceholder
-                            .shimmer(isActive: true)
                     case .success(let image):
                         image
                             .resizable()
@@ -36,10 +34,10 @@ struct AlbumArtworkView: View {
 
     private var artworkPlaceholder: some View {
         ZStack {
-            Color(.secondarySystemGroupedBackground)
+            AppTheme.chipBackground
             Image(systemName: "music.note")
-                .font(.pBody(size * 0.35))
-                .foregroundStyle(Color(.tertiaryLabel))
+                .font(.system(size: (size ?? 48) * 0.35))
+                .foregroundStyle(AppTheme.textTertiary)
         }
     }
 }

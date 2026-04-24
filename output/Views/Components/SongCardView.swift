@@ -1,5 +1,4 @@
 import SwiftUI
-import PersonalColorDesignSystem
 
 // MARK: - SongCardView
 
@@ -7,36 +6,36 @@ struct SongCardView: View {
     let groupedSong: GroupedSong
 
     var body: some View {
-        VStack(alignment: .leading, spacing: PSpacing.sm) {
-            AlbumArtworkView(urlString: groupedSong.artworkUrl, size: 120, cornerRadius: PRadius.sm)
+        VStack(alignment: .leading, spacing: 10) {
+            AlbumArtworkView(urlString: groupedSong.artworkUrl, size: nil, cornerRadius: AppTheme.cornerRadiusSm)
+                .aspectRatio(1, contentMode: .fit)
                 .frame(maxWidth: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
 
-            VStack(alignment: .leading, spacing: PSpacing.xs) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(groupedSong.songTitle)
-                    .font(.pBodyMedium(15))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(AppTheme.textPrimary)
                     .lineLimit(2)
-                    .accessibilityLabel("곡 제목: \(groupedSong.songTitle)")
 
                 Text(groupedSong.artistName)
-                    .font(.pBody(13))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 12))
+                    .foregroundStyle(AppTheme.textSecondary)
                     .lineLimit(1)
-                    .accessibilityLabel("아티스트: \(groupedSong.artistName)")
 
-                HStack(spacing: PSpacing.xs) {
+                HStack(spacing: 4) {
                     Image(systemName: "heart.fill")
-                        .font(.pCaption(11))
-                        .foregroundStyle(Color.pAccentPrimary)
+                        .font(.system(size: 10))
+                        .foregroundStyle(AppTheme.accent)
                     Text("\(groupedSong.memoryCount)개의 기록")
-                        .font(.pCaption(11))
-                        .foregroundStyle(Color(.tertiaryLabel))
+                        .font(.system(size: 11))
+                        .foregroundStyle(AppTheme.textTertiary)
                 }
+                .padding(.top, 2)
             }
-            .padding(.horizontal, PSpacing.sm)
-            .padding(.bottom, PSpacing.sm)
+            .padding(.horizontal, 10)
+            .padding(.bottom, 12)
         }
-        .cardStyle()
-        .pressable(scale: 0.97)
+        .cardStyle(cornerRadius: AppTheme.cornerRadius)
     }
 }

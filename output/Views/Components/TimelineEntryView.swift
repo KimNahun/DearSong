@@ -1,5 +1,4 @@
 import SwiftUI
-import PersonalColorDesignSystem
 
 // MARK: - TimelineEntryView
 
@@ -12,23 +11,22 @@ struct TimelineEntryView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: PSpacing.md) {
+        VStack(alignment: .leading, spacing: 14) {
             // 년도 헤더
             HStack {
-                VStack(alignment: .leading, spacing: PSpacing.xs) {
-                    Text(yearString)
-                        .font(.pTitle(17))
-                        .foregroundStyle(.primary)
-                        .accessibilityLabel("\(yearString)년")
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(yearString)년")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(AppTheme.textPrimary)
 
                     if let location = memory.location, !location.isEmpty {
-                        HStack(spacing: PSpacing.xs) {
-                            Image(systemName: "mappin.circle")
-                                .font(.pCaption(12))
-                                .foregroundStyle(Color.pAccentSecondary)
+                        HStack(spacing: 4) {
+                            Image(systemName: "mappin.circle.fill")
+                                .font(.system(size: 12))
+                                .foregroundStyle(AppTheme.accentSecondary)
                             Text(location)
-                                .font(.pCaption(12))
-                                .foregroundStyle(.secondary)
+                                .font(.system(size: 12))
+                                .foregroundStyle(AppTheme.textSecondary)
                         }
                         .accessibilityElement(children: .combine)
                         .accessibilityLabel("장소: \(location)")
@@ -38,60 +36,64 @@ struct TimelineEntryView: View {
                 Spacer()
 
                 Button(action: onAddEntry) {
-                    Image(systemName: "plus.circle")
-                        .font(.pTitle(17))
-                        .foregroundStyle(Color.pAccentPrimary)
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 22))
+                        .foregroundStyle(AppTheme.accent)
                 }
                 .frame(minWidth: 44, minHeight: 44)
                 .accessibilityLabel("이 시기에 새 기록 추가")
             }
 
-            PDivider()
+            // 구분선
+            Rectangle()
+                .fill(AppTheme.divider)
+                .frame(height: 1)
 
             // 감정 태그
             if !memory.moodTags.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: PSpacing.xs) {
-                        ForEach(memory.moodTags, id: \.self) { tag in
-                            PChip(tag)
-                                .accessibilityLabel("감정: \(tag)")
-                        }
+                FlowLayout(spacing: 6) {
+                    ForEach(memory.moodTags, id: \.self) { tag in
+                        Text(tag)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(AppTheme.accent)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(AppTheme.accentSoft)
+                            .clipShape(Capsule())
+                            .accessibilityLabel("감정: \(tag)")
                     }
-                    .padding(.horizontal, PSpacing.xs)
                 }
             }
 
             // 텍스트 엔트리들
             if !memory.entries.isEmpty {
-                VStack(alignment: .leading, spacing: PSpacing.sm) {
+                VStack(alignment: .leading, spacing: 10) {
                     ForEach(memory.entries) { entry in
                         entryRow(entry)
                     }
                 }
             }
         }
-        .padding(PSpacing.lg)
+        .padding(18)
         .cardStyle()
     }
 
     @ViewBuilder
     private func entryRow(_ entry: Entry) -> some View {
-        VStack(alignment: .leading, spacing: PSpacing.xs) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(entry.text)
-                .font(.pBody(14))
-                .foregroundStyle(.primary)
+                .font(.system(size: 14))
+                .foregroundStyle(AppTheme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
-                .accessibilityLabel("기록: \(entry.text)")
 
             Text(formattedDate(entry.writtenAt))
-                .font(.pCaption(11))
-                .foregroundStyle(Color(.tertiaryLabel))
-                .accessibilityLabel("작성일: \(formattedDate(entry.writtenAt))")
+                .font(.system(size: 11))
+                .foregroundStyle(AppTheme.textTertiary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(PSpacing.sm)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: PRadius.sm))
+        .padding(12)
+        .background(AppTheme.chipBackground)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusXs))
     }
 
     private func formattedDate(_ date: Date) -> String {

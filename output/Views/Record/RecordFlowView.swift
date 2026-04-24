@@ -27,7 +27,7 @@ struct RecordFlowView: View {
         }
         .onChange(of: viewModel.savedSuccessfully) { _, saved in
             if saved {
-                toastManager.show("기록이 저장되었어요 🎵", type: .success)
+                toastManager.show("기록이 저장되었어요", type: .success)
                 HapticManager.notification(.success)
                 onDismiss()
             }
@@ -46,8 +46,8 @@ struct RecordFlowView: View {
             if viewModel.currentStep != .songSearch {
                 Button(action: { viewModel.goToPreviousStep() }) {
                     Image(systemName: "chevron.left")
-                        .font(.pTitle(17))
-                        .foregroundStyle(.primary)
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundStyle(AppTheme.textPrimary)
                         .frame(width: 44, height: 44)
                 }
                 .accessibilityLabel("이전 단계")
@@ -57,16 +57,20 @@ struct RecordFlowView: View {
 
             Spacer()
 
-            VStack(spacing: PSpacing.xs) {
+            VStack(spacing: 6) {
                 Text(stepTitle)
-                    .font(.pTitle(17))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(AppTheme.textPrimary)
 
-                HStack(spacing: PSpacing.xs) {
+                // 단계 인디케이터
+                HStack(spacing: 6) {
                     ForEach(0..<3, id: \.self) { index in
-                        Circle()
-                            .fill(index == viewModel.currentStep.rawValue ? Color.pAccentPrimary : Color(.systemGray5))
-                            .frame(width: 6, height: 6)
+                        Capsule()
+                            .fill(index == viewModel.currentStep.rawValue
+                                  ? AppTheme.accent
+                                  : AppTheme.border)
+                            .frame(width: index == viewModel.currentStep.rawValue ? 20 : 6, height: 6)
+                            .animation(.easeInOut(duration: 0.25), value: viewModel.currentStep)
                     }
                 }
             }
@@ -75,14 +79,14 @@ struct RecordFlowView: View {
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
-                    .font(.pTitle(17))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(AppTheme.textTertiary)
                     .frame(width: 44, height: 44)
             }
             .accessibilityLabel("기록 작성 취소")
         }
-        .padding(.horizontal, PSpacing.lg)
-        .padding(.vertical, PSpacing.sm)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
     }
 
     private var stepTitle: String {

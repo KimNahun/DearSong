@@ -6,41 +6,33 @@ import PersonalColorDesignSystem
 struct MoodChipGridView: View {
     @Binding var selectedTags: Set<String>
 
-    private let columns = [
-        GridItem(.adaptive(minimum: 80), spacing: PSpacing.sm)
-    ]
-
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: PSpacing.lg) {
+            VStack(alignment: .leading, spacing: 20) {
                 ForEach(MoodCategory.allCases, id: \.rawValue) { category in
                     categorySection(category)
                 }
             }
-            .padding(.horizontal, PSpacing.lg)
-            .padding(.vertical, PSpacing.md)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
         }
     }
 
     @ViewBuilder
     private func categorySection(_ category: MoodCategory) -> some View {
-        VStack(alignment: .leading, spacing: PSpacing.sm) {
-            PSectionHeader(category.displayName)
+        VStack(alignment: .leading, spacing: 10) {
+            Text(category.displayName)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(AppTheme.textPrimary)
 
-            LazyVGrid(columns: columns, spacing: PSpacing.sm) {
+            FlowLayout(spacing: 8) {
                 ForEach(category.tags, id: \.self) { tag in
                     let isSelected = selectedTags.contains(tag)
-                    PChip(
-                        tag,
-                        variant: .toggle,
-                        isSelected: Binding(
-                            get: { isSelected },
-                            set: { _ in toggleTag(tag) }
-                        )
-                    )
+                    MoodChipButton(title: tag, isSelected: isSelected) {
+                        toggleTag(tag)
+                    }
                     .accessibilityLabel("\(tag) 감정 태그")
                     .accessibilityAddTraits(isSelected ? .isSelected : [])
-                    .animation(PAnimation.springFast, value: isSelected)
                 }
             }
         }

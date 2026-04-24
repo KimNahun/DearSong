@@ -17,30 +17,31 @@ struct MoodSelectionView: View {
 
             // 안내 텍스트
             Text("이 곡을 들었을 때의 감정을 선택하세요")
-                .font(.pBody(14))
-                .foregroundStyle(.secondary)
-                .padding(.vertical, PSpacing.sm)
-                .padding(.horizontal, PSpacing.lg)
+                .font(.system(size: 14))
+                .foregroundStyle(AppTheme.textSecondary)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 20)
 
             // 선택된 태그 수 표시
             if !viewModel.selectedMoodTags.isEmpty {
-                HStack {
+                HStack(spacing: 6) {
                     Image(systemName: "tag.fill")
-                        .font(.pCaption(12))
-                        .foregroundStyle(Color.pAccentPrimary)
+                        .font(.system(size: 12))
+                        .foregroundStyle(AppTheme.accent)
                     Text("\(viewModel.selectedMoodTags.count)개 선택됨")
-                        .font(.pCaption(12))
-                        .foregroundStyle(Color.pAccentPrimary)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(AppTheme.accent)
                     Spacer()
                 }
-                .padding(.horizontal, PSpacing.lg)
-                .padding(.bottom, PSpacing.xs)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 8)
             }
 
-            PDivider()
-                .padding(.horizontal, PSpacing.lg)
+            Divider()
+                .foregroundStyle(AppTheme.divider)
+                .padding(.horizontal, 20)
 
-            // 감정 태그 그리드
+            // 감정 태그 그리드 (FlowLayout)
             MoodChipGridView(selectedTags: $viewModel.selectedMoodTags)
         }
         .bottomButtons {
@@ -55,52 +56,54 @@ struct MoodSelectionView: View {
     }
 
     private func selectedSongBanner(_ song: SearchedSong) -> some View {
-        HStack(spacing: PSpacing.sm) {
-            AlbumArtworkView(urlString: song.artworkURL?.absoluteString, size: 40, cornerRadius: PRadius.xs)
+        HStack(spacing: 12) {
+            AlbumArtworkView(urlString: song.artworkURL?.absoluteString, size: 44, cornerRadius: AppTheme.cornerRadiusXs)
 
-            VStack(alignment: .leading, spacing: PSpacing.xxs) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(song.title)
-                    .font(.pBodyMedium(14))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(AppTheme.textPrimary)
                     .lineLimit(1)
                 Text(song.artistName)
-                    .font(.pCaption(12))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 13))
+                    .foregroundStyle(AppTheme.textSecondary)
                     .lineLimit(1)
             }
 
             Spacer()
         }
-        .padding(.horizontal, PSpacing.lg)
-        .padding(.vertical, PSpacing.sm)
-        .background(Color(.secondarySystemGroupedBackground))
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(AppTheme.cardBackground)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("선택된 곡: \(song.title), \(song.artistName)")
     }
 
     private var manualSongBanner: some View {
-        HStack(spacing: PSpacing.sm) {
+        HStack(spacing: 12) {
             Image(systemName: "music.note")
-                .font(.pTitle(17))
-                .foregroundStyle(Color.pAccentSecondary)
-                .frame(width: 40, height: 40)
+                .font(.system(size: 20))
+                .foregroundStyle(AppTheme.accentSecondary)
+                .frame(width: 44, height: 44)
+                .background(AppTheme.chipBackground)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusXs))
 
-            VStack(alignment: .leading, spacing: PSpacing.xxs) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(viewModel.manualSongTitle)
-                    .font(.pBodyMedium(14))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(AppTheme.textPrimary)
                     .lineLimit(1)
                 Text(viewModel.manualArtistName)
-                    .font(.pCaption(12))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 13))
+                    .foregroundStyle(AppTheme.textSecondary)
                     .lineLimit(1)
             }
 
             Spacer()
         }
-        .padding(.horizontal, PSpacing.lg)
-        .padding(.vertical, PSpacing.sm)
-        .background(Color(.secondarySystemGroupedBackground))
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(AppTheme.cardBackground)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("선택된 곡: \(viewModel.manualSongTitle), \(viewModel.manualArtistName)")
     }

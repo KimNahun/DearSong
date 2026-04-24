@@ -2,10 +2,19 @@ import Foundation
 import MusicKit
 import os
 
+// MARK: - MusicAuthStatus
+
+nonisolated enum MusicAuthStatus: Sendable {
+    case authorized
+    case denied
+    case restricted
+    case notDetermined
+}
+
 // MARK: - MusicSearchServiceProtocol
 
 protocol MusicSearchServiceProtocol: Sendable {
-    func requestAuthorization() async -> MusicAuthorization.Status
+    func requestAuthorization() async -> MusicAuthStatus
     func searchSongs(query: String, limit: Int) async throws -> [SearchedSong]
 }
 
@@ -14,11 +23,17 @@ protocol MusicSearchServiceProtocol: Sendable {
 actor MusicSearchService: MusicSearchServiceProtocol {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.nahun.DearSong", category: "MusicSearchService")
 
-    func requestAuthorization() async -> MusicAuthorization.Status {
+    func requestAuthorization() async -> MusicAuthStatus {
         logger.info("MusicKit 권한 요청")
         let status = await MusicAuthorization.request()
         logger.info("MusicKit 권한 상태: \(String(describing: status))")
-        return status
+        switch status {
+        case .authorized: return .authorized
+        case .denied: return .denied
+        case .restricted: return .restricted
+        case .notDetermined: return .notDetermined
+        @unknown default: return .notDetermined
+        }
     }
 
     func searchSongs(query: String, limit: Int = 25) async throws -> [SearchedSong] {

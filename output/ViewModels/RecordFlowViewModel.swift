@@ -14,7 +14,7 @@ nonisolated enum RecordStep: Int, Sendable {
 @MainActor
 @Observable
 final class RecordFlowViewModel {
-    var currentStep: RecordStep = .songSearch
+    private(set) var currentStep: RecordStep = .songSearch
     var selectedSong: SearchedSong?
     var selectedMoodTags: Set<String> = []
     var entryText: String = ""

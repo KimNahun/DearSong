@@ -96,10 +96,6 @@ struct TimelineEntryView: View {
     }
 
     private func formattedDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        formatter.locale = Locale(identifier: "ko_KR")
-        return formatter.string(from: date)
+        DateFormatters.mediumDateString(from: date)
     }
 }

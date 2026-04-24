@@ -1,6 +1,5 @@
 import Foundation
 import Observation
-import MusicKit
 
 // MARK: - SongSearchViewModel
 
@@ -23,14 +22,10 @@ final class SongSearchViewModel {
     func requestAuthorization() async {
         let status = await service.requestAuthorization()
         switch status {
-        case .authorized:
+        case .authorized, .notDetermined:
             isMusicKitDenied = false
         case .denied, .restricted:
             isMusicKitDenied = true
-        case .notDetermined:
-            isMusicKitDenied = false
-        @unknown default:
-            isMusicKitDenied = false
         }
     }
 

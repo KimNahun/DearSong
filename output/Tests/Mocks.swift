@@ -1,6 +1,5 @@
 import Foundation
 import Supabase
-import MusicKit
 @testable import DearSong
 
 // MARK: - MockAuthService
@@ -96,12 +95,12 @@ actor MockSongMemoryService: SongMemoryServiceProtocol {
 // MARK: - MockMusicSearchService
 
 actor MockMusicSearchService: MusicSearchServiceProtocol {
-    var authStatus: MusicKit.MusicAuthorization.Status
+    var authStatus: MusicAuthStatus
     var searchResults: [SearchedSong]
     var shouldFail: Bool
 
     init(
-        authStatus: MusicKit.MusicAuthorization.Status = .authorized,
+        authStatus: MusicAuthStatus = .authorized,
         searchResults: [SearchedSong] = [],
         shouldFail: Bool = false
     ) {
@@ -110,7 +109,7 @@ actor MockMusicSearchService: MusicSearchServiceProtocol {
         self.shouldFail = shouldFail
     }
 
-    func requestAuthorization() async -> MusicKit.MusicAuthorization.Status {
+    func requestAuthorization() async -> MusicAuthStatus {
         return authStatus
     }
 

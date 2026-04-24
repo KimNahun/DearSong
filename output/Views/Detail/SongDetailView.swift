@@ -163,14 +163,17 @@ struct SongDetailView: View {
                     showAddEntry = true
                 })
                 .padding(.horizontal, PSpacing.lg)
-                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                .contextMenu {
                     Button(role: .destructive) {
                         memoryToDelete = memory
                         showDeleteConfirm = true
                     } label: {
                         Label("삭제", systemImage: "trash")
                     }
-                    .accessibilityLabel("이 시기 기록 삭제")
+                }
+                .accessibilityAction(named: "삭제") {
+                    memoryToDelete = memory
+                    showDeleteConfirm = true
                 }
             }
         }

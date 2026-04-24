@@ -153,7 +153,7 @@ struct AddEntryView: View {
                     Text("오늘 이 곡을 다시 들으며 느낀 점을 적어보세요.")
                         .font(.pBody(15))
                         .foregroundStyle(Color.pTextTertiary)
-                        .padding(16)
+                        .padding(PSpacing.lg)
                         .allowsHitTesting(false)
                 }
             }
@@ -162,10 +162,6 @@ struct AddEntryView: View {
     }
 
     private func formattedDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        formatter.locale = Locale(identifier: "ko_KR")
-        return formatter.string(from: date)
+        DateFormatters.mediumDateString(from: date)
     }
 }

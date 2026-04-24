@@ -136,7 +136,7 @@ struct EntryWriteView: View {
                     Text("이 노래를 들었을 때 어떤 감정이었나요?\n그때의 기억을 자유롭게 적어보세요.")
                         .font(.pBody(15))
                         .foregroundStyle(Color.pTextTertiary)
-                        .padding(16)
+                        .padding(PSpacing.lg)
                         .allowsHitTesting(false)
                 }
             }

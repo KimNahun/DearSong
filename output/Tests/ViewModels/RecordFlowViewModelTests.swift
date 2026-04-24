@@ -48,8 +48,9 @@ struct RecordFlowViewModelTests {
             authService: MockAuthService()
         )
         viewModel.selectedSong = SearchedSong(id: "1", title: "Test", artistName: "Artist", artworkURL: nil, albumTitle: nil)
-        viewModel.currentStep = .moodSelection
-        viewModel.goToNextStep()
+        viewModel.goToNextStep() // songSearch → moodSelection
+        #expect(viewModel.currentStep == .moodSelection)
+        viewModel.goToNextStep() // 태그 없으면 이동 안 됨
         #expect(viewModel.currentStep == .moodSelection)
     }
 
@@ -60,7 +61,9 @@ struct RecordFlowViewModelTests {
             memoryService: MockSongMemoryService(),
             authService: MockAuthService()
         )
-        viewModel.currentStep = .moodSelection
+        viewModel.selectedSong = SearchedSong(id: "1", title: "Test", artistName: "Artist", artworkURL: nil, albumTitle: nil)
+        viewModel.goToNextStep() // songSearch → moodSelection
+        #expect(viewModel.currentStep == .moodSelection)
         viewModel.goToPreviousStep()
         #expect(viewModel.currentStep == .songSearch)
     }

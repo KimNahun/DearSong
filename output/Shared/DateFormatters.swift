@@ -2,20 +2,10 @@ import Foundation
 
 // MARK: - DateFormatters
 
-nonisolated(unsafe) let _yearOnlyFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy"
-    formatter.locale = Locale(identifier: "ko_KR")
-    return formatter
-}()
-
 nonisolated enum DateFormatters: Sendable {
-    /// 년도만 표시 (예: "2016")
-    static var yearOnly: DateFormatter { _yearOnlyFormatter }
-
-    /// 날짜 → 년도 문자열
+    /// 날짜 → 년도 문자열 (예: "2016")
     nonisolated static func yearString(from date: Date) -> String {
-        _yearOnlyFormatter.string(from: date)
+        date.formatted(.dateTime.year())
     }
 
     /// 년도 Int → Date (1월 1일 기준)
@@ -40,5 +30,10 @@ nonisolated enum DateFormatters: Sendable {
     /// 선택 가능한 년도 목록 (2000 ~ 현재)
     static var selectableYears: [Int] {
         (2000...currentYear).reversed().map { $0 }
+    }
+
+    /// 날짜 → 중간 형식 문자열 (예: "2026년 4월 24일")
+    nonisolated static func mediumDateString(from date: Date) -> String {
+        date.formatted(.dateTime.year().month().day().locale(Locale(identifier: "ko_KR")))
     }
 }

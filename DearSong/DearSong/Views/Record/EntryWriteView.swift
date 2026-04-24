@@ -13,32 +13,53 @@ struct EntryWriteView: View {
 
     var body: some View {
         ZStack {
-            // 배경: 크림 베이스 + 옵셔널 아트워크 (저불투명도)
             artworkBackground
 
-            VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: PSpacing.xl) {
-                        // 선택된 곡 + 태그 요약
-                        summaryCard
+            ScrollView {
+                VStack(spacing: 24) {
+                    // 선택된 곡 + 태그 요약
+                    summaryCard
 
-                        // 텍스트 에디터
-                        textEditorSection
+                    // 텍스트 에디터
+                    textEditorSection
 
-                        // 년도 + 장소
-                        metadataSection
-                    }
-                    .padding(.horizontal, PSpacing.lg)
-                    .padding(.top, PSpacing.md)
-                    .padding(.bottom, PSpacing.huge)
+                    // 년도 + 장소
+                    metadataSection
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 120)
             }
-            .bottomButtons {
-                BottomPlacedButton(title: "기록 남기기") {
+
+            // 저장 버튼
+            VStack {
+                Spacer()
+                Button {
                     isTextEditorFocused = false
                     Task { await viewModel.save() }
+                } label: {
+                    Text("기록 남기기")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            viewModel.isSaving
+                                ? AppTheme.textTertiary
+                                : AppTheme.accent
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
                 }
                 .disabled(viewModel.isSaving)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
+                .background(
+                    LinearGradient(
+                        colors: [AppTheme.background.opacity(0), AppTheme.background],
+                        startPoint: .top,
+                        endPoint: .center
+                    )
+                )
                 .accessibilityLabel("기록 저장")
             }
 
@@ -71,29 +92,34 @@ struct EntryWriteView: View {
     }
 
     private var summaryCard: some View {
-        HStack(spacing: PSpacing.md) {
+        HStack(spacing: 14) {
             AlbumArtworkView(
                 urlString: viewModel.effectiveArtworkURL,
-                size: 52,
-                cornerRadius: PRadius.xs
+                size: 56,
+                cornerRadius: AppTheme.cornerRadiusXs
             )
 
-            VStack(alignment: .leading, spacing: PSpacing.xs) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(viewModel.effectiveSongTitle)
-                    .font(.pBodyMedium(15))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(AppTheme.textPrimary)
                     .lineLimit(1)
                 Text(viewModel.effectiveArtistName)
-                    .font(.pBody(13))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 14))
+                    .foregroundStyle(AppTheme.textSecondary)
                     .lineLimit(1)
 
-                // 선택된 감정 태그들
                 if !viewModel.selectedMoodTags.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: PSpacing.xs) {
+                        HStack(spacing: 6) {
                             ForEach(Array(viewModel.selectedMoodTags).sorted(), id: \.self) { tag in
-                                PChip(tag)
+                                Text(tag)
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(AppTheme.accent)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(AppTheme.accentSoft)
+                                    .clipShape(Capsule())
                             }
                         }
                     }
@@ -101,56 +127,55 @@ struct EntryWriteView: View {
             }
             Spacer()
         }
-        .padding(PSpacing.md)
+        .padding(16)
         .cardStyle()
         .accessibilityElement(children: .combine)
         .accessibilityLabel("선택: \(viewModel.effectiveSongTitle), \(viewModel.effectiveArtistName)")
     }
 
     private var textEditorSection: some View {
-        VStack(alignment: .leading, spacing: PSpacing.sm) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("이 곡과 함께했던 순간")
-                .font(.pTitle(17))
-                .foregroundStyle(.primary)
+                .font(.system(size: 17, weight: .bold))
+                .foregroundStyle(AppTheme.textPrimary)
 
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: PRadius.md)
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm)
                     .fill(AppTheme.cardBackground)
                     .overlay(
-                        RoundedRectangle(cornerRadius: PRadius.md)
-                            .stroke(isTextEditorFocused ? Color.pAccentPrimary : Color(.systemGray5), lineWidth: PBorder.thin)
+                        RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm)
+                            .stroke(isTextEditorFocused ? AppTheme.accent : AppTheme.border, lineWidth: 1.2)
                     )
 
                 TextEditor(text: $viewModel.entryText)
-                    .font(.pBody(15))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 15))
+                    .foregroundStyle(AppTheme.textPrimary)
                     .scrollContentBackground(.hidden)
                     .background(.clear)
-                    .frame(minHeight: 140)
-                    .padding(PSpacing.md)
+                    .frame(minHeight: 160)
+                    .padding(14)
                     .focused($isTextEditorFocused)
                     .accessibilityLabel("감정 기록 텍스트 입력")
 
                 if viewModel.entryText.isEmpty {
                     Text("이 노래를 들었을 때 어떤 감정이었나요?\n그때의 기억을 자유롭게 적어보세요.")
-                        .font(.pBody(15))
-                        .foregroundStyle(Color(.tertiaryLabel))
-                        .padding(PSpacing.lg)
+                        .font(.system(size: 15))
+                        .foregroundStyle(AppTheme.textTertiary)
+                        .padding(18)
                         .allowsHitTesting(false)
                 }
             }
-            .animation(PAnimation.easeOut, value: isTextEditorFocused)
-            .pFocusBorder(isFocused: isTextEditorFocused)
+            .animation(.easeOut(duration: 0.2), value: isTextEditorFocused)
         }
     }
 
     private var metadataSection: some View {
-        VStack(spacing: PSpacing.lg) {
+        VStack(spacing: 20) {
             // 년도 선택
-            VStack(alignment: .leading, spacing: PSpacing.sm) {
+            VStack(alignment: .leading, spacing: 10) {
                 Text("들었던 시기")
-                    .font(.pTitle(17))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(AppTheme.textPrimary)
 
                 PDropdownButton(
                     placeholder: "년도 선택",
@@ -164,13 +189,26 @@ struct EntryWriteView: View {
             }
 
             // 장소 입력
-            VStack(alignment: .leading, spacing: PSpacing.sm) {
+            VStack(alignment: .leading, spacing: 10) {
                 Text("들었던 장소 (선택)")
-                    .font(.pTitle(17))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(AppTheme.textPrimary)
 
-                PTextField(placeholder: "예: 학교 옥상, 버스 안, 카페...", text: $viewModel.location)
-                    .accessibilityLabel("들었던 장소 입력 (선택 사항)")
+                HStack(spacing: 10) {
+                    Image(systemName: "mappin.circle")
+                        .foregroundStyle(AppTheme.textTertiary)
+                    TextField("예: 학교 옥상, 버스 안, 카페...", text: $viewModel.location)
+                        .font(.system(size: 15))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .accessibilityLabel("들었던 장소 입력 (선택 사항)")
+                }
+                .padding(14)
+                .background(AppTheme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm)
+                        .stroke(AppTheme.border, lineWidth: 1)
+                )
             }
         }
     }

@@ -16,33 +16,41 @@ struct SongDetailView: View {
 
     var body: some View {
         ZStack {
-            // 배경: 크림 베이스 + 옵셔널 아트워크 (저불투명도)
             backgroundView
 
             ScrollView {
-                VStack(spacing: PSpacing.xl) {
+                VStack(spacing: 24) {
                     // 헤더: 앨범 커버 + 곡 정보
                     songHeader
 
                     // "새 시기 추가" 버튼
                     addNewPeriodButton
-                        .padding(.horizontal, PSpacing.lg)
+                        .padding(.horizontal, 20)
 
                     // 타임라인
                     if viewModel.isLoading {
                         ProgressView()
-                            .tint(Color.pAccentPrimary)
-                            .padding(.top, PSpacing.xxxl)
+                            .tint(AppTheme.accent)
+                            .padding(.top, 40)
                     } else if viewModel.memories.isEmpty {
-                        EmptyStateView(
-                            title: "아직 기록이 없어요",
-                            description: "이 곡을 들었던 시기를\n기록해보세요"
-                        )
+                        VStack(spacing: 16) {
+                            Image(systemName: "book.closed")
+                                .font(.system(size: 40))
+                                .foregroundStyle(AppTheme.textTertiary)
+                            Text("아직 기록이 없어요")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(AppTheme.textPrimary)
+                            Text("이 곡을 들었던 시기를\n기록해보세요")
+                                .font(.system(size: 14))
+                                .foregroundStyle(AppTheme.textSecondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(.top, 40)
                     } else {
                         timelineSection
                     }
                 }
-                .padding(.bottom, PSpacing.huge)
+                .padding(.bottom, 60)
             }
         }
         .navigationTitle(groupedSong.songTitle)
@@ -126,43 +134,55 @@ struct SongDetailView: View {
     }
 
     private var songHeader: some View {
-        VStack(spacing: PSpacing.lg) {
-            AlbumArtworkView(urlString: groupedSong.artworkUrl, size: 160, cornerRadius: PRadius.lg)
-                .pShadowHigh()
+        VStack(spacing: 16) {
+            AlbumArtworkView(urlString: groupedSong.artworkUrl, size: 160, cornerRadius: AppTheme.cornerRadius)
+                .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
 
-            VStack(spacing: PSpacing.xs) {
+            VStack(spacing: 6) {
                 Text(groupedSong.songTitle)
-                    .font(.pTitle(20))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(AppTheme.textPrimary)
                     .multilineTextAlignment(.center)
-                    .accessibilityLabel("곡 제목: \(groupedSong.songTitle)")
 
                 Text(groupedSong.artistName)
-                    .font(.pBody(15))
-                    .foregroundStyle(.secondary)
-                    .accessibilityLabel("아티스트: \(groupedSong.artistName)")
+                    .font(.system(size: 15))
+                    .foregroundStyle(AppTheme.textSecondary)
             }
         }
-        .padding(.top, PSpacing.lg)
+        .padding(.top, 20)
     }
 
     private var addNewPeriodButton: some View {
-        CommonButton(
-            title: "이 곡의 새 시기 추가",
-            style: .outlined,
-            action: { showRecordFlow = true }
-        )
+        Button {
+            showRecordFlow = true
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.system(size: 16))
+                Text("이 곡의 새 시기 추가")
+                    .font(.system(size: 15, weight: .semibold))
+            }
+            .foregroundStyle(AppTheme.accent)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(AppTheme.accentSoft)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm)
+                    .stroke(AppTheme.accent.opacity(0.3), lineWidth: 1)
+            )
+        }
         .accessibilityLabel("이 곡의 새 시기 기록 추가")
     }
 
     private var timelineSection: some View {
-        LazyVStack(spacing: PSpacing.md) {
+        LazyVStack(spacing: 16) {
             ForEach(viewModel.memories) { memory in
                 TimelineEntryView(memory: memory, onAddEntry: {
                     selectedMemory = memory
                     showAddEntry = true
                 })
-                .padding(.horizontal, PSpacing.lg)
+                .padding(.horizontal, 20)
                 .contextMenu {
                     Button(role: .destructive) {
                         memoryToDelete = memory

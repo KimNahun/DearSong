@@ -26,32 +26,54 @@ struct AddEntryView: View {
             AppBackground(showLines: true)
 
             VStack(spacing: 0) {
-                // 헤더
                 sheetHeader
 
-                PDivider()
+                Rectangle()
+                    .fill(AppTheme.divider)
+                    .frame(height: 1)
 
                 ScrollView {
-                    VStack(spacing: PSpacing.xl) {
-                        // 기존 엔트리들
+                    VStack(spacing: 24) {
                         if !viewModel.existingEntries.isEmpty {
                             existingEntriesSection
                         }
-
-                        // 새 엔트리 입력
                         newEntrySection
                     }
-                    .padding(.horizontal, PSpacing.lg)
-                    .padding(.top, PSpacing.md)
-                    .padding(.bottom, PSpacing.huge)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 120)
                 }
             }
-            .bottomButtons {
-                BottomPlacedButton(title: "기록 추가") {
+
+            // 저장 버튼
+            VStack {
+                Spacer()
+                Button {
                     isTextEditorFocused = false
                     Task { await viewModel.save(memoryId: memory.id) }
+                } label: {
+                    Text("기록 추가")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            (viewModel.isSaving || viewModel.entryText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                                ? AppTheme.textTertiary
+                                : AppTheme.accent
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
                 }
                 .disabled(viewModel.isSaving || viewModel.entryText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
+                .background(
+                    LinearGradient(
+                        colors: [AppTheme.background.opacity(0), AppTheme.background],
+                        startPoint: .top,
+                        endPoint: .center
+                    )
+                )
                 .accessibilityLabel("기록 추가 저장")
             }
 
@@ -77,14 +99,14 @@ struct AddEntryView: View {
 
     private var sheetHeader: some View {
         HStack {
-            VStack(alignment: .leading, spacing: PSpacing.xxs) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(memory.songTitle)
-                    .font(.pTitle(17))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(AppTheme.textPrimary)
                     .lineLimit(1)
                 Text("\(yearString)년 · \(memory.artistName)")
-                    .font(.pCaption(12))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 12))
+                    .foregroundStyle(AppTheme.textSecondary)
                     .lineLimit(1)
             }
 
@@ -92,35 +114,37 @@ struct AddEntryView: View {
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.pTitle(22))
-                    .foregroundStyle(Color(.tertiaryLabel))
+                    .font(.system(size: 24))
+                    .foregroundStyle(AppTheme.textTertiary)
                     .frame(width: 44, height: 44)
             }
             .accessibilityLabel("닫기")
         }
-        .padding(.horizontal, PSpacing.lg)
-        .padding(.vertical, PSpacing.md)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
     }
 
     private var existingEntriesSection: some View {
-        VStack(alignment: .leading, spacing: PSpacing.sm) {
-            PSectionHeader("이전 기록들")
+        VStack(alignment: .leading, spacing: 10) {
+            Text("이전 기록들")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(AppTheme.textPrimary)
 
             ForEach(viewModel.existingEntries) { entry in
-                VStack(alignment: .leading, spacing: PSpacing.xs) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text(entry.text)
-                        .font(.pBody(14))
-                        .foregroundStyle(.primary)
+                        .font(.system(size: 14))
+                        .foregroundStyle(AppTheme.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
 
                     Text(formattedDate(entry.writtenAt))
-                        .font(.pCaption(11))
-                        .foregroundStyle(Color(.tertiaryLabel))
+                        .font(.system(size: 11))
+                        .foregroundStyle(AppTheme.textTertiary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(PSpacing.md)
-                .background(Color(.secondarySystemGroupedBackground))
-                .clipShape(RoundedRectangle(cornerRadius: PRadius.sm))
+                .padding(14)
+                .background(AppTheme.chipBackground)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusXs))
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("이전 기록: \(entry.text)")
             }
@@ -128,36 +152,38 @@ struct AddEntryView: View {
     }
 
     private var newEntrySection: some View {
-        VStack(alignment: .leading, spacing: PSpacing.sm) {
-            PSectionHeader("새 기록")
+        VStack(alignment: .leading, spacing: 10) {
+            Text("새 기록")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(AppTheme.textPrimary)
 
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: PRadius.md)
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm)
                     .fill(AppTheme.cardBackground)
                     .overlay(
-                        RoundedRectangle(cornerRadius: PRadius.md)
-                            .stroke(isTextEditorFocused ? Color.pAccentPrimary : Color(.systemGray5), lineWidth: PBorder.thin)
+                        RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm)
+                            .stroke(isTextEditorFocused ? AppTheme.accent : AppTheme.border, lineWidth: 1.2)
                     )
 
                 TextEditor(text: $viewModel.entryText)
-                    .font(.pBody(15))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 15))
+                    .foregroundStyle(AppTheme.textPrimary)
                     .scrollContentBackground(.hidden)
                     .background(.clear)
-                    .frame(minHeight: 120)
-                    .padding(PSpacing.md)
+                    .frame(minHeight: 140)
+                    .padding(14)
                     .focused($isTextEditorFocused)
                     .accessibilityLabel("새 기록 입력")
 
                 if viewModel.entryText.isEmpty {
                     Text("오늘 이 곡을 다시 들으며 느낀 점을 적어보세요.")
-                        .font(.pBody(15))
-                        .foregroundStyle(Color(.tertiaryLabel))
-                        .padding(PSpacing.lg)
+                        .font(.system(size: 15))
+                        .foregroundStyle(AppTheme.textTertiary)
+                        .padding(18)
                         .allowsHitTesting(false)
                 }
             }
-            .animation(PAnimation.easeOut, value: isTextEditorFocused)
+            .animation(.easeOut(duration: 0.2), value: isTextEditorFocused)
         }
     }
 

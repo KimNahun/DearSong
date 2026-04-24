@@ -32,7 +32,7 @@ struct AddEntryView: View {
                 PDivider()
 
                 ScrollView {
-                    VStack(spacing: PSpacing.xl(20)) {
+                    VStack(spacing: PSpacing.xl) {
                         // 기존 엔트리들
                         if !viewModel.existingEntries.isEmpty {
                             existingEntriesSection
@@ -41,9 +41,9 @@ struct AddEntryView: View {
                         // 새 엔트리 입력
                         newEntrySection
                     }
-                    .padding(.horizontal, PSpacing.lg(16))
-                    .padding(.top, PSpacing.md(12))
-                    .padding(.bottom, PSpacing.huge(48))
+                    .padding(.horizontal, PSpacing.lg)
+                    .padding(.top, PSpacing.md)
+                    .padding(.bottom, PSpacing.huge)
                 }
             }
             .bottomButtons {
@@ -56,7 +56,7 @@ struct AddEntryView: View {
             }
 
             if viewModel.isSaving {
-                PLoadingOverlay(isLoading: true)
+                PLoadingOverlay()
             }
         }
         .onChange(of: viewModel.savedSuccessfully) { _, saved in
@@ -77,7 +77,7 @@ struct AddEntryView: View {
 
     private var sheetHeader: some View {
         HStack {
-            VStack(alignment: .leading, spacing: PSpacing.xs(2)) {
+            VStack(alignment: .leading, spacing: PSpacing.xxs) {
                 Text(memory.songTitle)
                     .font(.pTitle(17))
                     .foregroundStyle(Color.pTextPrimary)
@@ -98,16 +98,16 @@ struct AddEntryView: View {
             }
             .accessibilityLabel("닫기")
         }
-        .padding(.horizontal, PSpacing.lg(16))
-        .padding(.vertical, PSpacing.md(12))
+        .padding(.horizontal, PSpacing.lg)
+        .padding(.vertical, PSpacing.md)
     }
 
     private var existingEntriesSection: some View {
-        VStack(alignment: .leading, spacing: PSpacing.sm(8)) {
-            PSectionHeader(title: "이전 기록들")
+        VStack(alignment: .leading, spacing: PSpacing.sm) {
+            PSectionHeader("이전 기록들")
 
             ForEach(viewModel.existingEntries) { entry in
-                VStack(alignment: .leading, spacing: PSpacing.xs(4)) {
+                VStack(alignment: .leading, spacing: PSpacing.xs) {
                     Text(entry.text)
                         .font(.pBody(14))
                         .foregroundStyle(Color.pTextPrimary)
@@ -118,9 +118,9 @@ struct AddEntryView: View {
                         .foregroundStyle(Color.pTextTertiary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(PSpacing.md(12))
+                .padding(PSpacing.md)
                 .background(Color.pGlassFill)
-                .clipShape(RoundedRectangle(cornerRadius: PRadius.sm(8)))
+                .clipShape(RoundedRectangle(cornerRadius: PRadius.sm))
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("이전 기록: \(entry.text)")
             }
@@ -128,15 +128,15 @@ struct AddEntryView: View {
     }
 
     private var newEntrySection: some View {
-        VStack(alignment: .leading, spacing: PSpacing.sm(8)) {
-            PSectionHeader(title: "새 기록")
+        VStack(alignment: .leading, spacing: PSpacing.sm) {
+            PSectionHeader("새 기록")
 
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: PRadius.md(12))
+                RoundedRectangle(cornerRadius: PRadius.md)
                     .fill(Color.pGlassFill)
                     .overlay(
-                        RoundedRectangle(cornerRadius: PRadius.md(12))
-                            .stroke(isTextEditorFocused ? Color.pAccentPrimary : Color.pGlassBorder, lineWidth: PBorder.thin(1.0))
+                        RoundedRectangle(cornerRadius: PRadius.md)
+                            .stroke(isTextEditorFocused ? Color.pAccentPrimary : Color.pGlassBorder, lineWidth: PBorder.thin)
                     )
 
                 TextEditor(text: $viewModel.entryText)
@@ -145,7 +145,7 @@ struct AddEntryView: View {
                     .scrollContentBackground(.hidden)
                     .background(.clear)
                     .frame(minHeight: 120)
-                    .padding(PSpacing.md(12))
+                    .padding(PSpacing.md)
                     .focused($isTextEditorFocused)
                     .accessibilityLabel("새 기록 입력")
 

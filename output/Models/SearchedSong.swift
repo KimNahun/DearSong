@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - SearchedSong
 
-struct SearchedSong: Identifiable, Sendable {
+nonisolated struct SearchedSong: Identifiable, Sendable {
     let id: String
     var title: String
     var artistName: String

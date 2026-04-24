@@ -20,31 +20,29 @@ struct SongDetailView: View {
             backgroundView
 
             ScrollView {
-                VStack(spacing: PSpacing.xl(20)) {
+                VStack(spacing: PSpacing.xl) {
                     // 헤더: 앨범 커버 + 곡 정보
                     songHeader
 
                     // "새 시기 추가" 버튼
                     addNewPeriodButton
-                        .padding(.horizontal, PSpacing.lg(16))
+                        .padding(.horizontal, PSpacing.lg)
 
                     // 타임라인
                     if viewModel.isLoading {
                         ProgressView()
                             .tint(Color.pAccentPrimary)
-                            .padding(.top, PSpacing.xxxl(32))
+                            .padding(.top, PSpacing.xxxl)
                     } else if viewModel.memories.isEmpty {
                         EmptyStateView(
                             title: "아직 기록이 없어요",
-                            message: "이 곡을 들었던 시기를\n기록해보세요",
-                            actionTitle: nil,
-                            action: nil
+                            description: "이 곡을 들었던 시기를\n기록해보세요"
                         )
                     } else {
                         timelineSection
                     }
                 }
-                .padding(.bottom, PSpacing.huge(48))
+                .padding(.bottom, PSpacing.huge)
             }
         }
         .navigationTitle(groupedSong.songTitle)
@@ -128,11 +126,11 @@ struct SongDetailView: View {
     }
 
     private var songHeader: some View {
-        VStack(spacing: PSpacing.lg(16)) {
-            AlbumArtworkView(urlString: groupedSong.artworkUrl, size: 160, cornerRadius: PRadius.lg(16))
+        VStack(spacing: PSpacing.lg) {
+            AlbumArtworkView(urlString: groupedSong.artworkUrl, size: 160, cornerRadius: PRadius.lg)
                 .pShadowHigh()
 
-            VStack(spacing: PSpacing.xs(4)) {
+            VStack(spacing: PSpacing.xs) {
                 Text(groupedSong.songTitle)
                     .font(.pTitle(20))
                     .foregroundStyle(Color.pTextPrimary)
@@ -145,7 +143,7 @@ struct SongDetailView: View {
                     .accessibilityLabel("아티스트: \(groupedSong.artistName)")
             }
         }
-        .padding(.top, PSpacing.lg(16))
+        .padding(.top, PSpacing.lg)
     }
 
     private var addNewPeriodButton: some View {
@@ -158,13 +156,13 @@ struct SongDetailView: View {
     }
 
     private var timelineSection: some View {
-        LazyVStack(spacing: PSpacing.md(12)) {
+        LazyVStack(spacing: PSpacing.md) {
             ForEach(viewModel.memories) { memory in
                 TimelineEntryView(memory: memory, onAddEntry: {
                     selectedMemory = memory
                     showAddEntry = true
                 })
-                .padding(.horizontal, PSpacing.lg(16))
+                .padding(.horizontal, PSpacing.lg)
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     Button(role: .destructive) {
                         memoryToDelete = memory

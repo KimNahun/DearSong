@@ -7,31 +7,31 @@ struct MoodChipGridView: View {
     @Binding var selectedTags: Set<String>
 
     private let columns = [
-        GridItem(.adaptive(minimum: 80), spacing: PSpacing.sm(8))
+        GridItem(.adaptive(minimum: 80), spacing: PSpacing.sm)
     ]
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: PSpacing.lg(16)) {
+            VStack(alignment: .leading, spacing: PSpacing.lg) {
                 ForEach(MoodCategory.allCases, id: \.rawValue) { category in
                     categorySection(category)
                 }
             }
-            .padding(.horizontal, PSpacing.lg(16))
-            .padding(.vertical, PSpacing.md(12))
+            .padding(.horizontal, PSpacing.lg)
+            .padding(.vertical, PSpacing.md)
         }
     }
 
     @ViewBuilder
     private func categorySection(_ category: MoodCategory) -> some View {
-        VStack(alignment: .leading, spacing: PSpacing.sm(8)) {
-            PSectionHeader(title: category.displayName)
+        VStack(alignment: .leading, spacing: PSpacing.sm) {
+            PSectionHeader(category.displayName)
 
-            LazyVGrid(columns: columns, spacing: PSpacing.sm(8)) {
+            LazyVGrid(columns: columns, spacing: PSpacing.sm) {
                 ForEach(category.tags, id: \.self) { tag in
                     let isSelected = selectedTags.contains(tag)
                     PChip(
-                        title: tag,
+                        tag,
                         variant: .toggle,
                         isSelected: Binding(
                             get: { isSelected },

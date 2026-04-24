@@ -4,16 +4,16 @@ import PersonalColorDesignSystem
 // MARK: - ManualSongInputView
 
 struct ManualSongInputView: View {
-    var viewModel: RecordFlowViewModel
+    @Bindable var viewModel: RecordFlowViewModel
 
     var body: some View {
-        VStack(spacing: PSpacing.xl(20)) {
+        VStack(spacing: PSpacing.xl) {
             // 안내 배너
             PBanner(type: .info, message: "Apple Music 권한 없이 곡을 직접 입력합니다.")
-                .padding(.horizontal, PSpacing.lg(16))
-                .padding(.top, PSpacing.md(12))
+                .padding(.horizontal, PSpacing.lg)
+                .padding(.top, PSpacing.md)
 
-            VStack(spacing: PSpacing.lg(16)) {
+            VStack(spacing: PSpacing.lg) {
                 PFormField(label: "곡 제목", state: titleFieldState) {
                     PTextField(placeholder: "예: 봄날", text: $viewModel.manualSongTitle)
                         .accessibilityLabel("곡 제목 입력")
@@ -24,7 +24,7 @@ struct ManualSongInputView: View {
                         .accessibilityLabel("아티스트명 입력")
                 }
             }
-            .padding(.horizontal, PSpacing.lg(16))
+            .padding(.horizontal, PSpacing.lg)
 
             Spacer()
         }
@@ -44,7 +44,7 @@ struct ManualSongInputView: View {
             return .normal
         }
         return viewModel.manualSongTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            ? .error("곡 제목을 입력해주세요")
+            ? .error
             : .normal
     }
 
@@ -53,7 +53,7 @@ struct ManualSongInputView: View {
             return .normal
         }
         return viewModel.manualArtistName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            ? .error("아티스트명을 입력해주세요")
+            ? .error
             : .normal
     }
 }

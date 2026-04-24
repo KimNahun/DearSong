@@ -2,14 +2,14 @@ import Foundation
 
 // MARK: - Domain Errors
 
-enum AuthError: Error, Sendable {
+nonisolated enum AuthError: Error, Sendable {
     case invalidCredentials
     case sessionExpired
     case signOutFailed
     case noSession
 }
 
-enum SongMemoryError: Error, Sendable {
+nonisolated enum SongMemoryError: Error, Sendable {
     case fetchFailed
     case createFailed
     case updateFailed
@@ -17,7 +17,7 @@ enum SongMemoryError: Error, Sendable {
     case notFound
 }
 
-enum MusicSearchError: Error, Sendable {
+nonisolated enum MusicSearchError: Error, Sendable {
     case unauthorized
     case searchFailed
     case networkError
@@ -25,7 +25,7 @@ enum MusicSearchError: Error, Sendable {
 
 // MARK: - AppError
 
-enum AppError: Error, LocalizedError, Sendable {
+nonisolated enum AppError: Error, LocalizedError, Sendable {
     case auth(AuthError)
     case songMemory(SongMemoryError)
     case musicSearch(MusicSearchError)

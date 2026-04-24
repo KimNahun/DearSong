@@ -4,7 +4,7 @@ import PersonalColorDesignSystem
 // MARK: - MoodSelectionView
 
 struct MoodSelectionView: View {
-    var viewModel: RecordFlowViewModel
+    @Bindable var viewModel: RecordFlowViewModel
 
     var body: some View {
         VStack(spacing: 0) {
@@ -19,8 +19,8 @@ struct MoodSelectionView: View {
             Text("이 곡을 들었을 때의 감정을 선택하세요")
                 .font(.pBody(14))
                 .foregroundStyle(Color.pTextSecondary)
-                .padding(.vertical, PSpacing.sm(8))
-                .padding(.horizontal, PSpacing.lg(16))
+                .padding(.vertical, PSpacing.sm)
+                .padding(.horizontal, PSpacing.lg)
 
             // 선택된 태그 수 표시
             if !viewModel.selectedMoodTags.isEmpty {
@@ -33,12 +33,12 @@ struct MoodSelectionView: View {
                         .foregroundStyle(Color.pAccentPrimary)
                     Spacer()
                 }
-                .padding(.horizontal, PSpacing.lg(16))
-                .padding(.bottom, PSpacing.xs(4))
+                .padding(.horizontal, PSpacing.lg)
+                .padding(.bottom, PSpacing.xs)
             }
 
             PDivider()
-                .padding(.horizontal, PSpacing.lg(16))
+                .padding(.horizontal, PSpacing.lg)
 
             // 감정 태그 그리드
             MoodChipGridView(selectedTags: $viewModel.selectedMoodTags)
@@ -55,10 +55,10 @@ struct MoodSelectionView: View {
     }
 
     private func selectedSongBanner(_ song: SearchedSong) -> some View {
-        HStack(spacing: PSpacing.sm(8)) {
-            AlbumArtworkView(urlString: song.artworkURL?.absoluteString, size: 40, cornerRadius: PRadius.xs(4))
+        HStack(spacing: PSpacing.sm) {
+            AlbumArtworkView(urlString: song.artworkURL?.absoluteString, size: 40, cornerRadius: PRadius.xs)
 
-            VStack(alignment: .leading, spacing: PSpacing.xs(2)) {
+            VStack(alignment: .leading, spacing: PSpacing.xxs) {
                 Text(song.title)
                     .font(.pBodyMedium(14))
                     .foregroundStyle(Color.pTextPrimary)
@@ -71,21 +71,21 @@ struct MoodSelectionView: View {
 
             Spacer()
         }
-        .padding(.horizontal, PSpacing.lg(16))
-        .padding(.vertical, PSpacing.sm(8))
+        .padding(.horizontal, PSpacing.lg)
+        .padding(.vertical, PSpacing.sm)
         .background(Color.pGlassFill)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("선택된 곡: \(song.title), \(song.artistName)")
     }
 
     private var manualSongBanner: some View {
-        HStack(spacing: PSpacing.sm(8)) {
+        HStack(spacing: PSpacing.sm) {
             Image(systemName: "music.note")
                 .font(.pTitle(17))
                 .foregroundStyle(Color.pAccentSecondary)
                 .frame(width: 40, height: 40)
 
-            VStack(alignment: .leading, spacing: PSpacing.xs(2)) {
+            VStack(alignment: .leading, spacing: PSpacing.xxs) {
                 Text(viewModel.manualSongTitle)
                     .font(.pBodyMedium(14))
                     .foregroundStyle(Color.pTextPrimary)
@@ -98,8 +98,8 @@ struct MoodSelectionView: View {
 
             Spacer()
         }
-        .padding(.horizontal, PSpacing.lg(16))
-        .padding(.vertical, PSpacing.sm(8))
+        .padding(.horizontal, PSpacing.lg)
+        .padding(.vertical, PSpacing.sm)
         .background(Color.pGlassFill)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("선택된 곡: \(viewModel.manualSongTitle), \(viewModel.manualArtistName)")

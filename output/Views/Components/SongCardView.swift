@@ -8,11 +8,11 @@ struct SongCardView: View {
 
     var body: some View {
         GlassCard {
-            VStack(alignment: .leading, spacing: PSpacing.sm(8)) {
-                AlbumArtworkView(urlString: groupedSong.artworkUrl, size: 120, cornerRadius: PRadius.sm(8))
+            VStack(alignment: .leading, spacing: PSpacing.sm) {
+                AlbumArtworkView(urlString: groupedSong.artworkUrl, size: 120, cornerRadius: PRadius.sm)
                     .frame(maxWidth: .infinity)
 
-                VStack(alignment: .leading, spacing: PSpacing.xs(4)) {
+                VStack(alignment: .leading, spacing: PSpacing.xs) {
                     Text(groupedSong.songTitle)
                         .font(.pBodyMedium(15))
                         .foregroundStyle(Color.pTextPrimary)
@@ -25,7 +25,7 @@ struct SongCardView: View {
                         .lineLimit(1)
                         .accessibilityLabel("아티스트: \(groupedSong.artistName)")
 
-                    HStack(spacing: PSpacing.xs(4)) {
+                    HStack(spacing: PSpacing.xs) {
                         Image(systemName: "heart.fill")
                             .font(.pCaption(11))
                             .foregroundStyle(Color.pAccentPrimary)
@@ -34,11 +34,11 @@ struct SongCardView: View {
                             .foregroundStyle(Color.pTextTertiary)
                     }
                 }
-                .padding(.horizontal, PSpacing.sm(8))
-                .padding(.bottom, PSpacing.sm(8))
+                .padding(.horizontal, PSpacing.sm)
+                .padding(.bottom, PSpacing.sm)
             }
         }
         .pShadowLow()
-        .pressable(scale: 0.97, haptic: true)
+        .pressable(scale: 0.97)
     }
 }

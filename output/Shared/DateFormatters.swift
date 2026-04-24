@@ -2,22 +2,24 @@ import Foundation
 
 // MARK: - DateFormatters
 
-enum DateFormatters {
+nonisolated(unsafe) let _yearOnlyFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy"
+    formatter.locale = Locale(identifier: "ko_KR")
+    return formatter
+}()
+
+nonisolated enum DateFormatters: Sendable {
     /// 년도만 표시 (예: "2016")
-    static let yearOnly: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy"
-        formatter.locale = Locale(identifier: "ko_KR")
-        return formatter
-    }()
+    static var yearOnly: DateFormatter { _yearOnlyFormatter }
 
     /// 날짜 → 년도 문자열
-    static func yearString(from date: Date) -> String {
-        yearOnly.string(from: date)
+    nonisolated static func yearString(from date: Date) -> String {
+        _yearOnlyFormatter.string(from: date)
     }
 
     /// 년도 Int → Date (1월 1일 기준)
-    static func date(fromYear year: Int) -> Date {
+    nonisolated static func date(fromYear year: Int) -> Date {
         var components = DateComponents()
         components.year = year
         components.month = 1
@@ -26,7 +28,7 @@ enum DateFormatters {
     }
 
     /// Date → 년도 Int
-    static func year(from date: Date) -> Int {
+    nonisolated static func year(from date: Date) -> Int {
         Calendar.current.component(.year, from: date)
     }
 

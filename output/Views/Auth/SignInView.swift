@@ -12,11 +12,11 @@ struct SignInView: View {
         ZStack {
             PGradientBackground()
 
-            VStack(spacing: PSpacing.xxxl(32)) {
+            VStack(spacing: PSpacing.xxxl) {
                 Spacer()
 
                 // 앱 로고 영역
-                VStack(spacing: PSpacing.lg(16)) {
+                VStack(spacing: PSpacing.lg) {
                     Image(systemName: "music.note.list")
                         .font(.pDisplay(64))
                         .foregroundStyle(
@@ -28,7 +28,7 @@ struct SignInView: View {
                         )
                         .accessibilityLabel("DearSong 앱 아이콘")
 
-                    VStack(spacing: PSpacing.xs(4)) {
+                    VStack(spacing: PSpacing.xs) {
                         Text("DearSong")
                             .font(.pDisplay(40))
                             .foregroundStyle(Color.pTextPrimary)
@@ -43,7 +43,7 @@ struct SignInView: View {
                 Spacer()
 
                 // Sign In 영역
-                VStack(spacing: PSpacing.lg(16)) {
+                VStack(spacing: PSpacing.lg) {
                     SignInWithAppleButton { request in
                         let preparedRequest = viewModel.prepareSignInRequest()
                         request.requestedScopes = preparedRequest.requestedScopes
@@ -60,19 +60,19 @@ struct SignInView: View {
                     }
                     .signInWithAppleButtonStyle(.white)
                     .frame(height: 50)
-                    .cornerRadius(PRadius.md(12))
+                    .cornerRadius(PRadius.md)
                     .accessibilityLabel("Apple로 로그인")
 
                     Text("Apple ID로 안전하게 로그인하세요")
                         .font(.pCaption(12))
                         .foregroundStyle(Color.pTextTertiary)
                 }
-                .padding(.horizontal, PSpacing.xl(20))
-                .padding(.bottom, PSpacing.huge(48))
+                .padding(.horizontal, PSpacing.xl)
+                .padding(.bottom, PSpacing.huge)
             }
 
             if viewModel.isLoading {
-                PLoadingOverlay(isLoading: true)
+                PLoadingOverlay()
             }
         }
         .onChange(of: viewModel.errorMessage) { _, message in

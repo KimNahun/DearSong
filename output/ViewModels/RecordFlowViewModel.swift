@@ -3,7 +3,7 @@ import Observation
 
 // MARK: - RecordStep
 
-enum RecordStep: Int, Sendable {
+nonisolated enum RecordStep: Int, Sendable {
     case songSearch = 0
     case moodSelection = 1
     case entryWrite = 2

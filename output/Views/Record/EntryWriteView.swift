@@ -4,7 +4,7 @@ import PersonalColorDesignSystem
 // MARK: - EntryWriteView
 
 struct EntryWriteView: View {
-    var viewModel: RecordFlowViewModel
+    @Bindable var viewModel: RecordFlowViewModel
     @FocusState private var isTextEditorFocused: Bool
 
     private var yearOptions: [String] {
@@ -18,7 +18,7 @@ struct EntryWriteView: View {
 
             VStack(spacing: 0) {
                 ScrollView {
-                    VStack(spacing: PSpacing.xl(20)) {
+                    VStack(spacing: PSpacing.xl) {
                         // 선택된 곡 + 태그 요약
                         summaryCard
 
@@ -28,9 +28,9 @@ struct EntryWriteView: View {
                         // 년도 + 장소
                         metadataSection
                     }
-                    .padding(.horizontal, PSpacing.lg(16))
-                    .padding(.top, PSpacing.md(12))
-                    .padding(.bottom, PSpacing.huge(48))
+                    .padding(.horizontal, PSpacing.lg)
+                    .padding(.top, PSpacing.md)
+                    .padding(.bottom, PSpacing.huge)
                 }
             }
             .bottomButtons {
@@ -43,7 +43,7 @@ struct EntryWriteView: View {
             }
 
             if viewModel.isSaving {
-                PLoadingOverlay(isLoading: true)
+                PLoadingOverlay()
             }
         }
     }
@@ -72,14 +72,14 @@ struct EntryWriteView: View {
 
     private var summaryCard: some View {
         GlassCard {
-            HStack(spacing: PSpacing.md(12)) {
+            HStack(spacing: PSpacing.md) {
                 AlbumArtworkView(
                     urlString: viewModel.effectiveArtworkURL,
                     size: 52,
-                    cornerRadius: PRadius.xs(4)
+                    cornerRadius: PRadius.xs
                 )
 
-                VStack(alignment: .leading, spacing: PSpacing.xs(4)) {
+                VStack(alignment: .leading, spacing: PSpacing.xs) {
                     Text(viewModel.effectiveSongTitle)
                         .font(.pBodyMedium(15))
                         .foregroundStyle(Color.pTextPrimary)
@@ -92,9 +92,9 @@ struct EntryWriteView: View {
                     // 선택된 감정 태그들
                     if !viewModel.selectedMoodTags.isEmpty {
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: PSpacing.xs(4)) {
+                            HStack(spacing: PSpacing.xs) {
                                 ForEach(Array(viewModel.selectedMoodTags).sorted(), id: \.self) { tag in
-                                    PChip(title: tag, variant: .label, isSelected: .constant(false))
+                                    PChip(tag)
                                 }
                             }
                         }
@@ -102,24 +102,24 @@ struct EntryWriteView: View {
                 }
                 Spacer()
             }
-            .padding(PSpacing.md(12))
+            .padding(PSpacing.md)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("선택: \(viewModel.effectiveSongTitle), \(viewModel.effectiveArtistName)")
     }
 
     private var textEditorSection: some View {
-        VStack(alignment: .leading, spacing: PSpacing.sm(8)) {
+        VStack(alignment: .leading, spacing: PSpacing.sm) {
             Text("이 곡과 함께했던 순간")
                 .font(.pTitle(17))
                 .foregroundStyle(Color.pTextPrimary)
 
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: PRadius.md(12))
+                RoundedRectangle(cornerRadius: PRadius.md)
                     .fill(Color.pGlassFill)
                     .overlay(
-                        RoundedRectangle(cornerRadius: PRadius.md(12))
-                            .stroke(isTextEditorFocused ? Color.pAccentPrimary : Color.pGlassBorder, lineWidth: PBorder.thin(1.0))
+                        RoundedRectangle(cornerRadius: PRadius.md)
+                            .stroke(isTextEditorFocused ? Color.pAccentPrimary : Color.pGlassBorder, lineWidth: PBorder.thin)
                     )
 
                 TextEditor(text: $viewModel.entryText)
@@ -128,7 +128,7 @@ struct EntryWriteView: View {
                     .scrollContentBackground(.hidden)
                     .background(.clear)
                     .frame(minHeight: 140)
-                    .padding(PSpacing.md(12))
+                    .padding(PSpacing.md)
                     .focused($isTextEditorFocused)
                     .accessibilityLabel("감정 기록 텍스트 입력")
 
@@ -146,25 +146,26 @@ struct EntryWriteView: View {
     }
 
     private var metadataSection: some View {
-        VStack(spacing: PSpacing.lg(16)) {
+        VStack(spacing: PSpacing.lg) {
             // 년도 선택
-            VStack(alignment: .leading, spacing: PSpacing.sm(8)) {
+            VStack(alignment: .leading, spacing: PSpacing.sm) {
                 Text("들었던 시기")
                     .font(.pTitle(17))
                     .foregroundStyle(Color.pTextPrimary)
 
                 PDropdownButton(
-                    selection: Binding(
+                    placeholder: "년도 선택",
+                    options: yearOptions,
+                    selectedOption: Binding(
                         get: { String(viewModel.selectedYear) },
-                        set: { if let year = Int($0) { viewModel.selectedYear = year } }
-                    ),
-                    options: yearOptions
+                        set: { if let val = $0, let year = Int(val) { viewModel.selectedYear = year } }
+                    )
                 )
                 .accessibilityLabel("들었던 연도 선택: \(viewModel.selectedYear)년")
             }
 
             // 장소 입력
-            VStack(alignment: .leading, spacing: PSpacing.sm(8)) {
+            VStack(alignment: .leading, spacing: PSpacing.sm) {
                 Text("들었던 장소 (선택)")
                     .font(.pTitle(17))
                     .foregroundStyle(Color.pTextPrimary)

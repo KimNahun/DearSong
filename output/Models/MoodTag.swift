@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - MoodCategory
 
-enum MoodCategory: String, CaseIterable, Sendable {
+nonisolated enum MoodCategory: String, CaseIterable, Sendable {
     case excitement
     case peace
     case nostalgia
@@ -53,7 +53,7 @@ enum MoodCategory: String, CaseIterable, Sendable {
 
 // MARK: - MoodTag
 
-struct MoodTag: Identifiable, Sendable {
+nonisolated struct MoodTag: Identifiable, Sendable {
     let id: String
     var name: String
     var category: MoodCategory

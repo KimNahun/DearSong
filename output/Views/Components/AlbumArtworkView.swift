@@ -6,7 +6,7 @@ import PersonalColorDesignSystem
 struct AlbumArtworkView: View {
     let urlString: String?
     let size: CGFloat
-    var cornerRadius: CGFloat = PRadius.md(12)
+    var cornerRadius: CGFloat = PRadius.md
 
     var body: some View {
         Group {

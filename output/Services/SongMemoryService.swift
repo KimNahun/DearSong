@@ -14,51 +14,47 @@ protocol SongMemoryServiceProtocol: Sendable {
     func findExistingMemory(ownerId: UUID, appleMusicId: String?, songTitle: String, artistName: String, listenedAt: Date) async throws -> SongMemory?
 }
 
-// MARK: - NewSongMemoryPayload (INSERT 전용)
-
-private struct NewSongMemoryPayload: Encodable {
-    let ownerId: UUID
-    let appleMusicId: String?
-    let songTitle: String
-    let artistName: String
-    let artworkUrl: String?
-    let listenedAt: String
-    let moodTags: [String]
-    let location: String?
-    let entries: [Entry]
-    let attachments: [Attachment]
-
-    enum CodingKeys: String, CodingKey {
-        case ownerId = "owner_id"
-        case appleMusicId = "apple_music_id"
-        case songTitle = "song_title"
-        case artistName = "artist_name"
-        case artworkUrl = "artwork_url"
-        case listenedAt = "listened_at"
-        case moodTags = "mood_tags"
-        case location
-        case entries
-        case attachments
-    }
-}
-
-// MARK: - UpdateEntriesPayload
-
-private struct UpdateEntriesPayload: Encodable {
-    let entries: [Entry]
-    let updatedAt: String
-
-    enum CodingKeys: String, CodingKey {
-        case entries
-        case updatedAt = "updated_at"
-    }
-}
-
 // MARK: - SongMemoryService
 
 actor SongMemoryService: SongMemoryServiceProtocol {
+
+    private struct NewSongMemoryPayload: Encodable, Sendable {
+        let ownerId: UUID
+        let appleMusicId: String?
+        let songTitle: String
+        let artistName: String
+        let artworkUrl: String?
+        let listenedAt: String
+        let moodTags: [String]
+        let location: String?
+        let entries: [Entry]
+        let attachments: [Attachment]
+
+        enum CodingKeys: String, CodingKey {
+            case ownerId = "owner_id"
+            case appleMusicId = "apple_music_id"
+            case songTitle = "song_title"
+            case artistName = "artist_name"
+            case artworkUrl = "artwork_url"
+            case listenedAt = "listened_at"
+            case moodTags = "mood_tags"
+            case location
+            case entries
+            case attachments
+        }
+    }
+
+    private struct UpdateEntriesPayload: Encodable, Sendable {
+        let entries: [Entry]
+        let updatedAt: String
+
+        enum CodingKeys: String, CodingKey {
+            case entries
+            case updatedAt = "updated_at"
+        }
+    }
     private let supabase: SupabaseClient
-    private static let tableName = "song_memories"
+    private let tableName = "song_memories"
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.nahun.DearSong", category: "SongMemoryService")
 
     init(supabase: SupabaseClient = SupabaseClientProvider.shared.client) {
@@ -69,7 +65,7 @@ actor SongMemoryService: SongMemoryServiceProtocol {
         logger.info("전체 기억 로딩 시작")
         do {
             let memories: [SongMemory] = try await supabase
-                .from(Self.tableName)
+                .from(tableName)
                 .select()
                 .eq("owner_id", value: ownerId.uuidString)
                 .order("listened_at", ascending: false)
@@ -86,7 +82,7 @@ actor SongMemoryService: SongMemoryServiceProtocol {
     func fetchMemoriesBySong(ownerId: UUID, appleMusicId: String) async throws -> [SongMemory] {
         do {
             let memories: [SongMemory] = try await supabase
-                .from(Self.tableName)
+                .from(tableName)
                 .select()
                 .eq("owner_id", value: ownerId.uuidString)
                 .eq("apple_music_id", value: appleMusicId)
@@ -102,7 +98,7 @@ actor SongMemoryService: SongMemoryServiceProtocol {
     func fetchMemoriesBySongTitle(ownerId: UUID, songTitle: String, artistName: String) async throws -> [SongMemory] {
         do {
             let memories: [SongMemory] = try await supabase
-                .from(Self.tableName)
+                .from(tableName)
                 .select()
                 .eq("owner_id", value: ownerId.uuidString)
                 .eq("song_title", value: songTitle)
@@ -118,7 +114,8 @@ actor SongMemoryService: SongMemoryServiceProtocol {
 
     func createMemory(_ memory: SongMemory) async throws {
         logger.info("기억 생성 시작: \(memory.songTitle)")
-        let listenedAtString = DateFormatters.yearOnly.string(from: memory.listenedAt) + "-01-01"
+        let year = DateFormatters.year(from: memory.listenedAt)
+        let listenedAtString = "\(year)-01-01"
         let payload = NewSongMemoryPayload(
             ownerId: memory.ownerId,
             appleMusicId: memory.appleMusicId,
@@ -133,7 +130,7 @@ actor SongMemoryService: SongMemoryServiceProtocol {
         )
         do {
             try await supabase
-                .from(Self.tableName)
+                .from(tableName)
                 .insert(payload)
                 .execute()
             logger.info("기억 생성 완료: \(memory.songTitle)")
@@ -147,7 +144,7 @@ actor SongMemoryService: SongMemoryServiceProtocol {
         // 현재 entries를 가져온 뒤 append
         do {
             let memories: [SongMemory] = try await supabase
-                .from(Self.tableName)
+                .from(tableName)
                 .select()
                 .eq("id", value: memoryId.uuidString)
                 .limit(1)
@@ -167,7 +164,7 @@ actor SongMemoryService: SongMemoryServiceProtocol {
             )
 
             try await supabase
-                .from(Self.tableName)
+                .from(tableName)
                 .update(payload)
                 .eq("id", value: memoryId.uuidString)
                 .execute()
@@ -182,7 +179,7 @@ actor SongMemoryService: SongMemoryServiceProtocol {
         logger.info("기억 삭제 시작: \(memoryId)")
         do {
             try await supabase
-                .from(Self.tableName)
+                .from(tableName)
                 .delete()
                 .eq("id", value: memoryId.uuidString)
                 .execute()
@@ -200,7 +197,7 @@ actor SongMemoryService: SongMemoryServiceProtocol {
 
         do {
             var query = supabase
-                .from(Self.tableName)
+                .from(tableName)
                 .select()
                 .eq("owner_id", value: ownerId.uuidString)
                 .gte("listened_at", value: startDate)

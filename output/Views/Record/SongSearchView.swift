@@ -29,9 +29,9 @@ struct SongSearchView: View {
     private var searchContent: some View {
         VStack(spacing: 0) {
             // 검색 필드
-            VStack(spacing: PSpacing.sm(8)) {
+            VStack(spacing: PSpacing.sm) {
                 PTextField(placeholder: "곡 제목 또는 아티스트 검색", text: $searchViewModel.query)
-                    .padding(.horizontal, PSpacing.lg(16))
+                    .padding(.horizontal, PSpacing.lg)
                     .accessibilityLabel("곡 검색 입력")
 
                 if searchViewModel.isMusicKitDenied {
@@ -43,7 +43,7 @@ struct SongSearchView: View {
                     .accessibilityLabel("곡을 직접 입력하는 모드로 전환")
                 }
             }
-            .padding(.vertical, PSpacing.md(12))
+            .padding(.vertical, PSpacing.md)
 
             PDivider()
 
@@ -55,15 +55,15 @@ struct SongSearchView: View {
     @ViewBuilder
     private var searchResultList: some View {
         if searchViewModel.isSearching {
-            VStack(spacing: PSpacing.sm(8)) {
+            VStack(spacing: PSpacing.sm) {
                 ForEach(0..<5, id: \.self) { _ in
                     PSkeletonLoader(preset: .listRow)
-                        .padding(.horizontal, PSpacing.lg(16))
+                        .padding(.horizontal, PSpacing.lg)
                 }
             }
-            .padding(.top, PSpacing.md(12))
+            .padding(.top, PSpacing.md)
         } else if !searchViewModel.query.isEmpty && searchViewModel.results.isEmpty {
-            VStack(spacing: PSpacing.md(12)) {
+            VStack(spacing: PSpacing.md) {
                 Spacer()
                 Text("검색 결과가 없어요")
                     .font(.pBody(15))
@@ -105,10 +105,10 @@ struct SongSearchView: View {
             viewModel.goToNextStep()
             HapticManager.selection()
         } label: {
-            HStack(spacing: PSpacing.md(12)) {
-                AlbumArtworkView(urlString: song.artworkURL?.absoluteString, size: 48, cornerRadius: PRadius.sm(8))
+            HStack(spacing: PSpacing.md) {
+                AlbumArtworkView(urlString: song.artworkURL?.absoluteString, size: 48, cornerRadius: PRadius.sm)
 
-                VStack(alignment: .leading, spacing: PSpacing.xs(4)) {
+                VStack(alignment: .leading, spacing: PSpacing.xs) {
                     Text(song.title)
                         .font(.pBodyMedium(15))
                         .foregroundStyle(Color.pTextPrimary)
@@ -128,8 +128,8 @@ struct SongSearchView: View {
                         .accessibilityLabel("선택됨")
                 }
             }
-            .padding(.horizontal, PSpacing.lg(16))
-            .padding(.vertical, PSpacing.md(12))
+            .padding(.horizontal, PSpacing.lg)
+            .padding(.vertical, PSpacing.md)
             .frame(minHeight: 44)
         }
         .buttonStyle(.plain)

@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - SongMemory
 
-struct SongMemory: Identifiable, Sendable, Codable {
+nonisolated struct SongMemory: Identifiable, Sendable, Codable {
     let id: UUID
     let ownerId: UUID
     var appleMusicId: String?
@@ -36,7 +36,7 @@ struct SongMemory: Identifiable, Sendable, Codable {
 
 // MARK: - Entry
 
-struct Entry: Identifiable, Sendable, Codable {
+nonisolated struct Entry: Identifiable, Sendable, Codable {
     let id: UUID
     var text: String
     var writtenAt: Date
@@ -50,7 +50,7 @@ struct Entry: Identifiable, Sendable, Codable {
 
 // MARK: - Attachment (v1 미사용 — 스키마 예비)
 
-struct Attachment: Identifiable, Sendable, Codable {
+nonisolated struct Attachment: Identifiable, Sendable, Codable {
     let id: UUID
     var type: String
     var url: String
@@ -58,7 +58,7 @@ struct Attachment: Identifiable, Sendable, Codable {
 
 // MARK: - GroupedSong (View 전용 구조체)
 
-struct GroupedSong: Identifiable, Sendable {
+nonisolated struct GroupedSong: Identifiable, Sendable {
     let id: String
     let appleMusicId: String?
     let songTitle: String

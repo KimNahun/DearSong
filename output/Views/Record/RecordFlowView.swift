@@ -57,12 +57,12 @@ struct RecordFlowView: View {
 
             Spacer()
 
-            VStack(spacing: PSpacing.xs(4)) {
+            VStack(spacing: PSpacing.xs) {
                 Text(stepTitle)
                     .font(.pTitle(17))
                     .foregroundStyle(Color.pTextPrimary)
 
-                HStack(spacing: PSpacing.xs(4)) {
+                HStack(spacing: PSpacing.xs) {
                     ForEach(0..<3, id: \.self) { index in
                         Circle()
                             .fill(index == viewModel.currentStep.rawValue ? Color.pAccentPrimary : Color.pGlassBorder)
@@ -81,8 +81,8 @@ struct RecordFlowView: View {
             }
             .accessibilityLabel("기록 작성 취소")
         }
-        .padding(.horizontal, PSpacing.lg(16))
-        .padding(.vertical, PSpacing.sm(8))
+        .padding(.horizontal, PSpacing.lg)
+        .padding(.vertical, PSpacing.sm)
     }
 
     private var stepTitle: String {

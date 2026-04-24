@@ -10,8 +10,8 @@ struct SongCollectionView: View {
     @Environment(PToastManager.self) private var toastManager
 
     private let columns = [
-        GridItem(.flexible(), spacing: PSpacing.md(12)),
-        GridItem(.flexible(), spacing: PSpacing.md(12))
+        GridItem(.flexible(), spacing: PSpacing.md),
+        GridItem(.flexible(), spacing: PSpacing.md)
     ]
 
     init(authViewModel: AuthViewModel) {
@@ -39,8 +39,8 @@ struct SongCollectionView: View {
                     HStack {
                         Spacer()
                         floatingAddButton
-                            .padding(.trailing, PSpacing.xl(20))
-                            .padding(.bottom, PSpacing.xl(20))
+                            .padding(.trailing, PSpacing.xl)
+                            .padding(.bottom, PSpacing.xl)
                     }
                 }
             }
@@ -83,22 +83,22 @@ struct SongCollectionView: View {
             PSkeletonLoader(preset: .card)
             PSkeletonLoader(preset: .card)
         }
-        .padding(.horizontal, PSpacing.lg(16))
+        .padding(.horizontal, PSpacing.lg)
     }
 
     private var emptyStateView: some View {
         EmptyStateView(
             title: "아직 기록된 곡이 없어요",
-            message: "오늘 들은 노래에\n어떤 감정이 담겨 있나요?",
+            description: "오늘 들은 노래에\n어떤 감정이 담겨 있나요?",
             actionTitle: "첫 기록 남기기",
             action: { showRecordFlow = true }
         )
-        .padding(.horizontal, PSpacing.xl(20))
+        .padding(.horizontal, PSpacing.xl)
     }
 
     private var songGrid: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: PSpacing.md(12)) {
+            LazyVGrid(columns: columns, spacing: PSpacing.md) {
                 ForEach(viewModel.groupedSongs) { group in
                     NavigationLink(destination: SongDetailView(groupedSong: group)) {
                         SongCardView(groupedSong: group)
@@ -106,9 +106,9 @@ struct SongCollectionView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, PSpacing.lg(16))
-            .padding(.vertical, PSpacing.md(12))
-            .padding(.bottom, PSpacing.giant(64)) // 플로팅 버튼 공간
+            .padding(.horizontal, PSpacing.lg)
+            .padding(.vertical, PSpacing.md)
+            .padding(.bottom, PSpacing.giant) // 플로팅 버튼 공간
         }
     }
 
@@ -118,7 +118,7 @@ struct SongCollectionView: View {
             HapticManager.impact(.medium)
         } label: {
             ZStack {
-                PAccentGradient(direction: .diagonal)
+                PAccentGradient()
                     .frame(width: 56, height: 56)
                     .clipShape(Circle())
                     .pShadowMid()

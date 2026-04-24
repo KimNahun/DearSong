@@ -1,0 +1,177 @@
+import SwiftUI
+import PersonalColorDesignSystem
+
+// MARK: - EntryWriteView
+
+struct EntryWriteView: View {
+    var viewModel: RecordFlowViewModel
+    @FocusState private var isTextEditorFocused: Bool
+
+    private var yearOptions: [String] {
+        DateFormatters.selectableYears.map { String($0) }
+    }
+
+    var body: some View {
+        ZStack {
+            // 배경: 앨범 아트워크 블러
+            artworkBackground
+
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(spacing: PSpacing.xl(20)) {
+                        // 선택된 곡 + 태그 요약
+                        summaryCard
+
+                        // 텍스트 에디터
+                        textEditorSection
+
+                        // 년도 + 장소
+                        metadataSection
+                    }
+                    .padding(.horizontal, PSpacing.lg(16))
+                    .padding(.top, PSpacing.md(12))
+                    .padding(.bottom, PSpacing.huge(48))
+                }
+            }
+            .bottomButtons {
+                BottomPlacedButton(title: "기록 남기기") {
+                    isTextEditorFocused = false
+                    Task { await viewModel.save() }
+                }
+                .disabled(viewModel.isSaving)
+                .accessibilityLabel("기록 저장")
+            }
+
+            if viewModel.isSaving {
+                PLoadingOverlay(isLoading: true)
+            }
+        }
+    }
+
+    // MARK: - Subviews
+
+    @ViewBuilder
+    private var artworkBackground: some View {
+        ZStack {
+            PGradientBackground()
+            if let urlString = viewModel.effectiveArtworkURL, let url = URL(string: urlString) {
+                AsyncImage(url: url) { phase in
+                    if case .success(let image) = phase {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .blur(radius: 50)
+                            .opacity(0.2)
+                            .ignoresSafeArea()
+                    }
+                }
+            }
+        }
+        .ignoresSafeArea()
+    }
+
+    private var summaryCard: some View {
+        GlassCard {
+            HStack(spacing: PSpacing.md(12)) {
+                AlbumArtworkView(
+                    urlString: viewModel.effectiveArtworkURL,
+                    size: 52,
+                    cornerRadius: PRadius.xs(4)
+                )
+
+                VStack(alignment: .leading, spacing: PSpacing.xs(4)) {
+                    Text(viewModel.effectiveSongTitle)
+                        .font(.pBodyMedium(15))
+                        .foregroundStyle(Color.pTextPrimary)
+                        .lineLimit(1)
+                    Text(viewModel.effectiveArtistName)
+                        .font(.pBody(13))
+                        .foregroundStyle(Color.pTextSecondary)
+                        .lineLimit(1)
+
+                    // 선택된 감정 태그들
+                    if !viewModel.selectedMoodTags.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: PSpacing.xs(4)) {
+                                ForEach(Array(viewModel.selectedMoodTags).sorted(), id: \.self) { tag in
+                                    PChip(title: tag, variant: .label, isSelected: .constant(false))
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer()
+            }
+            .padding(PSpacing.md(12))
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("선택: \(viewModel.effectiveSongTitle), \(viewModel.effectiveArtistName)")
+    }
+
+    private var textEditorSection: some View {
+        VStack(alignment: .leading, spacing: PSpacing.sm(8)) {
+            Text("이 곡과 함께했던 순간")
+                .font(.pTitle(17))
+                .foregroundStyle(Color.pTextPrimary)
+
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: PRadius.md(12))
+                    .fill(Color.pGlassFill)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: PRadius.md(12))
+                            .stroke(isTextEditorFocused ? Color.pAccentPrimary : Color.pGlassBorder, lineWidth: PBorder.thin(1.0))
+                    )
+
+                TextEditor(text: $viewModel.entryText)
+                    .font(.pBody(15))
+                    .foregroundStyle(Color.pTextPrimary)
+                    .scrollContentBackground(.hidden)
+                    .background(.clear)
+                    .frame(minHeight: 140)
+                    .padding(PSpacing.md(12))
+                    .focused($isTextEditorFocused)
+                    .accessibilityLabel("감정 기록 텍스트 입력")
+
+                if viewModel.entryText.isEmpty {
+                    Text("이 노래를 들었을 때 어떤 감정이었나요?\n그때의 기억을 자유롭게 적어보세요.")
+                        .font(.pBody(15))
+                        .foregroundStyle(Color.pTextTertiary)
+                        .padding(16)
+                        .allowsHitTesting(false)
+                }
+            }
+            .animation(PAnimation.easeOut, value: isTextEditorFocused)
+            .pFocusBorder(isFocused: isTextEditorFocused)
+        }
+    }
+
+    private var metadataSection: some View {
+        VStack(spacing: PSpacing.lg(16)) {
+            // 년도 선택
+            VStack(alignment: .leading, spacing: PSpacing.sm(8)) {
+                Text("들었던 시기")
+                    .font(.pTitle(17))
+                    .foregroundStyle(Color.pTextPrimary)
+
+                PDropdownButton(
+                    selection: Binding(
+                        get: { String(viewModel.selectedYear) },
+                        set: { if let year = Int($0) { viewModel.selectedYear = year } }
+                    ),
+                    options: yearOptions
+                )
+                .accessibilityLabel("들었던 연도 선택: \(viewModel.selectedYear)년")
+            }
+
+            // 장소 입력
+            VStack(alignment: .leading, spacing: PSpacing.sm(8)) {
+                Text("들었던 장소 (선택)")
+                    .font(.pTitle(17))
+                    .foregroundStyle(Color.pTextPrimary)
+
+                PTextField(placeholder: "예: 학교 옥상, 버스 안, 카페...", text: $viewModel.location)
+                    .accessibilityLabel("들었던 장소 입력 (선택 사항)")
+            }
+        }
+    }
+}

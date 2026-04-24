@@ -1,276 +1,136 @@
-# Harness Engineering for iOS
+# DearSong
 
-**Claude Code 기반 iOS 앱 코드 생성 품질 보장 시스템**
+**노래에 감정을 기록하는 음악 감성 다이어리**
 
-3-Agent 파이프라인(Planner → Generator → Evaluator)으로 Swift 6 + SwiftUI + MVVM 코드를 자동 생성하고, 평가 기준표로 품질을 강제합니다.
-
-어떤 iOS 프로젝트에도 `PROJECT_CONTEXT.md` 하나만 작성하면 적용할 수 있습니다.
-
----
-
-## 왜 필요한가?
-
-일반적으로 AI에게 "앱 만들어줘"라고 하면 품질이 일정하지 않습니다.
-
-| 문제 | 하네스 해결 방식 |
-|------|-----------------|
-| Swift 6 동시성 누락 (`@MainActor` 빠짐, `DispatchQueue` 섞임) | Evaluator가 전수검사, 위반 시 불합격 |
-| MVVM 레이어 오염 (View에 로직, ViewModel에 SwiftUI) | 체크리스트 기반 감점 |
-| 자기 코드에 관대한 평가 | Generator와 Evaluator를 다른 에이전트로 분리 |
-| 매번 "Swift 6 써줘, MVVM으로 해줘" 반복 | rules/로 자동 적용 |
+특정 노래를 들었을 때 느꼈던 감정, 그때의 기분, 그 순간의 기억을 기록하는 iOS 앱입니다.
+같은 노래라도 듣는 시기에 따라 감정이 다르고, 그 변화 자체가 기록의 가치입니다.
 
 ---
 
-## 시스템 구성
+## 핵심 기능
+
+### 곡 검색
+Apple Music 카탈로그에서 곡을 검색하고, 앨범 커버와 메타데이터를 자동으로 가져옵니다.
+MusicKit 권한이 없어도 곡 제목과 아티스트를 직접 입력할 수 있습니다.
+
+### 감정 기록
+그 곡을 들었던 시기(년도)와 장소, 그때의 감정을 기록합니다.
+9개 카테고리, 50개 이상의 감정 태그에서 다중 선택하고 자유 텍스트로 기록을 남깁니다.
+
+### 감정 타임라인
+같은 노래의 시기별 감정 변화를 타임라인으로 돌아봅니다.
+"같은 노래, 다른 시기의 감정" — 시간이 지나며 달라지는 감정의 결을 확인할 수 있습니다.
+
+### 곡 컬렉션
+기록한 모든 곡을 앨범 커버 중심의 그리드로 한눈에 봅니다.
+
+---
+
+## 화면 흐름
 
 ```
-harness/
-├── CLAUDE.md                           # 오케스트레이터 (파이프라인 전체 흐름)
-├── PROJECT_CONTEXT.template.md         # 프로젝트별 설정 템플릿
-│
-├── agents/                             # 서브에이전트
-│   ├── planner.md                      #   아키텍처 설계 (opus)
-│   ├── generator.md                    #   Swift 코드 생성 (sonnet → opus)
-│   ├── evaluator.md                    #   QA 검수 (opus)
-│   ├── ios-reviewer.md                 #   피드백 수정 (opus)
-│   └── evaluation_criteria.md          #   공통 평가 기준표
-│
-├── .claude/
-│   ├── settings.json                   # 훅 설정 (시스템 레벨 강제)
-│   ├── rules/                          # 코딩 규칙 (항상 자동 적용)
-│   │   ├── swift-style.md              #   Swift 코딩 스타일
-│   │   ├── swift-concurrency.md        #   Swift 6 동시성 규칙
-│   │   ├── ios-security.md             #   iOS 보안 규칙
-│   │   ├── hig.md                      #   Human Interface Guidelines
-│   │   ├── testing.md                  #   테스트 규칙
-│   │   └── workflow-enforcement.md     #   워크플로우 강제 규칙
-│   └── commands/                       # 슬래시 커맨드
-│       ├── harness.md                  #   /harness [설명]
-│       ├── feedback.md                 #   /feedback [내용]
-│       ├── build-fix.md                #   /build-fix
-│       ├── evaluate.md                 #   /evaluate
-│       └── tdd.md                      #   /tdd [대상]
-│
-├── skills/                             # 재사용 워크플로우
-│   ├── harness-pipeline/SKILL.md       #   3-Agent 파이프라인
-│   ├── feedback-loop/SKILL.md          #   사용자 피드백 루프
-│   ├── ios-tdd/SKILL.md                #   TDD 워크플로우
-│   └── build-fix/SKILL.md              #   빌드 에러 수정
-│
-├── scripts/hooks/                      # 시스템 훅 스크립트
-│   ├── block-direct-write.js           #   프로젝트 폴더 직접 Write 차단
-│   ├── swift-syntax-check.js           #   Swift 문법 검증 (파일별)
-│   └── pre-commit-build.js             #   커밋 전 빌드 검증 + 자동 커밋
-│
-└── START.md                            # 시작 가이드
+[Apple Sign In] → [곡 컬렉션 (메인)]
+                        │
+                        ├── 곡 탭 → [곡 상세 타임라인]
+                        │              ├── 시기 카드 탭 → 엔트리 추가
+                        │              └── 새 시기 추가
+                        │
+                        └── + 버튼 → [새 기록 작성]
+                                       ├── Step 1: 곡 검색
+                                       ├── Step 2: 감정 태그 선택
+                                       └── Step 3: 텍스트 + 년도 + 장소 → 저장
 ```
 
 ---
 
-## 파이프라인 흐름
+## 감정 태그
+
+| 카테고리 | 태그 예시 |
+|---------|----------|
+| 설렘/기쁨 | 설렘, 행복, 기쁨, 벅참, 두근거림 |
+| 평온/감사 | 평온, 감사, 포근함, 따뜻함, 편안함 |
+| 그리움/향수 | 그리움, 아련함, 향수, 먹먹함, 추억 |
+| 슬픔/외로움 | 슬픔, 외로움, 허전함, 우울 |
+| 에너지/자신감 | 신남, 열정, 자신감, 용기 |
+| 차분/몽환 | 잔잔함, 몽환, 여유, 나른함, 고요함 |
+| 위로/치유 | 위로, 치유, 공감, 다독임, 희망 |
+| 계절/날씨 | 비 오는 날, 여름밤, 가을 햇살, 봄바람 |
+| 장소/상황 | 드라이브, 새벽, 밤산책, 혼자인 시간 |
+
+---
+
+## 기술 스택
+
+| 구분 | 기술 |
+|------|------|
+| 플랫폼 | iOS 17.0+ |
+| 언어 | Swift 6 (엄격 동시성) |
+| UI | SwiftUI |
+| 아키텍처 | MVVM (View → ViewModel → Service) |
+| 인증 | Apple Sign In + Supabase Auth |
+| 백엔드 | Supabase (PostgreSQL + RLS) |
+| 음악 검색 | MusicKit (Apple Music 카탈로그) |
+| 디자인 시스템 | [PersonalColorDesignSystem](https://github.com/KimNahun/PersonalColorDesignSystem) |
+
+---
+
+## 프로젝트 구조
 
 ```
-사용자: "레시피 관리 앱 만들어줘"
-         │
-         ▼
-┌─ 단계 1: Planner (opus) ──────────────────┐
-│  SPEC.md 생성                              │
-│  아키텍처, 기능 목록, 화면 흐름, 동시성 경계 │
-└────────────────────────────────────────────┘
-         │
-         ▼
-┌─ 단계 2: Generator (sonnet) ──────────────┐
-│  output/*.swift 생성                       │
-│  View, ViewModel, Service, Model 전부      │
-└────────────────────────────────────────────┘
-         │
-         ▼
-┌─ 단계 2.5: 빌드 게이트 ──────────────────────┐
-│  xcodebuild로 컴파일 + 테스트 통과 확인      │
-│  실패 시 → Generator가 자동 수정             │
-└────────────────────────────────────────────┘
-         │
-         ▼
-┌─ 단계 3: Evaluator (opus) ────────────────┐
-│  QA_REPORT.md 생성                         │
-│  5개 항목 채점 → 7.0 미만이면 불합격        │
-└────────────────────────────────────────────┘
-         │
-    합격? ─── No ──→ Generator로 복귀 (최대 3회)
-         │
-        Yes
-         │
-         ▼
-┌─ 단계 5: Xcode 통합 ─────────────────────┐
-│  output/ → 프로젝트 폴더 동기화            │
-└────────────────────────────────────────────┘
+DearSong/
+├── App/              # 앱 진입점, 의존성 주입
+├── Views/            # SwiftUI 뷰
+│   ├── Auth/         #   로그인
+│   ├── Collection/   #   곡 컬렉션 (메인)
+│   ├── Detail/       #   곡 상세 타임라인
+│   ├── Record/       #   새 기록 작성 플로우
+│   ├── Entry/        #   엔트리 추가
+│   └── Components/   #   재사용 컴포넌트
+├── ViewModels/       # @MainActor @Observable 뷰모델
+├── Models/           # Sendable 데이터 모델
+├── Services/         # actor 기반 서비스 (Supabase, MusicKit, Auth)
+└── Shared/           # 에러 타입, 유틸리티
 ```
 
 ---
 
-## 평가 기준
+## 설정
 
-| 항목 | 비중 | 핵심 기준 |
-|------|------|-----------|
-| **Swift 6 동시성** | 30% | `@MainActor`, `actor`, `Sendable`, 구버전 패턴 금지 |
-| **MVVM 분리** | 25% | View↔ViewModel↔Service 단방향, 레이어 오염 금지 |
-| **HIG 준수** | 20% | Dynamic Type, 44pt 터치 영역, 접근성, 로딩/에러 UI |
-| **API 활용** | 15% | Apple Framework 올바른 사용, Service 레이어에서만 호출 |
-| **기능성/가독성** | 10% | 완성도, 접근 제어자, 에러 타입 |
+### 사전 요구사항
 
-- **7.0 이상** → 합격
-- **5.0 ~ 6.9** → 조건부 합격 (피드백 반영 후 재검수)
-- **5.0 미만** → 불합격
-- **동시성 또는 MVVM 4점 이하** → 무조건 불합격
+- Xcode 16+
+- iOS 17.0+ 시뮬레이터 또는 실기기
+- Supabase 프로젝트 (Auth + Database)
+- Apple Developer 계정 (MusicKit, Sign In with Apple)
 
----
+### 빌드
 
-## 시스템 레벨 강제 규칙
+1. 레포지토리를 클론합니다.
+   ```bash
+   git clone https://github.com/KimNahun/DearSong.git
+   cd DearSong
+   ```
 
-슬래시 커맨드 없이도 **항상 자동 적용**되는 규칙:
+2. `DearSong/Secrets.xcconfig` 파일을 생성하고 Supabase 키를 설정합니다.
+   ```
+   SUPABASE_URL = https://your-project.supabase.co
+   SUPABASE_ANON_KEY = your-anon-key
+   ```
 
-| 규칙 | 강제 방식 |
-|------|-----------|
-| 신규 기능 → 테스트 코드 필수 | rule (AI 행동 지침) |
-| 신규 기능 → 로그 필수 | rule |
-| 기능 완료/버그 수정 → 커밋 필수 | rule + hook (Stop 시 자동) |
-| 시뮬레이터 고정 (신규 생성 금지) | rule |
-| 디자인 시스템 사용 강제 | rule |
-| 빌드 오류 검사 | rule + hook 2중 (파일별 syntax + 커밋 전 전체 빌드) |
-| 프로젝트 폴더 직접 Write 차단 | hook (PreToolUse) |
+3. Xcode에서 `DearSong/DearSong.xcodeproj`를 열고 빌드합니다.
 
 ---
 
-## 빠른 시작
+## 코드 품질
 
-### 1. 프로젝트 설정
+이 프로젝트의 코드는 3-Agent 하네스 파이프라인(Planner → Generator → Evaluator)으로 생성되고 검수됩니다.
 
-```bash
-cd harness
-cp PROJECT_CONTEXT.template.md PROJECT_CONTEXT.md
-# PROJECT_CONTEXT.md를 열고 앱 이름, 경로, 빌드 명령어 등 작성
-```
-
-### 2. 파이프라인 실행
-
-```bash
-claude
-```
-
-```
-/harness Core Data 기반 레시피 관리 앱 만들어줘
-```
-
-### 3. 피드백 루프 (앱을 써보고)
-
-```
-/feedback [버그] 저장 후 목록에 안 뜸
-/feedback [UI] 다크모드에서 텍스트 안 보임
-```
+- **Swift 6 동시성**: `@MainActor`, `actor`, `Sendable` 엄격 적용
+- **MVVM 분리**: View ↔ ViewModel ↔ Service 단방향 의존, 레이어 오염 금지
+- **HIG 준수**: Dynamic Type, 접근성, 로딩/에러 상태 처리
+- **빌드 게이트**: 커밋 전 자동 빌드 검증
 
 ---
-
-## 커맨드
-
-| 커맨드 | 용도 |
-|--------|------|
-| `/harness [설명]` | 3-Agent 파이프라인 전체 실행 |
-| `/feedback [내용]` | 피드백 1건씩 처리 + 커밋 |
-| `/build-fix` | Xcode 빌드 에러 진단/수정 |
-| `/evaluate` | Evaluator만 단독 실행 (점수 확인) |
-| `/tdd [대상]` | TDD 워크플로우 (Red→Green→Refactor) |
-
-자연어로 말해도 rules/가 자동 적용되므로 동일한 품질 규칙이 적용됩니다.
-
----
-
-## 다른 프로젝트에 적용
-
-**`PROJECT_CONTEXT.md` 이 파일 하나만 바꾸면 됩니다.** 나머지는 전부 공용입니다.
-
-```bash
-cp PROJECT_CONTEXT.template.md PROJECT_CONTEXT.md
-# PROJECT_CONTEXT.md를 열고 프로젝트에 맞게 수정
-```
-
-### 공용 vs 프로젝트별
-
-```
-공용 (안 바꿈)                    프로젝트별 (이것만 바꿈)
-─────────────                   ──────────────────
-agents/planner.md               PROJECT_CONTEXT.md
-agents/generator.md
-agents/evaluator.md
-agents/ios-reviewer.md
-agents/evaluation_criteria.md
-.claude/rules/*
-.claude/commands/*
-skills/*
-scripts/hooks/*
-```
-
-### PROJECT_CONTEXT.md에서 바꿀 항목
-
-| 섹션 | 바꿀 내용 | 예시 |
-|------|-----------|------|
-| **앱 이름 / 번들 ID** | 프로젝트 기본 정보 | `MyRecipeApp`, `com.nahun.MyRecipeApp` |
-| **프로젝트 경로** | `PROJECT_ROOT`, `TARGET_DIR`, `HARNESS_ROOT` | `/Users/you/Desktop/MyRecipeApp` |
-| **빌드 / 테스트 명령어** | `BUILD_COMMAND`, `TEST_COMMAND` | scheme, destination 변경 |
-| **Xcode 통합 방식** | `SYNC_METHOD` | `auto` (파일 복사만) 또는 `manual` |
-| **디자인 시스템** | 커스텀 SPM 패키지 (없으면 삭제) | `PersonalColorDesignSystem` |
-| **추가 기능 요구사항** | 프로젝트 고유 기능/제약 | "Core Data 사용", "AlarmKit 연동" |
-| **API 문서 수집** | NotebookLM/context7 질의 목록 (없으면 삭제) | 노트북 ID, 질문 |
-| **기존 코드 참고** | Generator가 참고할 기존 파일 경로 | `Services/AuthService.swift` |
-| **보존 파일** | 덮어쓰면 안 되는 파일 | `Utils/Logger.swift` |
-
-### 예시: 레시피 앱
-
-```markdown
-## 대상 프로젝트
-- 앱 이름: MyRecipeApp
-- 번들 ID: com.nahun.MyRecipeApp
-- 최소 타겟 iOS: 17.0
-
-## 프로젝트 경로
-PROJECT_ROOT="/Users/haesuyoun/Desktop/MyRecipeApp"
-TARGET_DIR="MyRecipeApp"
-HARNESS_ROOT="/Users/haesuyoun/Desktop/NahunPersonalFolder/harness"
-
-## 빌드 / 테스트 명령어
-BUILD_COMMAND="xcodebuild -project $PROJECT_ROOT/MyRecipeApp.xcodeproj \
-  -scheme MyRecipeApp \
-  -destination 'platform=iOS Simulator,name=iPhone 16' \
-  build 2>&1 | grep -E 'error:|BUILD (SUCCEEDED|FAILED)'"
-
-## 사용자 추가 요구사항
-#### 1. Core Data + CloudKit 동기화
-- 레시피 모델을 Core Data로 저장
-- CloudKit으로 디바이스 간 동기화
-```
-
-### 예시: 건강 대시보드 앱
-
-```markdown
-## 대상 프로젝트
-- 앱 이름: HealthDash
-- 번들 ID: com.nahun.HealthDash
-- 최소 타겟 iOS: 17.0
-
-## 사용자 추가 요구사항
-#### 1. HealthKit 데이터 읽기
-- 걸음 수, 심박수, 수면 데이터
-- HealthKit 권한 요청 흐름
-
-#### 2. Swift Charts로 시각화
-- 일/주/월 단위 차트
-```
-
----
-
-## 기반 기술
-
-- [Claude Code](https://claude.ai/code) — Anthropic의 AI 코딩 CLI
-- [Everything Claude Code](https://github.com/affaan-m/everything-claude-code) — Claude Code 플러그인 프레임워크
 
 ## License
 

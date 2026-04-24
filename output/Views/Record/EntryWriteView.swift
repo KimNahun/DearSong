@@ -53,7 +53,7 @@ struct EntryWriteView: View {
     @ViewBuilder
     private var artworkBackground: some View {
         ZStack {
-            AppBackground()
+            AppBackground(showLines: true)
             if let urlString = viewModel.effectiveArtworkURL, let url = URL(string: urlString) {
                 AsyncImage(url: url) { phase in
                     if case .success(let image) = phase {

@@ -23,7 +23,7 @@ struct AddEntryView: View {
 
     var body: some View {
         ZStack {
-            AppBackground()
+            AppBackground(showLines: true)
 
             VStack(spacing: 0) {
                 // 헤더

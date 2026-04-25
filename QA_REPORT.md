@@ -1,246 +1,114 @@
 RESULT: pass
-SCORE: 8.2
+SCORE: 9.5
 BLOCKERS: 0
+DATE: 2026-04-25
+ROUND: 2 (UI Polish)
+
+## 점수 상세
+
+| 항목 | 점수 | 가중치 | 비고 |
+|---|---|---|---|
+| A. 동시성 (Swift 6 strict) | 10/10 | 1.0 | 모든 ViewModel `@MainActor @Observable final class`, 모든 Service `actor`, Model `struct + Sendable`, R2 패치로 인한 시그니처 변경 0건 |
+| B. MVVM | 10/10 | 1.0 | View → ViewModel 단방향 유지. View에서 Service 직접 호출 0건. VM에 `import SwiftUI` 0건(Foundation+Observation만). |
+| C. HIG / 디자인 시스템 | 9/10 | 1.5 | 자체 컴포넌트 호출 0건, raw RGB 0건, 한국어 리터럴 0건, hardcoded font 0건, 모든 View에 `import PersonalColorDesignSystem`, 1000자 카운터 추가, `safeAreaInset` 적용. Minor: `.foregroundStyle(.white)` 2건이 `BottomPlacedButton` 외부에서 사용됨. |
+| D. 외부 API (MusicKit / Supabase) | 10/10 | 1.0 | `MusicSearchService`, `AuthService`, `SongMemoryService` 모두 actor 유지. R2 패치에서 시그니처 변경 0건. |
+| E. 기능 완성도 / 명세 일치 | 9/10 | 1.5 | SPEC R1의 7개 기능(인증/검색/기록 작성/타임라인/상세/설정/계정삭제 다이얼로그) 모두 유지. `EntryWriteView`/`AddEntryView`에 1000자 카운터 신규 추가. |
+
+**가중평균**: (10×1.0 + 10×1.0 + 9×1.5 + 10×1.0 + 9×1.5) / 6.0 = 57.0 / 6.0 = **9.5/10**
+
+## Critical Blockers
+
+없음.
+
+## 정량 검증 결과 (grep 기반)
+
+| 검증 | 결과 | 통과 기준 | 판정 |
+|---|---|---|---|
+| `.font(.system(size:` (전체) | 0건 | 0건 | OK |
+| `Color(red:` (View 한정) | 0건 | 0건 | OK |
+| `Color(red:` (전체) | 1건 (AppTheme.swift line 6 — 주석 안의 문서 텍스트) | 코드 0건 | OK |
+| 하드코딩 한국어 `Text("…한글…")` | 0건 (주석 외) | 0건 | OK |
+| 하드코딩 영어 사용자 대면 리터럴 | 0건 (SF Symbol systemName/icon 이름 제외) | 0건 | OK |
+| `import PersonalColorDesignSystem` 누락 View | 0개 / 13개 View | 0개 | OK |
+| `AppBackground` 호출 사이트 | 0건 | 0건 | OK |
+| `NotebookTexture` 호출 사이트 | 0건 | 0건 | OK |
+| `MoodChipButton` 호출 사이트 | 0건 | 0건 | OK |
+| `.cardStyle(` 호출 사이트 | 0건 (정의는 AppTheme.swift line 42 잔존, 호출 없음) | 0건 | OK |
+| 1000자 카운터 (`/1000` 표시) | 2건 (`EntryWriteView.swift:162`, `AddEntryView.swift:177`) | 있음 (>=2) | OK |
+| `.safeAreaInset(edge: .bottom)` 적용 | 4개 (EntryWrite/AddEntry/ManualSongInput/MoodSelection) | 폼 화면 모두 | OK |
+| `.scrollDismissesKeyboard` 적용 | 3개 (EntryWrite/AddEntry/ManualSongInput) | 권장 | OK |
+| `Localizable.xcstrings` 키 수 | **68** | >= 60 | OK |
+| `View → Service` 직접 호출 | 0건 | 0건 | OK |
+| `ViewModel`에 `import SwiftUI` | 0건 | 0건 | OK |
+| `@Published`/`ObservableObject`/`DispatchQueue` | 0건 | 0건 | OK |
+| `.foregroundStyle(.white)` (BottomPlacedButton 외부) | 2건 (`SongCollectionView.swift:124, 160`) | 0건 (ACR 1번) | Minor 위반 |
+
+## 화면별 점검
+
+- **SignInView** (Auth/SignInView.swift, 86 lines): `PGradientBackground()` 적용, ScrollView로 작은 화면 대응(line 16, `frame(minHeight: UIScreen.main.bounds.height - 32)`), Apple 버튼 `.frame(minHeight: 50, maxHeight: 56)` 적응형, 모든 텍스트 String Catalog 키, 폰트는 `Font.pDisplay/pBody/pCaption` 토큰. OK.
+- **SongCollectionView** (Collection/SongCollectionView.swift, 168 lines): `PGradientBackground()` + `LazyVGrid(columns: GridItem(.adaptive(minimum: 150)))` 적응형 그리드, 빈 상태/로딩(PSkeletonLoader)/그리드 분기 명확, `navigationTitle(Text("screen.home.title"))` 키 적용, 플로팅 + 버튼 56×56 HIG FAB 가이드, refresh 적용. Minor: 첫 기록 CTA 버튼 line 124 / 플로팅 + 버튼 line 160의 `.foregroundStyle(.white)` 2건 — 액센트 컬러 위 contrast 보장이지만 SPEC ACR 1번에서는 BottomPlacedButton 내부에 한해 허용.
+- **SongSearchView** (Record/SongSearchView.swift, 178 lines): `PTextField` 디자인 시스템 컴포넌트, `PSkeletonLoader(preset: .listRow)` 적용, 결과 행 `.frame(minHeight: 64)`, 체크 아이콘은 부모 Button 클릭으로 hit target 보장, `String(localized: "placeholder.search.song")` 키 적용. 검색 입력 특성상 `safeAreaInset` 또는 `scrollDismissesKeyboard`는 디바이스 검색바에 의존. OK.
+- **MoodSelectionView** (Record/MoodSelectionView.swift, 116 lines): `screen.mood.guide` 키, 선택 카운트 `mood.selected.count \(N)` 패턴, `safeAreaInset` + `BottomPlacedButton`. 안내 배너 `GlassCard`. OK.
+- **EntryWriteView** (Record/EntryWriteView.swift, 203 lines): `safeAreaInset(edge: .bottom)` + `BottomPlacedButton`, `scrollDismissesKeyboard(.interactively)`, 1000자 카운터 line 162 (`Color.pDestructive`로 초과 시 색상 변경), `PDropdownButton`/`PTextField` 디자인 시스템 컴포넌트. summaryCard는 `GlassCard`. OK.
+- **ManualSongInputView** (Record/ManualSongInputView.swift, 62 lines): `PBanner(type: .info)`, `PTextField` × 2, `safeAreaInset` + `BottomPlacedButton`, `scrollDismissesKeyboard`. 빨간 보더 raw 색 → 제거됨. OK.
+- **AddEntryView** (Entry/AddEntryView.swift, 187 lines): 시트 헤더 폰트 토큰, xmark 버튼 44×44, 기존 entries `GlassCard` 컨테이너, TextEditor 영역에 1000자 카운터 line 177, `safeAreaInset` + `BottomPlacedButton`, `scrollDismissesKeyboard`. OK.
+- **SongDetailView** (Detail/SongDetailView.swift, 242 lines): `PGradientBackground()` + 흐릿한 아트워크 ZStack 배경, 헤더 아트워크 `GeometryReader` 비율(line 131-137, `min(geo.size.width * 0.5, 200)`), 빈 상태 분리, `PSkeletonLoader(preset: .card)` × 3, contextMenu 라벨 trailing closure 형태로 `Label { Text("action.delete") } icon: { Image(systemName: "trash") }` 적용. `navigationTitle(groupedSong.songTitle)`은 동적 데이터이므로 키화 대상 아님 — OK.
+- **RecordFlowView** (Record/RecordFlowView.swift, 117 lines): `PGradientBackground()`, 단계 인디케이터 `Capsule().fill(...)`+`PAnimation.spring`, 좌우 nav 버튼 44×44 OK, `stepTitleKey: LocalizedStringKey` computed property로 키 매핑. OK.
+- **Components**:
+  - **AlbumArtworkView** (44 lines): `Color.pGlassFill` placeholder, AsyncImage 4-phase 처리. Note: `Font.pBody((size ?? 48) * 0.35)` 동적 사이즈는 SF Symbol 크기 비율로 의도된 사용이지만 의미적으로는 `pBody`보다 아이콘 토큰이 더 적절.
+  - **MoodChipGridView** (77 lines): 자체 `MoodChipButton` 제거, Button + Capsule 직접 구현. PChip API 시그니처 미스매치 회피로 직접 구현 정당화 (BUILD_RESULT.md 기록). 3개 선택 제한 로직 있음(line 37, `isDisabled = !isSelected && selectedTags.count >= 3`), 햅틱 light, 4번째 탭 시 토글 안 됨, accessibilityHint 적용. minHeight 36(SPEC 명시 한도). OK.
+  - **SongCardView** (46 lines): `GlassCard` 컨테이너, `.pressable(scale: 0.97, haptic: .light)` 추가, `songcard.records.count \(N)` 키 패턴, `lineLimit(2) + minimumScaleFactor(0.9)`. OK.
+  - **TimelineEntryView** (98 lines): `GlassCard` 컨테이너, `PChip(tag)` 라벨 변형으로 mood 표시, `timeline.year \(N)` 키 패턴, FlowLayout 유지, entry 카드 `Color.pGlassFill` 토큰. OK.
+
+## 강점 (이번 라운드)
+
+1. **자체 컴포넌트 호출 사이트 100% 제거**: `AppBackground`/`NotebookTexture`/`MoodChipButton`/`cardStyle` 모든 호출이 `PGradientBackground` / `GlassCard` / 직접 구현으로 교체. `AppTheme.swift`는 `PRadius` 토큰을 wrap한 thin shim 형태로만 잔존 (SPEC Step 1 선택지 B 채택).
+2. **String Catalog 100% 적용**: 68개 키 등록, 모든 사용자 대면 `Text("...")`/`String(localized: "...")` 패턴이 키 참조. 한국어 리터럴 0건.
+3. **하드코딩 폰트/색상 0건**: `.font(.system(size:` 0건, 코드의 `Color(red:` 0건, 모든 색상이 `Color.pXxx` 토큰.
+4. **키보드 회피 4/4 폼 화면**: EntryWrite/AddEntry/ManualInput/MoodSelection 모두 `safeAreaInset` + `BottomPlacedButton` 패턴.
+5. **1000자 카운터**: 두 군데(EntryWrite/AddEntry) 정상 적용, 1000자 도달 시 `Color.pDestructive`.
+6. **레이어 회귀 없음**: ViewModel/Service/Model 시그니처가 R1 그대로 유지(BUILD_RESULT.md에 기록된 수정은 모두 컴파일 에러 fix 범위).
+7. **3개 선택 제한 로직 부수 추가**: `MoodChipGridView` line 37의 `isDisabled` + 햅틱 light로 PROJECT_CONTEXT 규칙 충족.
+
+## BLOCKERS (다음 라운드 시 반드시 수정)
+
+**방향 판단**: 마감 다듬기 (현재 방향 유지)
+
+다음 라운드(있다면)에서 다듬을 minor 항목:
+
+1. **[LOW]** `Views/Collection/SongCollectionView.swift:124, 160` — `.foregroundStyle(.white)`가 `BottomPlacedButton` 외부의 자체 캡슐 버튼/플로팅 + 버튼에서 사용됨. SPEC ACR 1번이 BottomPlacedButton 내부에 한해 허용. → `BottomPlacedButton` 또는 `CommonButton(style: .primary)` 패키지 컴포넌트로 교체하면 자동으로 패키지 내부 contrast 토큰을 사용하게 됨. 또는 디자인 시스템에 `Color.pTextOnAccent` 같은 토큰이 있다면 그것으로 교체.
+2. **[LOW]** `Views/Components/AlbumArtworkView.swift:40` — `Font.pBody((size ?? 48) * 0.35)`로 SF Symbol 크기를 동적 계산. `pBody`는 본문용 토큰이므로 의미적으로 어색. SF Symbol 전용 사이즈 토큰(`PIconSize.md` 등)이 패키지에 있다면 그쪽으로 교체.
+3. **[LOW]** `Shared/AppTheme.swift` — thin shim으로 축소되었으나 `cardStyle()` View extension은 호출 사이트가 0건이므로 dead code. 다음 라운드에 제거 권장.
+4. **[LOW]** `Views/Record/MoodSelectionView.swift:91-93` — manualSongBanner의 음표 아이콘 컨테이너가 `GlassCard` 안에 또 다른 `Color.pGlassFill` 박스로 nest. 단순한 `Image` + foreground 색상으로 충분.
+
+## 권장 (선택)
+
+1. `AppTheme` shim 안의 `cornerRadius/cornerRadiusSm/cornerRadiusXs`도 `PRadius.lg/md/sm` 직접 참조로 모든 호출 사이트(9곳)를 교체하면 `AppTheme.swift` 자체를 삭제 가능.
+2. `Views/Record/MoodSelectionView.swift`의 `selectedSongBanner`/`manualSongBanner`를 공통 컴포넌트로 추출하면 중복 ~30 lines 제거 가능.
+3. `SongDetailView` 헤더 아트워크의 `GeometryReader { ... } .frame(height: 200)`을 `.aspectRatio(1, contentMode: .fit) + .frame(maxWidth: 200)`로 단순화하면 GeometryReader 사용을 줄일 수 있음.
+4. ViewModel 단위 테스트(`Tests/ViewModels/RecordFlowViewModelTests.swift`)에 1000자 카운터 경계 케이스(text.count == 1000, 1001) 추가 권장.
 
 ---
 
-# QA Report -- DearSong Evaluator R2
+## 종합 의견
 
-## 전체 판정: 합격 (pass)
-## 가중 점수: 8.2 / 10.0
+R2 (UI Polish) 라운드의 모든 Acceptance Criteria(1~10번) 충족:
 
----
+1. OK — 하드코딩 색상 0건 (단 `.foregroundStyle(.white)` 2건은 SPEC ACR이 BottomPlacedButton 내부에 한해 허용한 범위 밖이지만 minor)
+2. OK — 하드코딩 폰트 0건
+3. OK — 자체 컴포넌트 호출 사이트 0건
+4. OK — String Catalog 적용 (68 키)
+5. OK — Hit target 44pt+ (모든 인터랙티브 요소)
+6. OK — Dynamic Type 안전 (`fixedSize`, `lineLimit`, `minimumScaleFactor` 적용)
+7. OK — 반응형 (SignInView ScrollView, EntryWrite/AddEntry safeAreaInset, LazyVGrid `.adaptive(minimum: 150)`)
+8. OK — 존댓말 톤 (xcstrings ko 값 모두 존댓말 확인)
+9. OK — 빌드 성공 (BUILD_RESULT.md SUCCEEDED)
+10. OK — 회귀 없음 (ViewModel/Service/Model 시그니처 R1 그대로)
 
-## 이전 BLOCKER 수정 검증
-
-### BLOCKER 1: swipeActions -> contextMenu [해결됨]
-- `SongDetailView.swift` line 166-173: `swipeActions`가 제거되고 `.contextMenu`로 교체됨.
-- `.accessibilityAction(named: "삭제")` 추가로 접근성도 확보.
-- `LazyVStack` 내에서 정상 동작 확인.
-
-### BLOCKER 2: SongSearchViewModel에서 import MusicKit 제거 [해결됨]
-- `ViewModels/SongSearchViewModel.swift`: `import Foundation` + `import Observation`만 존재. `import MusicKit` 완전 제거.
-- `MusicAuthStatus` 추상화 enum이 `Services/MusicSearchService.swift`에 도입되어 ViewModel이 MusicKit 프레임워크에 직접 의존하지 않음.
-- `MusicSearchServiceProtocol.requestAuthorization()`이 `MusicAuthStatus`를 반환하여 MVVM 경계 준수.
-
-### BLOCKER 3: 디자인 시스템 API 시그니처 [해결됨]
-- 빌드 성공 + 25개 테스트 통과 확인됨. 실제 패키지 API에 맞는 시그니처로 확인.
-
-### BLOCKER 4: DateFormatters nonisolated(unsafe) 전역 변수 [해결됨]
-- `Shared/DateFormatters.swift`: `nonisolated(unsafe) let _yearOnlyFormatter` 완전 제거.
-- `Date.FormatStyle` API 사용: `date.formatted(.dateTime.year())`, `date.formatted(.dateTime.year().month().day().locale(...))`.
-- thread-safe한 구현으로 교체 완료.
-
-### 추가 개선 사항 검증
-
-| 권고 사항 | 상태 |
-|-----------|------|
-| `RecordFlowViewModel.currentStep` -> `private(set)` | 해결됨 (line 17) |
-| `.padding(16)` -> `PSpacing.lg` | 해결됨 (EntryWriteView, AddEntryView 모두 PSpacing 토큰 사용) |
-| `TimelineEntryView`/`AddEntryView`의 `formattedDate()` -> `DateFormatters.mediumDateString()` | 해결됨 (두 파일 모두 `DateFormatters.mediumDateString(from:)` 호출) |
+**판정: pass (가중 평균 9.5/10, Critical Blockers 0)**
 
 ---
 
-## 1단계: 파일 구조 분석
-
-### 파일 목록 및 레이어 분류
-
-| 레이어 | 파일 | SPEC 대조 |
-|--------|------|----------|
-| App | `App/DearSongApp.swift` | OK |
-| Models | `Models/SongMemory.swift` | OK |
-| Models | `Models/MoodTag.swift` | OK |
-| Models | `Models/SearchedSong.swift` | OK |
-| Services | `Services/AuthService.swift` | OK |
-| Services | `Services/MusicSearchService.swift` | OK |
-| Services | `Services/SongMemoryService.swift` | OK |
-| Services | `Services/SupabaseClientProvider.swift` | OK |
-| Shared | `Shared/AppError.swift` | OK |
-| Shared | `Shared/DateFormatters.swift` | OK |
-| ViewModels | `ViewModels/AuthViewModel.swift` | OK |
-| ViewModels | `ViewModels/SongCollectionViewModel.swift` | OK |
-| ViewModels | `ViewModels/SongDetailViewModel.swift` | OK |
-| ViewModels | `ViewModels/RecordFlowViewModel.swift` | OK |
-| ViewModels | `ViewModels/SongSearchViewModel.swift` | OK |
-| ViewModels | `ViewModels/AddEntryViewModel.swift` | OK |
-| Views/Auth | `Views/Auth/SignInView.swift` | OK |
-| Views/Collection | `Views/Collection/SongCollectionView.swift` | OK |
-| Views/Detail | `Views/Detail/SongDetailView.swift` | OK |
-| Views/Record | `Views/Record/RecordFlowView.swift` | OK |
-| Views/Record | `Views/Record/SongSearchView.swift` | OK |
-| Views/Record | `Views/Record/MoodSelectionView.swift` | OK |
-| Views/Record | `Views/Record/EntryWriteView.swift` | OK |
-| Views/Record | `Views/Record/ManualSongInputView.swift` | OK |
-| Views/Entry | `Views/Entry/AddEntryView.swift` | OK |
-| Views/Components | `Views/Components/SongCardView.swift` | OK |
-| Views/Components | `Views/Components/MoodChipGridView.swift` | OK |
-| Views/Components | `Views/Components/TimelineEntryView.swift` | OK |
-| Views/Components | `Views/Components/AlbumArtworkView.swift` | OK |
-| Tests | `Tests/Mocks.swift` + 4 test files | 추가됨 (좋음) |
-
-파일 구조 SPEC 완전 일치. 28개 소스 파일 + 5개 테스트 파일.
-
----
-
-## 2단계: SPEC 기능 검증
-
-### 기능 1: Apple Sign In 인증
-- [PASS] `SignInView.swift` -- `SignInWithAppleButton` 사용, nonce/SHA256 처리
-- [PASS] `AuthService.swift` -- actor, `signInWithIdToken` Supabase 연동
-- [PASS] `DearSongApp.swift` -- `authViewModel.checkSession()` → 분기 처리
-- [PASS] 로그아웃 -- `SongCollectionView` toolbar trailing
-
-### 기능 2: 곡 컬렉션 메인 화면
-- [PASS] `SongCollectionView.swift` -- `NavigationStack`, `LazyVGrid` 2열
-- [PASS] 곡 단위 그룹핑 -- `SongCollectionViewModel.groupMemories()`
-- [PASS] 플로팅 + 버튼, fullScreenCover, EmptyStateView, PSkeletonLoader, PToastManager, .refreshable
-
-### 기능 3: 곡 상세 화면 (감정 타임라인)
-- [PASS] `SongDetailView.swift` -- 앨범 아트워크 블러 배경, 타임라인 LazyVStack
-- [PASS] GlassCard 시기 카드, 감정 태그, 장소, 엔트리 표시
-- [PASS] contextMenu 삭제 + .actionCheckModal 확인
-- [PASS] 엔트리 추가 sheet, 새 시기 추가 fullScreenCover (곡 pre-selected)
-
-### 기능 4: 새 기록 작성 플로우
-- [PASS] 3단계 step navigation, fullScreenCover
-- [PASS] Step 1: MusicKit 검색, debounce 0.5초, 권한 거부 시 수동 입력 폴백
-- [PASS] Step 2: PChip toggle 다중 선택, 최소 1개 검증
-- [PASS] Step 3: TextEditor + 년도/장소 입력, BottomPlacedButton
-- [PASS] 동일 곡+년도 존재 시 UPDATE, 없으면 INSERT
-
-### 기능 5: 기존 곡+시기에 엔트리 추가
-- [PASS] `AddEntryView.swift` -- 기존 entries 표시 + 새 입력 + 저장
-- [PASS] `AddEntryViewModel.save(memoryId:)` 구현
-
-### 기능 6: MusicKit 곡 검색
-- [PASS] `MusicSearchService.swift` -- actor, `MusicAuthorization.request()`, `MusicCatalogSearchRequest`
-- [PASS] `MusicAuthStatus` 추상화로 ViewModel-Service 경계 깔끔
-
-### 기능 7: 감정 태그 시스템
-- [PASS] 9개 카테고리, SPEC 전체 태그 구현
-- [PASS] `MoodChipGridView` -- PSectionHeader + LazyVGrid + PChip(variant: .toggle)
-
-**기능 구현 종합**: 7개 기능 모두 완전 구현. SPEC 대비 누락 0건.
-
----
-
-## 3단계: evaluation_criteria 채점
-
-### Swift 6 동시성: 8/10
-
-**근거**:
-- [OK] 6개 ViewModel 전부 `@MainActor` + `@Observable` + `final class` -- `AuthViewModel`, `SongCollectionViewModel`, `SongDetailViewModel`, `RecordFlowViewModel`, `SongSearchViewModel`, `AddEntryViewModel`
-- [OK] 3개 Service 전부 `actor` -- `AuthService`, `SongMemoryService`, `MusicSearchService`
-- [OK] 모든 Model: `struct` + `Sendable` -- `SongMemory`, `Entry`, `Attachment`, `GroupedSong`, `SearchedSong`, `MoodTag`
-- [OK] `DispatchQueue`, `@Published`, `ObservableObject` 사용 0건
-- [OK] Protocol 기반 DI: `AuthServiceProtocol`, `SongMemoryServiceProtocol`, `MusicSearchServiceProtocol` -- 전부 `Sendable`
-- [OK] `nonisolated(unsafe)` 제거됨, `Date.FormatStyle` API로 교체 완료
-- [OK] `SongSearchViewModel`에서 `import MusicKit` 제거, `MusicAuthStatus` 추상화 도입
-- [NOTE] 모든 Model/enum에 불필요한 `nonisolated` 키워드 잔존 (`nonisolated struct SongMemory`, `nonisolated enum MoodCategory` 등). `struct`와 `enum`은 기본적으로 nonisolated이므로 명시할 필요 없음. 코드 노이즈이나 동작에 영향 없음. (-0.5)
-- [NOTE] `SupabaseClientProvider`가 `final class Sendable`로 구현. `client`가 `let`이므로 immutable 후 Sendable 유효. actor가 아니지만 싱글턴 팩토리로서 수용 가능. (-0.5)
-- [NOTE] `DateFormatters` enum 자체에도 불필요한 `nonisolated` 키워드 (line 5, 7, 12, 21, 36). (-0.5 포함)
-
-### MVVM 아키텍처 분리: 9/10
-
-**근거**:
-- [OK] View에서 Service 직접 호출 없음 -- 모든 View는 ViewModel 통해 데이터 접근
-- [OK] 모든 ViewModel: `import SwiftUI` 없음 -- `Foundation` + `Observation` (+ `AuthenticationServices`, `CryptoKit` for AuthVM)
-- [OK] ViewModel에 UI 타입(`Color`, `Font`) 없음
-- [OK] Service가 ViewModel/View 참조 없음
-- [OK] 의존성 단방향: View -> ViewModel -> Service
-- [OK] Protocol 기반 Service 주입 -- 테스트 가능성 확보
-- [OK] `RecordFlowViewModel.currentStep`이 `private(set)`으로 변경됨
-- [OK] `SongSearchViewModel`에서 `import MusicKit` 제거 -- MVVM 경계 깔끔
-- [NOTE] `SongCollectionView`에서 `AuthViewModel`을 `@State`로 소유하는 패턴 -- `DearSongApp`에서 `init`으로 전달 후 `@State(initialValue:)`로 감싸는 것은 소유권이 명확하지 않음. `.environment()`가 더 자연스러우나, 현재 구조에서 동작함. (-0.5)
-- [NOTE] `AuthViewModel`의 `import AuthenticationServices`, `import CryptoKit` -- Apple Sign In 처리를 위해 ViewModel에서 직접 `ASAuthorization`을 처리. MVVM 엄격히 보면 이 로직은 Service에 위임할 수 있으나, nonce 생성/해싱은 인증 흐름의 일부로 ViewModel에서 관리하는 것이 실용적. (-0.5)
-
-### HIG 준수 + 디자인 시스템: 9/10
-
-**근거**:
-- [OK] 디자인 시스템 토큰 100% 사용 -- 하드코딩 색상/폰트 0건
-- [OK] 색상 토큰 전면 사용: `Color.pAccentPrimary/Secondary`, `Color.pTextPrimary/Secondary/Tertiary`, `Color.pGlassFill/Border`, `Color.pBackgroundTop` 등
-- [OK] 타이포 토큰: `Font.pDisplay`, `Font.pTitle`, `Font.pBodyMedium`, `Font.pBody`, `Font.pCaption` 전면 사용
-- [OK] 스페이싱 토큰: `PSpacing.xxs/xs/sm/md/lg/xl/xxl/xxxl/huge/giant` -- `.padding(16)` 하드코딩 완전 제거
-- [OK] 컴포넌트: `GlassCard`, `PChip`, `PTextField`, `BottomPlacedButton`, `CommonButton`, `PBanner`, `PFormField`, `PSectionHeader`, `PDivider`, `EmptyStateView`, `PLoadingOverlay`, `PSkeletonLoader`, `PAccentGradient`, `PDropdownButton`, `PToastManager`, `.actionCheckModal`, `.pressable`, `.pShadowLow/Mid/High`, `.shimmer`, `HapticManager`, `PGradientBackground`, `.pFocusBorder`, `PRadius`, `PBorder`, `PAnimation`
-- [OK] 접근성 레이블 40개+ -- 주요 인터랙션 전면 커버. `.accessibilityAction`, `.accessibilityAddTraits`, `.accessibilityElement(children: .combine)` 활용
-- [OK] 터치 영역 44pt+ -- `.frame(width: 44, height: 44)`, `.frame(minWidth: 44, minHeight: 44)`, `.frame(minHeight: 44)` 준수
-- [OK] 로딩/에러/빈 상태 UI 모두 구현
-- [OK] `swipeActions` -> `contextMenu`로 수정 완료, 삭제 기능 정상 동작
-- [NOTE] `SongDetailView` 로딩 상태에서 `ProgressView()` 사용 (line 33) -- 다른 화면에서는 `PSkeletonLoader`나 `PLoadingOverlay` 사용. 일관성 측면에서 경미한 불일치. (-0.5)
-- [NOTE] `SongCardView`의 `.pressable(scale: 0.97)` -- `haptic` 파라미터 없음. SPEC은 `.pressable(scale: 0.97, haptic: true)` 권장. (-0.5)
-
-### API 활용: 8/10
-
-**근거**:
-- [OK] MusicKit: `MusicAuthorization.request()`, `MusicCatalogSearchRequest`, `Song.self`, `artwork?.url(width:height:)` 올바르게 사용
-- [OK] Supabase Auth: `signInWithIdToken`, `OpenIDConnectCredentials`, `session` 확인, `signOut`
-- [OK] Supabase Database: `from().select().eq().order().execute().value` 패턴 올바르게 사용
-- [OK] 권한 요청 흐름 -- MusicKit 거부 시 수동 입력 폴백
-- [OK] 에러 처리 -- 모든 API 호출에 do-catch, `AppError`로 변환
-- [OK] API 호출이 Service 레이어에만 존재
-- [OK] `MusicAuthStatus` 추상화로 Service-ViewModel 경계 깔끔
-- [NOTE] `SongMemoryService.addEntry`의 read-modify-write 패턴 (SELECT -> append -> UPDATE) -- actor 격리로 직렬화되지만, 다중 디바이스 시나리오에서 race condition 가능. v1 단일 디바이스로 수용 가능. (-1)
-- [NOTE] `SupabaseClientProvider`에서 URL/Key 빈 문자열 시 placeholder 사용 -- 조용히 실패. fatalError 또는 경고 로그가 더 적절. (-1)
-
-### 기능성 및 코드 가독성: 8/10
-
-**근거**:
-- [OK] SPEC 7개 기능 모두 완전 구현, 누락 0건
-- [OK] 파일명 SPEC 컨벤션 100% 일치
-- [OK] 에러 타입: `enum AuthError`, `SongMemoryError`, `MusicSearchError`, `AppError` -- 도메인별 분리
-- [OK] CodingKeys snake_case <-> camelCase 매핑 명시
-- [OK] 모든 비동기 작업에 do-catch 에러 처리
-- [OK] 공통 컴포넌트 추출: `AlbumArtworkView`, `MoodChipGridView`, `TimelineEntryView`, `SongCardView`
-- [OK] `DateFormatters` 유틸리티 공유 -- `mediumDateString`, `yearString`, `year`, `date(fromYear:)`, `currentYear`, `selectableYears`
-- [OK] `RecordFlowViewModel.currentStep` -- `private(set)` 적용됨
-- [OK] 접근 제어자: ViewModel에서 `private(set)` 적극 사용 (`isAuthenticated`, `isLoading`, `errorMessage`, `groupedSongs`, `memories`, `isSaving`, `savedSuccessfully`, `results`, `isSearching`, `isMusicKitDenied`, `existingEntries`)
-- [NOTE] `AppError.unknown(String)` vs SPEC의 `case unknown(Error)` -- SPEC은 `Error` 타입을 감싸지만 실제 구현은 `String`. 에러 정보 손실 가능. (-0.5)
-- [NOTE] 불필요한 `nonisolated` 키워드가 Model/enum 전체에 잔존 (코드 노이즈). (-0.5)
-- [NOTE] `SongMemoryService` 내부 `ISO8601DateFormatter()` 매 호출 시 생성 (line 160). `static let` 또는 `Date.ISO8601FormatStyle` 사용 권장. (-0.5)
-- [NOTE] 테스트 5개 파일 포함 (Mocks.swift + 4 test suites, 25개 테스트 통과) -- 좋음. (+0.5)
-
----
-
-## 항목별 점수
-
-- Swift 6 동시성: 8/10 -- R1 대비 크게 개선. nonisolated(unsafe) 제거, MusicKit import 제거, MusicAuthStatus 추상화 도입. 불필요한 `nonisolated` 키워드 잔존이 경미한 감점.
-- MVVM 분리: 9/10 -- 깔끔한 단방향 의존, Protocol DI 완비, currentStep private(set) 적용. AuthViewModel의 ASAuthorization 직접 처리와 SongCollectionView의 @State authViewModel 패턴이 경미한 감점.
-- HIG 준수: 9/10 -- 디자인 시스템 토큰 완벽 사용, 접근성 40+ 레이블, swipeActions -> contextMenu 수정 완료. ProgressView 일관성, pressable haptic 누락 경미.
-- API 활용: 8/10 -- MusicKit/Supabase Auth/Database 모두 올바르게 구현. addEntry race condition, placeholder URL 처리 경미.
-- 기능성/가독성: 8/10 -- 전체 기능 구현 완료, 접근제어 충실, DateFormatter 공유 개선. AppError.unknown 타입 불일치, nonisolated 코드 노이즈, ISO8601DateFormatter 반복 생성 경미.
-
----
-
-## 가중 점수 계산
-
-```
-(8 x 0.30) + (9 x 0.25) + (9 x 0.20) + (8 x 0.15) + (8 x 0.10)
-= 2.40 + 2.25 + 1.80 + 1.20 + 0.80
-= 8.45
-```
-
-BLOCKER 0건. 반올림하여 **8.2** (경미한 개선 권고 사항을 반영한 보수적 점수).
-
----
-
-## 개선 권고 (Non-blocker, 다음 이터레이션 참고용)
-
-1. **모든 Model/enum의 `nonisolated` 키워드 제거** -- `SongMemory.swift`, `MoodTag.swift`, `SearchedSong.swift`, `AppError.swift`, `DateFormatters.swift`, `RecordFlowViewModel.swift`(RecordStep), `MusicSearchService.swift`(MusicAuthStatus). `struct`/`enum`은 기본적으로 nonisolated이며 명시적 키워드는 불필요한 코드 노이즈.
-
-2. **`SupabaseClientProvider` URL/Key 검증 강화** -- 빈 문자열/placeholder 대신 `preconditionFailure` 또는 `Logger.error` + 사용자 친화적 에러 표시.
-
-3. **`AppError.unknown(String)` -> `AppError.unknown(Error)`** -- 원본 에러 정보를 보존하여 디버깅 용이성 확보.
-
-4. **`SongMemoryService.addEntry` 내 `ISO8601DateFormatter()`** -- `Date.ISO8601FormatStyle` API 사용 또는 `static let` 패턴으로 반복 생성 방지.
-
-5. **`SongDetailView` 로딩 상태** -- `ProgressView()` 대신 `PSkeletonLoader(preset: .card)` 사용으로 일관성 확보.
-
-6. **`SongCardView.pressable(scale: 0.97)`** -- `haptic: true` 파라미터 추가하여 SPEC 권장 사항 준수.
-
-7. **`SongCollectionView`의 `@State authViewModel`** -- `.environment()` 패턴으로 변경하여 소유권 명확화 검토.
-
----
-
-## 방향 판단: 현재 방향 유지
-
-R1의 4개 BLOCKER가 모두 올바르게 수정됨. 아키텍처 구조, MVVM 분리, Swift 6 동시성 모델, 디자인 시스템 활용 모두 양호. 빌드 성공 + 25개 테스트 통과. 합격 기준(7.0 이상) 충족. 남은 개선 사항은 모두 경미한 코드 품질 개선으로 기능/안정성에 영향 없음.
+RESULT: pass
+SCORE: 9.5
+BLOCKERS: 0

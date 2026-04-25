@@ -1,5 +1,5 @@
 import SwiftUI
-import PersonalColorDesignSystem
+import TopDesignSystem
 
 // MARK: - SongDetailView
 
@@ -12,37 +12,40 @@ struct SongDetailView: View {
     @State private var showRecordFlow = false
     @State private var memoryToDelete: SongMemory?
     @State private var showDeleteConfirm = false
-    @Environment(PToastManager.self) private var toastManager
+    @Environment(\.designPalette) private var palette
+
+    @State private var showErrorToast = false
+    @State private var errorToastMessage = ""
 
     var body: some View {
         ZStack {
             backgroundView
 
             ScrollView {
-                VStack(spacing: PSpacing.lg) {
+                VStack(spacing: DesignSpacing.lg) {
                     // 헤더: 앨범 커버 + 곡 정보
                     songHeader
 
                     // "새 시기 추가" 버튼
                     addNewPeriodButton
-                        .padding(.horizontal, PSpacing.lg)
+                        .padding(.horizontal, DesignSpacing.lg)
 
                     // 타임라인
                     if viewModel.isLoading {
-                        PSkeletonLoader(preset: .card)
-                            .padding(.horizontal, PSpacing.lg)
-                            .padding(.top, PSpacing.xl)
-                        PSkeletonLoader(preset: .card)
-                            .padding(.horizontal, PSpacing.lg)
-                        PSkeletonLoader(preset: .card)
-                            .padding(.horizontal, PSpacing.lg)
+                        ShimmerPlaceholder(height: 160, cornerRadius: DesignCornerRadius.md)
+                            .padding(.horizontal, DesignSpacing.lg)
+                            .padding(.top, DesignSpacing.xl)
+                        ShimmerPlaceholder(height: 160, cornerRadius: DesignCornerRadius.md)
+                            .padding(.horizontal, DesignSpacing.lg)
+                        ShimmerPlaceholder(height: 160, cornerRadius: DesignCornerRadius.md)
+                            .padding(.horizontal, DesignSpacing.lg)
                     } else if viewModel.memories.isEmpty {
                         emptyMemoriesView
                     } else {
                         timelineSection
                     }
                 }
-                .padding(.bottom, PSpacing.xxl)
+                .padding(.bottom, DesignSpacing.xxl)
             }
         }
         .navigationTitle(groupedSong.songTitle)
@@ -86,9 +89,11 @@ struct SongDetailView: View {
                 }
             )
         }
-        .actionCheckModal(
+        .confirmationModal(
             isPresented: $showDeleteConfirm,
             title: String(localized: "action.delete_confirm"),
+            message: String(localized: "action.delete_confirm_message"),
+            isDestructive: true,
             onConfirm: {
                 if let memory = memoryToDelete {
                     Task { await viewModel.deleteMemory(id: memory.id) }
@@ -98,9 +103,11 @@ struct SongDetailView: View {
         )
         .onChange(of: viewModel.errorMessage) { _, message in
             if let message {
-                toastManager.show(message, type: .error)
+                errorToastMessage = message
+                showErrorToast = true
             }
         }
+        .bottomToast(isPresented: $showErrorToast, message: errorToastMessage, style: .error)
     }
 
     // MARK: - Subviews
@@ -108,7 +115,7 @@ struct SongDetailView: View {
     @ViewBuilder
     private var backgroundView: some View {
         ZStack {
-            PGradientBackground()
+            palette.background
                 .ignoresSafeArea()
             if let urlString = groupedSong.artworkUrl, let url = URL(string: urlString) {
                 AsyncImage(url: url) { phase in
@@ -127,51 +134,51 @@ struct SongDetailView: View {
     }
 
     private var songHeader: some View {
-        VStack(spacing: PSpacing.md) {
+        VStack(spacing: DesignSpacing.md) {
             GeometryReader { geo in
                 let size = min(geo.size.width * 0.5, 200)
-                AlbumArtworkView(urlString: groupedSong.artworkUrl, size: size, cornerRadius: AppTheme.cornerRadius)
+                AlbumArtworkView(urlString: groupedSong.artworkUrl, size: size, cornerRadius: DesignCornerRadius.lg)
                     .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
                     .frame(maxWidth: .infinity)
             }
             .frame(height: 200)
 
-            VStack(spacing: PSpacing.xxs) {
+            VStack(spacing: DesignSpacing.xxs) {
                 Text(groupedSong.songTitle)
-                    .font(Font.pTitle(20))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .font(.ssTitle2)
+                    .foregroundStyle(palette.textPrimary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
 
                 Text(groupedSong.artistName)
-                    .font(Font.pBody(15))
-                    .foregroundStyle(Color.pTextSecondary)
+                    .font(.ssBody)
+                    .foregroundStyle(palette.textSecondary)
                     .lineLimit(1)
                     .truncationMode(.tail)
             }
         }
-        .padding(.top, PSpacing.lg)
+        .padding(.top, DesignSpacing.lg)
     }
 
     private var addNewPeriodButton: some View {
         Button {
             showRecordFlow = true
         } label: {
-            HStack(spacing: PSpacing.xs) {
+            HStack(spacing: DesignSpacing.xs) {
                 Image(systemName: "plus.circle.fill")
-                    .font(Font.pBody(16))
+                    .font(.ssBody)
                 Text("action.add_period")
-                    .font(Font.pBodyMedium(15))
+                    .font(.ssBody.weight(.medium))
             }
-            .foregroundStyle(Color.pAccentPrimary)
+            .foregroundStyle(palette.primaryAction)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, PSpacing.sm)
-            .background(Color.pAccentPrimary.opacity(0.12))
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
+            .padding(.vertical, DesignSpacing.sm)
+            .background(palette.primaryAction.opacity(0.12))
+            .clipShape(RoundedRectangle(cornerRadius: DesignCornerRadius.sm))
             .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm)
-                    .stroke(Color.pAccentPrimary.opacity(0.3), lineWidth: 1)
+                RoundedRectangle(cornerRadius: DesignCornerRadius.sm)
+                    .stroke(palette.primaryAction.opacity(0.3), lineWidth: 1)
             )
         }
         .frame(minHeight: 44)
@@ -179,36 +186,36 @@ struct SongDetailView: View {
     }
 
     private var emptyMemoriesView: some View {
-        VStack(spacing: PSpacing.md) {
-            Spacer(minLength: PSpacing.xl)
+        VStack(spacing: DesignSpacing.md) {
+            Spacer(minLength: DesignSpacing.xl)
             Image(systemName: "book.closed")
-                .font(Font.pDisplay(40))
-                .foregroundStyle(Color.pTextSecondary.opacity(0.7))
-            VStack(spacing: PSpacing.xxs) {
+                .font(.ssLargeTitle)
+                .foregroundStyle(palette.textSecondary.opacity(0.7))
+            VStack(spacing: DesignSpacing.xxs) {
                 Text("empty.songdetail.title")
-                    .font(Font.pTitle(17))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .font(.ssTitle2)
+                    .foregroundStyle(palette.textPrimary)
                 Text("empty.songdetail.message")
-                    .font(Font.pBody(14))
-                    .foregroundStyle(Color.pTextSecondary)
+                    .font(.ssFootnote)
+                    .foregroundStyle(palette.textSecondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            Spacer(minLength: PSpacing.xl)
+            Spacer(minLength: DesignSpacing.xl)
         }
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, PSpacing.xl)
-        .padding(.top, PSpacing.xl)
+        .padding(.horizontal, DesignSpacing.xl)
+        .padding(.top, DesignSpacing.xl)
     }
 
     private var timelineSection: some View {
-        LazyVStack(spacing: PSpacing.md) {
+        LazyVStack(spacing: DesignSpacing.md) {
             ForEach(viewModel.memories) { memory in
                 TimelineEntryView(memory: memory, onAddEntry: {
                     selectedMemory = memory
                     showAddEntry = true
                 })
-                .padding(.horizontal, PSpacing.lg)
+                .padding(.horizontal, DesignSpacing.lg)
                 .contextMenu {
                     Button(role: .destructive) {
                         memoryToDelete = memory

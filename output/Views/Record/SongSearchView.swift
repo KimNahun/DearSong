@@ -1,11 +1,12 @@
 import SwiftUI
-import PersonalColorDesignSystem
+import TopDesignSystem
 
 // MARK: - SongSearchView
 
 struct SongSearchView: View {
     var viewModel: RecordFlowViewModel
     @State private var searchViewModel = SongSearchViewModel()
+    @Environment(\.designPalette) private var palette
 
     var body: some View {
         VStack(spacing: 0) {
@@ -28,14 +29,19 @@ struct SongSearchView: View {
 
     private var searchContent: some View {
         VStack(spacing: 0) {
-            // 검색 필드
-            VStack(spacing: PSpacing.xs) {
-                PTextField(
-                    placeholder: String(localized: "placeholder.search.song"),
-                    text: $searchViewModel.query,
-                    leadingIcon: "magnifyingglass"
-                )
-                .padding(.horizontal, PSpacing.lg)
+            // 검색 필드 — PTextField 대체: HStack + TextField + borderedContainer
+            VStack(spacing: DesignSpacing.xs) {
+                HStack(spacing: DesignSpacing.xs) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.ssBody)
+                        .foregroundStyle(palette.textSecondary)
+                    TextField(String(localized: "placeholder.search.song"), text: $searchViewModel.query)
+                        .font(.ssBody)
+                        .foregroundStyle(palette.textPrimary)
+                        .autocorrectionDisabled()
+                }
+                .borderedContainer(padding: DesignSpacing.sm)
+                .padding(.horizontal, DesignSpacing.lg)
                 .accessibilityLabel(Text("placeholder.search.song"))
 
                 if searchViewModel.isMusicKitDenied {
@@ -43,17 +49,19 @@ struct SongSearchView: View {
                         viewModel.isManualInput = true
                     } label: {
                         Text("action.manual_input")
-                            .font(Font.pBodyMedium(14))
-                            .foregroundStyle(Color.pAccentPrimary)
+                            .font(.ssFootnote.weight(.medium))
+                            .foregroundStyle(palette.primaryAction)
                     }
                     .frame(minHeight: 44)
                     .accessibilityLabel(Text("action.manual_input"))
                 }
             }
-            .padding(.vertical, PSpacing.xs)
+            .padding(.vertical, DesignSpacing.xs)
 
-            PDivider()
-                .padding(.horizontal, PSpacing.lg)
+            // 구분선 (PDivider 대체)
+            Divider()
+                .overlay(palette.border)
+                .padding(.horizontal, DesignSpacing.lg)
 
             // 검색 결과
             searchResultList
@@ -63,33 +71,32 @@ struct SongSearchView: View {
     @ViewBuilder
     private var searchResultList: some View {
         if searchViewModel.isSearching {
-            VStack(spacing: PSpacing.xs) {
+            VStack(spacing: DesignSpacing.xs) {
                 ForEach(0..<5, id: \.self) { _ in
-                    PSkeletonLoader(preset: .listRow)
-                        .frame(minHeight: 64)
-                        .padding(.horizontal, PSpacing.lg)
+                    ShimmerPlaceholder(height: 64)
+                        .padding(.horizontal, DesignSpacing.lg)
                 }
             }
-            .padding(.top, PSpacing.md)
+            .padding(.top, DesignSpacing.md)
         } else if !searchViewModel.query.isEmpty && searchViewModel.results.isEmpty {
-            VStack(spacing: PSpacing.md) {
+            VStack(spacing: DesignSpacing.md) {
                 Spacer()
                 Image(systemName: "music.note.list")
-                    .font(Font.pDisplay(40))
-                    .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+                    .font(.ssLargeTitle)
+                    .foregroundStyle(palette.textSecondary.opacity(0.7))
                 Text("empty.search.title")
-                    .font(Font.pBody(15))
-                    .foregroundStyle(Color.pTextSecondary)
+                    .font(.ssBody)
+                    .foregroundStyle(palette.textSecondary)
 
                 Button {
                     viewModel.isManualInput = true
                 } label: {
                     Text("action.manual_input")
-                        .font(Font.pBodyMedium(15))
-                        .foregroundStyle(Color.pAccentPrimary)
-                        .padding(.horizontal, PSpacing.lg)
-                        .padding(.vertical, PSpacing.xs)
-                        .background(Color.pAccentPrimary.opacity(0.12))
+                        .font(.ssBody.weight(.medium))
+                        .foregroundStyle(palette.primaryAction)
+                        .padding(.horizontal, DesignSpacing.lg)
+                        .padding(.vertical, DesignSpacing.xs)
+                        .background(palette.primaryAction.opacity(0.12))
                         .clipShape(Capsule())
                 }
                 .frame(minHeight: 44)
@@ -100,12 +107,12 @@ struct SongSearchView: View {
             VStack {
                 Spacer()
                 Image(systemName: "music.magnifyingglass")
-                    .font(Font.pDisplay(36))
-                    .foregroundStyle(Color.pTextSecondary.opacity(0.7))
-                    .padding(.bottom, PSpacing.xs)
+                    .font(.ssTitle1)
+                    .foregroundStyle(palette.textSecondary.opacity(0.7))
+                    .padding(.bottom, DesignSpacing.xs)
                 Text("empty.search.placeholder")
-                    .font(Font.pBody(15))
-                    .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+                    .font(.ssBody)
+                    .foregroundStyle(palette.textSecondary.opacity(0.7))
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
@@ -126,28 +133,28 @@ struct SongSearchView: View {
             viewModel.selectedSong = song
             viewModel.isManualInput = false
             viewModel.goToNextStep()
-            HapticManager.selection()
+            UISelectionFeedbackGenerator().selectionChanged()
         } label: {
-            HStack(spacing: PSpacing.sm) {
-                AlbumArtworkView(urlString: song.artworkURL?.absoluteString, size: 52, cornerRadius: AppTheme.cornerRadiusXs)
+            HStack(spacing: DesignSpacing.sm) {
+                AlbumArtworkView(urlString: song.artworkURL?.absoluteString, size: 52, cornerRadius: DesignCornerRadius.sm)
 
-                VStack(alignment: .leading, spacing: PSpacing.xxs) {
+                VStack(alignment: .leading, spacing: DesignSpacing.xxs) {
                     Text(song.title)
-                        .font(Font.pBodyMedium(15))
-                        .foregroundStyle(Color.pTextPrimary)
+                        .font(.ssFootnote.weight(.medium))
+                        .foregroundStyle(palette.textPrimary)
                         .lineLimit(1)
                         .truncationMode(.tail)
 
                     Text(song.artistName)
-                        .font(Font.pBody(13))
-                        .foregroundStyle(Color.pTextSecondary)
+                        .font(.ssFootnote)
+                        .foregroundStyle(palette.textSecondary)
                         .lineLimit(1)
                         .truncationMode(.tail)
 
                     if let album = song.albumTitle {
                         Text(album)
-                            .font(Font.pCaption(12))
-                            .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+                            .font(.ssCaption)
+                            .foregroundStyle(palette.textSecondary.opacity(0.7))
                             .lineLimit(1)
                             .truncationMode(.tail)
                     }
@@ -157,17 +164,17 @@ struct SongSearchView: View {
 
                 if viewModel.selectedSong?.id == song.id {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(Color.pAccentPrimary)
-                        .font(Font.pTitle(20))
+                        .foregroundStyle(palette.primaryAction)
+                        .font(.ssTitle2)
                         .accessibilityLabel(Text("action.selected"))
                 }
             }
-            .padding(.horizontal, PSpacing.lg)
-            .padding(.vertical, PSpacing.xs)
+            .padding(.horizontal, DesignSpacing.lg)
+            .padding(.vertical, DesignSpacing.xs)
             .frame(minHeight: 64)
             .background(
                 viewModel.selectedSong?.id == song.id
-                    ? Color.pAccentPrimary.opacity(0.12)
+                    ? palette.primaryAction.opacity(0.12)
                     : Color.clear
             )
             .contentShape(Rectangle())

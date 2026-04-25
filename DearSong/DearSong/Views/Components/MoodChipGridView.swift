@@ -1,29 +1,34 @@
 import SwiftUI
-import PersonalColorDesignSystem
+import TopDesignSystem
 
 // MARK: - MoodChipGridView
 
 struct MoodChipGridView: View {
     @Binding var selectedTags: Set<String>
+    @Environment(\.designPalette) private var palette
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: PSpacing.lg) {
+            VStack(alignment: .leading, spacing: DesignSpacing.lg) {
                 ForEach(MoodCategory.allCases, id: \.rawValue) { category in
                     categorySection(category)
                 }
             }
-            .padding(.horizontal, PSpacing.lg)
-            .padding(.vertical, PSpacing.md)
+            .padding(.horizontal, DesignSpacing.lg)
+            .padding(.vertical, DesignSpacing.md)
         }
     }
 
     @ViewBuilder
     private func categorySection(_ category: MoodCategory) -> some View {
-        VStack(alignment: .leading, spacing: PSpacing.xs) {
-            PSectionHeader(category.displayName)
+        VStack(alignment: .leading, spacing: DesignSpacing.xs) {
+            // PSectionHeader 대체: 인라인 Text
+            Text(category.displayName)
+                .font(.ssTitle2)
+                .foregroundStyle(palette.textPrimary)
 
-            FlowLayout(spacing: PSpacing.xs) {
+            // FlowLayout 대체: LazyVGrid adaptive
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 84), spacing: DesignSpacing.xs)], spacing: DesignSpacing.xs) {
                 ForEach(category.tags, id: \.self) { tag in
                     moodChip(tag: tag)
                 }
@@ -38,24 +43,24 @@ struct MoodChipGridView: View {
 
         Button {
             if isDisabled {
-                HapticManager.impact(.light)
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
             } else {
                 toggleTag(tag)
             }
         } label: {
             Text(tag)
-                .font(isSelected ? Font.pBodyMedium(14) : Font.pBody(14))
-                .foregroundStyle(isSelected ? Color.pTextPrimary : Color.pTextSecondary)
-                .padding(.horizontal, PSpacing.md)
-                .padding(.vertical, PSpacing.xs)
+                .font(isSelected ? .ssFootnote.weight(.medium) : .ssFootnote)
+                .foregroundStyle(isSelected ? palette.textPrimary : palette.textSecondary)
+                .padding(.horizontal, DesignSpacing.md)
+                .padding(.vertical, DesignSpacing.xs)
                 .frame(minHeight: 36)
                 .background(
                     Capsule()
-                        .fill(isSelected ? Color.pAccentPrimary.opacity(0.25) : Color.pGlassFill)
+                        .fill(isSelected ? palette.primaryAction.opacity(0.25) : palette.surface)
                 )
                 .overlay(
                     Capsule()
-                        .strokeBorder(isSelected ? Color.pAccentPrimary : Color.pGlassBorder, lineWidth: 1)
+                        .strokeBorder(isSelected ? palette.primaryAction : palette.border, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -72,6 +77,6 @@ struct MoodChipGridView: View {
         } else if selectedTags.count < 3 {
             selectedTags.insert(tag)
         }
-        HapticManager.selection()
+        UISelectionFeedbackGenerator().selectionChanged()
     }
 }

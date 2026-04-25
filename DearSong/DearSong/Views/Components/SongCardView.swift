@@ -1,46 +1,47 @@
 import SwiftUI
-import PersonalColorDesignSystem
+import TopDesignSystem
 
 // MARK: - SongCardView
 
 struct SongCardView: View {
     let groupedSong: GroupedSong
+    @Environment(\.designPalette) private var palette
 
     var body: some View {
         GlassCard {
-            VStack(alignment: .leading, spacing: PSpacing.xs) {
-                AlbumArtworkView(urlString: groupedSong.artworkUrl, size: nil, cornerRadius: AppTheme.cornerRadiusSm)
+            VStack(alignment: .leading, spacing: DesignSpacing.xs) {
+                AlbumArtworkView(urlString: groupedSong.artworkUrl, size: nil, cornerRadius: DesignCornerRadius.sm)
                     .aspectRatio(1, contentMode: .fit)
                     .frame(maxWidth: .infinity)
-                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignCornerRadius.sm))
 
-                VStack(alignment: .leading, spacing: PSpacing.xxs) {
+                VStack(alignment: .leading, spacing: DesignSpacing.xxs) {
                     Text(groupedSong.songTitle)
-                        .font(Font.pBodyMedium(14))
-                        .foregroundStyle(Color.pTextPrimary)
+                        .font(.ssFootnote.weight(.medium))
+                        .foregroundStyle(palette.textPrimary)
                         .lineLimit(2)
                         .minimumScaleFactor(0.9)
 
                     Text(groupedSong.artistName)
-                        .font(Font.pCaption(12))
-                        .foregroundStyle(Color.pTextSecondary)
+                        .font(.ssCaption)
+                        .foregroundStyle(palette.textSecondary)
                         .lineLimit(1)
                         .truncationMode(.tail)
 
-                    HStack(spacing: PSpacing.xxs) {
+                    HStack(spacing: DesignSpacing.xxs) {
                         Image(systemName: "heart.fill")
-                            .font(Font.pCaption(10))
-                            .foregroundStyle(Color.pAccentPrimary)
+                            .font(.system(size: 10))
+                            .foregroundStyle(palette.primaryAction)
                         Text("songcard.records.count \(groupedSong.memoryCount)")
-                            .font(Font.pCaption(11))
-                            .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+                            .font(.ssCaption)
+                            .foregroundStyle(palette.textSecondary.opacity(0.7))
                     }
-                    .padding(.top, PSpacing.xxs)
+                    .padding(.top, DesignSpacing.xxs)
                 }
-                .padding(.horizontal, PSpacing.xs)
-                .padding(.bottom, PSpacing.xs)
+                .padding(.horizontal, DesignSpacing.xs)
+                .padding(.bottom, DesignSpacing.xs)
             }
         }
-        .pressable(scale: 0.97, haptic: .light)
+        .buttonStyle(.pressScale)
     }
 }

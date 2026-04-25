@@ -1,16 +1,19 @@
 import SwiftUI
 import AuthenticationServices
-import PersonalColorDesignSystem
+import TopDesignSystem
 
 // MARK: - SignInView
 
 struct SignInView: View {
     @Environment(AuthViewModel.self) private var viewModel
-    @Environment(PToastManager.self) private var toastManager
+    @Environment(\.designPalette) private var palette
+
+    @State private var showErrorToast = false
+    @State private var errorToastMessage = ""
 
     var body: some View {
         ZStack {
-            PGradientBackground()
+            palette.background
                 .ignoresSafeArea()
 
             ScrollView {
@@ -18,20 +21,20 @@ struct SignInView: View {
                     Spacer(minLength: 60)
 
                     // 앱 로고 영역
-                    VStack(spacing: PSpacing.lg) {
+                    VStack(spacing: DesignSpacing.lg) {
                         Image(systemName: "music.note.list")
-                            .font(Font.pDisplay(56))
-                            .foregroundStyle(Color.pAccentPrimary)
+                            .font(.ssLargeTitle)
+                            .foregroundStyle(palette.primaryAction)
                             .accessibilityLabel(Text("screen.signin.app_icon_label"))
 
-                        VStack(spacing: PSpacing.xs) {
+                        VStack(spacing: DesignSpacing.xs) {
                             Text("screen.home.title")
-                                .font(Font.pDisplay(36))
-                                .foregroundStyle(Color.pTextPrimary)
+                                .font(.ssTitle1)
+                                .foregroundStyle(palette.textPrimary)
 
                             Text("screen.signin.tagline")
-                                .font(Font.pBody(14))
-                                .foregroundStyle(Color.pTextSecondary)
+                                .font(.ssFootnote)
+                                .foregroundStyle(palette.textSecondary)
                                 .multilineTextAlignment(.center)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -40,7 +43,7 @@ struct SignInView: View {
                     Spacer(minLength: 60)
 
                     // Sign In 영역
-                    VStack(spacing: PSpacing.md) {
+                    VStack(spacing: DesignSpacing.md) {
                         SignInWithAppleButton { request in
                             let preparedRequest = viewModel.prepareSignInRequest()
                             request.requestedScopes = preparedRequest.requestedScopes
@@ -51,35 +54,43 @@ struct SignInView: View {
                                 case .success(let authorization):
                                     await viewModel.signInWithApple(authorization: authorization)
                                 case .failure(let error):
-                                    toastManager.show(error.localizedDescription, type: .error)
+                                    errorToastMessage = error.localizedDescription
+                                    showErrorToast = true
                                 }
                             }
                         }
                         .signInWithAppleButtonStyle(.black)
                         .frame(minHeight: 50, maxHeight: 56)
-                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
+                        .clipShape(RoundedRectangle(cornerRadius: DesignCornerRadius.sm))
                         .accessibilityLabel(Text("action.signin_apple"))
 
                         Text("screen.signin.subtitle")
-                            .font(Font.pCaption(12))
-                            .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+                            .font(.ssCaption)
+                            .foregroundStyle(palette.textSecondary.opacity(0.7))
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    .padding(.horizontal, PSpacing.xl)
-                    .padding(.bottom, PSpacing.huge)
+                    .padding(.horizontal, DesignSpacing.xl)
+                    .padding(.bottom, DesignSpacing.xxxl)
                 }
                 .frame(minHeight: UIScreen.main.bounds.height - 32)
             }
 
             if viewModel.isLoading {
-                PLoadingOverlay()
+                ZStack {
+                    Color.black.opacity(0.3).ignoresSafeArea()
+                    ProgressView()
+                        .tint(palette.primaryAction)
+                        .scaleEffect(1.5)
+                }
             }
         }
         .onChange(of: viewModel.errorMessage) { _, message in
             if let message {
-                toastManager.show(message, type: .error)
+                errorToastMessage = message
+                showErrorToast = true
             }
         }
+        .bottomToast(isPresented: $showErrorToast, message: errorToastMessage, style: .error)
     }
 }

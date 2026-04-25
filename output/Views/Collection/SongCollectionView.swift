@@ -1,5 +1,5 @@
 import SwiftUI
-import PersonalColorDesignSystem
+import TopDesignSystem
 
 // MARK: - SongCollectionView
 
@@ -7,10 +7,13 @@ struct SongCollectionView: View {
     @State private var viewModel = SongCollectionViewModel()
     @State private var authViewModel: AuthViewModel
     @State private var showRecordFlow = false
-    @Environment(PToastManager.self) private var toastManager
+    @Environment(\.designPalette) private var palette
+
+    @State private var showErrorToast = false
+    @State private var errorToastMessage = ""
 
     private let columns = [
-        GridItem(.adaptive(minimum: 150), spacing: PSpacing.md)
+        GridItem(.adaptive(minimum: 150), spacing: DesignSpacing.md)
     ]
 
     init(authViewModel: AuthViewModel) {
@@ -20,7 +23,7 @@ struct SongCollectionView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                PGradientBackground()
+                palette.background
                     .ignoresSafeArea()
 
                 Group {
@@ -39,8 +42,8 @@ struct SongCollectionView: View {
                     HStack {
                         Spacer()
                         floatingAddButton
-                            .padding(.trailing, PSpacing.lg)
-                            .padding(.bottom, PSpacing.lg)
+                            .padding(.trailing, DesignSpacing.lg)
+                            .padding(.bottom, DesignSpacing.lg)
                     }
                 }
             }
@@ -52,8 +55,8 @@ struct SongCollectionView: View {
                         Task { await authViewModel.signOut() }
                     } label: {
                         Text("action.signout")
-                            .font(Font.pBody(14))
-                            .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+                            .font(.ssFootnote)
+                            .foregroundStyle(palette.textSecondary.opacity(0.7))
                     }
                     .accessibilityLabel(Text("action.signout"))
                 }
@@ -73,45 +76,47 @@ struct SongCollectionView: View {
         }
         .onChange(of: viewModel.errorMessage) { _, message in
             if let message {
-                toastManager.show(message, type: .error)
+                errorToastMessage = message
+                showErrorToast = true
             }
         }
+        .bottomToast(isPresented: $showErrorToast, message: errorToastMessage, style: .error)
     }
 
     // MARK: - Subviews
 
     private var loadingView: some View {
-        VStack(spacing: PSpacing.md) {
-            HStack(spacing: PSpacing.md) {
+        VStack(spacing: DesignSpacing.md) {
+            HStack(spacing: DesignSpacing.md) {
                 ForEach(0..<2, id: \.self) { _ in
-                    PSkeletonLoader(preset: .card)
+                    ShimmerPlaceholder(height: 160, cornerRadius: DesignCornerRadius.md)
                         .aspectRatio(1, contentMode: .fit)
                 }
             }
-            HStack(spacing: PSpacing.md) {
+            HStack(spacing: DesignSpacing.md) {
                 ForEach(0..<2, id: \.self) { _ in
-                    PSkeletonLoader(preset: .card)
+                    ShimmerPlaceholder(height: 160, cornerRadius: DesignCornerRadius.md)
                         .aspectRatio(1, contentMode: .fit)
                 }
             }
         }
-        .padding(.horizontal, PSpacing.lg)
+        .padding(.horizontal, DesignSpacing.lg)
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: PSpacing.lg) {
+        VStack(spacing: DesignSpacing.lg) {
             Spacer()
             Image(systemName: "music.note.list")
-                .font(Font.pDisplay(56))
-                .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+                .font(.ssLargeTitle)
+                .foregroundStyle(palette.textSecondary.opacity(0.7))
 
-            VStack(spacing: PSpacing.xs) {
+            VStack(spacing: DesignSpacing.xs) {
                 Text("empty.home.title")
-                    .font(Font.pTitle(17))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .font(.ssTitle2)
+                    .foregroundStyle(palette.textPrimary)
                 Text("empty.home.message")
-                    .font(Font.pBody(14))
-                    .foregroundStyle(Color.pTextSecondary)
+                    .font(.ssFootnote)
+                    .foregroundStyle(palette.textSecondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -120,23 +125,23 @@ struct SongCollectionView: View {
                 showRecordFlow = true
             } label: {
                 Text("action.first_record")
-                    .font(Font.pBodyMedium(15))
+                    .font(.ssBody.weight(.medium))
                     .foregroundStyle(.white)
-                    .padding(.horizontal, PSpacing.xl)
-                    .padding(.vertical, PSpacing.sm)
-                    .background(Color.pAccentPrimary)
+                    .padding(.horizontal, DesignSpacing.xl)
+                    .padding(.vertical, DesignSpacing.sm)
+                    .background(palette.primaryAction)
                     .clipShape(Capsule())
             }
             .frame(minHeight: 44)
             .accessibilityLabel(Text("action.first_record"))
             Spacer()
         }
-        .padding(.horizontal, PSpacing.xl)
+        .padding(.horizontal, DesignSpacing.xl)
     }
 
     private var songGrid: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: PSpacing.md) {
+            LazyVGrid(columns: columns, spacing: DesignSpacing.md) {
                 ForEach(viewModel.groupedSongs) { group in
                     NavigationLink(destination: SongDetailView(groupedSong: group)) {
                         SongCardView(groupedSong: group)
@@ -144,24 +149,24 @@ struct SongCollectionView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, PSpacing.lg)
-            .padding(.vertical, PSpacing.md)
-            .padding(.bottom, PSpacing.xxl + PSpacing.lg)
+            .padding(.horizontal, DesignSpacing.lg)
+            .padding(.vertical, DesignSpacing.md)
+            .padding(.bottom, DesignSpacing.xxl + DesignSpacing.lg)
         }
     }
 
     private var floatingAddButton: some View {
         Button {
             showRecordFlow = true
-            HapticManager.impact(.medium)
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         } label: {
             Image(systemName: "plus")
-                .font(Font.pTitle(20))
+                .font(.ssTitle2)
                 .foregroundStyle(.white)
                 .frame(width: 56, height: 56)
-                .background(Color.pAccentPrimary)
+                .background(palette.primaryAction)
                 .clipShape(Circle())
-                .shadow(color: Color.pAccentPrimary.opacity(0.3), radius: 8, x: 0, y: 4)
+                .shadow(color: palette.primaryAction.opacity(0.3), radius: 8, x: 0, y: 4)
         }
         .accessibilityLabel(Text("action.first_record"))
     }

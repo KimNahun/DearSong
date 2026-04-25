@@ -1,12 +1,16 @@
 import SwiftUI
-import PersonalColorDesignSystem
+import TopDesignSystem
 
 // MARK: - RecordFlowView
 
 struct RecordFlowView: View {
     @State private var viewModel: RecordFlowViewModel
-    @Environment(PToastManager.self) private var toastManager
+    @Environment(\.designPalette) private var palette
     let onDismiss: () -> Void
+
+    @State private var showSuccessToast = false
+    @State private var showErrorToast = false
+    @State private var errorToastMessage = ""
 
     init(preselectedSong: SearchedSong? = nil, onDismiss: @escaping () -> Void) {
         _viewModel = State(initialValue: RecordFlowViewModel(preselectedSong: preselectedSong))
@@ -15,7 +19,7 @@ struct RecordFlowView: View {
 
     var body: some View {
         ZStack {
-            PGradientBackground()
+            palette.background
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -28,16 +32,19 @@ struct RecordFlowView: View {
         }
         .onChange(of: viewModel.savedSuccessfully) { _, saved in
             if saved {
-                toastManager.show(String(localized: "toast.save.success"), type: .success)
-                HapticManager.notification(.success)
+                showSuccessToast = true
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
                 onDismiss()
             }
         }
         .onChange(of: viewModel.errorMessage) { _, message in
             if let message {
-                toastManager.show(message, type: .error)
+                errorToastMessage = message
+                showErrorToast = true
             }
         }
+        .bottomToast(isPresented: $showSuccessToast, message: String(localized: "toast.save.success"), style: .success)
+        .bottomToast(isPresented: $showErrorToast, message: errorToastMessage, style: .error)
     }
 
     // MARK: - Subviews
@@ -47,8 +54,8 @@ struct RecordFlowView: View {
             if viewModel.currentStep != .songSearch {
                 Button(action: { viewModel.goToPreviousStep() }) {
                     Image(systemName: "chevron.left")
-                        .font(Font.pTitle(17))
-                        .foregroundStyle(Color.pTextPrimary)
+                        .font(.ssTitle2)
+                        .foregroundStyle(palette.textPrimary)
                         .frame(width: 44, height: 44)
                 }
                 .accessibilityLabel(Text("action.previous"))
@@ -58,22 +65,22 @@ struct RecordFlowView: View {
 
             Spacer()
 
-            VStack(spacing: PSpacing.xxs) {
+            VStack(spacing: DesignSpacing.xxs) {
                 Text(stepTitleKey)
-                    .font(Font.pBodyMedium(17))
-                    .foregroundStyle(Color.pTextPrimary)
+                    .font(.ssBody.weight(.medium))
+                    .foregroundStyle(palette.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
 
                 // 단계 인디케이터
-                HStack(spacing: PSpacing.xxs) {
+                HStack(spacing: DesignSpacing.xxs) {
                     ForEach(0..<3, id: \.self) { index in
                         Capsule()
                             .fill(index == viewModel.currentStep.rawValue
-                                  ? Color.pAccentPrimary
-                                  : Color.pGlassBorder)
+                                  ? palette.primaryAction
+                                  : palette.border)
                             .frame(width: index == viewModel.currentStep.rawValue ? 20 : 6, height: 6)
-                            .animation(PAnimation.spring, value: viewModel.currentStep)
+                            .animation(SpringAnimation.gentle, value: viewModel.currentStep)
                     }
                 }
             }
@@ -82,14 +89,14 @@ struct RecordFlowView: View {
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
-                    .font(Font.pBody(15))
-                    .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+                    .font(.ssBody)
+                    .foregroundStyle(palette.textSecondary.opacity(0.7))
                     .frame(width: 44, height: 44)
             }
             .accessibilityLabel(Text("action.cancel"))
         }
-        .padding(.horizontal, PSpacing.md)
-        .padding(.vertical, PSpacing.xs)
+        .padding(.horizontal, DesignSpacing.md)
+        .padding(.vertical, DesignSpacing.xs)
     }
 
     private var stepTitleKey: LocalizedStringKey {

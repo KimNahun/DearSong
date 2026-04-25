@@ -1,12 +1,14 @@
 import SwiftUI
-import PersonalColorDesignSystem
+import TopDesignSystem
 
 // MARK: - AlbumArtworkView
 
 struct AlbumArtworkView: View {
     let urlString: String?
     let size: CGFloat?
-    var cornerRadius: CGFloat = AppTheme.cornerRadiusSm
+    var cornerRadius: CGFloat = DesignCornerRadius.sm
+
+    @Environment(\.designPalette) private var palette
 
     var body: some View {
         Group {
@@ -35,10 +37,10 @@ struct AlbumArtworkView: View {
 
     private var artworkPlaceholder: some View {
         ZStack {
-            Color.pGlassFill
+            palette.surface
             Image(systemName: "music.note")
-                .font(Font.pBody((size ?? 48) * 0.35))
-                .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+                .font(.system(size: (size ?? 48) * 0.35))
+                .foregroundStyle(palette.textSecondary.opacity(0.7))
         }
     }
 }

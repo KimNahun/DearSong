@@ -1,11 +1,12 @@
 import SwiftUI
-import PersonalColorDesignSystem
+import TopDesignSystem
 
 // MARK: - TimelineEntryView
 
 struct TimelineEntryView: View {
     let memory: SongMemory
     let onAddEntry: () -> Void
+    @Environment(\.designPalette) private var palette
 
     private var listenedYear: Int {
         DateFormatters.year(from: memory.listenedAt)
@@ -13,22 +14,22 @@ struct TimelineEntryView: View {
 
     var body: some View {
         GlassCard {
-            VStack(alignment: .leading, spacing: PSpacing.sm) {
+            VStack(alignment: .leading, spacing: DesignSpacing.sm) {
                 // 년도 헤더
                 HStack {
-                    VStack(alignment: .leading, spacing: PSpacing.xxs) {
+                    VStack(alignment: .leading, spacing: DesignSpacing.xxs) {
                         Text("timeline.year \(listenedYear)")
-                            .font(Font.pTitle(18))
-                            .foregroundStyle(Color.pTextPrimary)
+                            .font(.ssTitle2)
+                            .foregroundStyle(palette.textPrimary)
 
                         if let location = memory.location, !location.isEmpty {
-                            HStack(spacing: PSpacing.xxs) {
+                            HStack(spacing: DesignSpacing.xxs) {
                                 Image(systemName: "mappin.circle.fill")
-                                    .font(Font.pCaption(12))
-                                    .foregroundStyle(Color.pAccentPrimary.opacity(0.7))
+                                    .font(.ssCaption)
+                                    .foregroundStyle(palette.primaryAction.opacity(0.7))
                                 Text(location)
-                                    .font(Font.pCaption(12))
-                                    .foregroundStyle(Color.pTextSecondary)
+                                    .font(.ssCaption)
+                                    .foregroundStyle(palette.textSecondary)
                                     .lineLimit(1)
                                     .truncationMode(.tail)
                             }
@@ -41,21 +42,30 @@ struct TimelineEntryView: View {
 
                     Button(action: onAddEntry) {
                         Image(systemName: "plus.circle.fill")
-                            .font(Font.pTitle(22))
-                            .foregroundStyle(Color.pAccentPrimary)
+                            .font(.ssTitle2)
+                            .foregroundStyle(palette.primaryAction)
                     }
                     .frame(minWidth: 44, minHeight: 44)
                     .accessibilityLabel(Text("timeline.add_entry_aria"))
                 }
 
-                // 구분선
-                PDivider()
+                // 구분선 (PDivider 대체)
+                Divider()
+                    .overlay(palette.border)
 
-                // 감정 태그
+                // 감정 태그 — PChip 대체: 정적 Capsule + Text
                 if !memory.moodTags.isEmpty {
-                    FlowLayout(spacing: PSpacing.xxs) {
+                    LazyVGrid(
+                        columns: [GridItem(.adaptive(minimum: 84), spacing: DesignSpacing.xs)],
+                        spacing: DesignSpacing.xs
+                    ) {
                         ForEach(memory.moodTags, id: \.self) { tag in
-                            PChip(tag)
+                            Text(tag)
+                                .font(.ssCaption)
+                                .foregroundStyle(palette.textSecondary)
+                                .padding(.horizontal, DesignSpacing.sm)
+                                .padding(.vertical, DesignSpacing.xxs)
+                                .background(Capsule().fill(palette.surface))
                                 .accessibilityLabel(tag)
                         }
                     }
@@ -63,7 +73,7 @@ struct TimelineEntryView: View {
 
                 // 텍스트 엔트리들
                 if !memory.entries.isEmpty {
-                    VStack(alignment: .leading, spacing: PSpacing.xs) {
+                    VStack(alignment: .leading, spacing: DesignSpacing.xs) {
                         ForEach(memory.entries) { entry in
                             entryRow(entry)
                         }
@@ -75,21 +85,21 @@ struct TimelineEntryView: View {
 
     @ViewBuilder
     private func entryRow(_ entry: Entry) -> some View {
-        VStack(alignment: .leading, spacing: PSpacing.xxs) {
+        VStack(alignment: .leading, spacing: DesignSpacing.xxs) {
             Text(entry.text)
-                .font(Font.pBody(14))
-                .foregroundStyle(Color.pTextPrimary)
+                .font(.ssFootnote)
+                .foregroundStyle(palette.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(formattedDate(entry.writtenAt))
-                .font(Font.pCaption(11))
-                .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+                .font(.ssCaption)
+                .foregroundStyle(palette.textSecondary.opacity(0.7))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(PSpacing.xs)
-        .background(Color.pGlassFill)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusXs))
+        .padding(DesignSpacing.xs)
+        .background(palette.surface.opacity(0.6))
+        .clipShape(RoundedRectangle(cornerRadius: DesignCornerRadius.sm))
     }
 
     private func formattedDate(_ date: Date) -> String {

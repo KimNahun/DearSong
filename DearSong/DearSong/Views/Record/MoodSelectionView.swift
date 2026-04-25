@@ -1,10 +1,11 @@
 import SwiftUI
-import PersonalColorDesignSystem
+import TopDesignSystem
 
 // MARK: - MoodSelectionView
 
 struct MoodSelectionView: View {
     @Bindable var viewModel: RecordFlowViewModel
+    @Environment(\.designPalette) private var palette
 
     var body: some View {
         VStack(spacing: 0) {
@@ -17,58 +18,63 @@ struct MoodSelectionView: View {
 
             // 안내 텍스트
             Text("screen.mood.guide")
-                .font(Font.pBody(14))
-                .foregroundStyle(Color.pTextSecondary)
-                .padding(.vertical, PSpacing.xs)
-                .padding(.horizontal, PSpacing.lg)
+                .font(.ssFootnote)
+                .foregroundStyle(palette.textSecondary)
+                .padding(.vertical, DesignSpacing.xs)
+                .padding(.horizontal, DesignSpacing.lg)
                 .fixedSize(horizontal: false, vertical: true)
 
             // 선택된 태그 수 표시
             if !viewModel.selectedMoodTags.isEmpty {
-                HStack(spacing: PSpacing.xxs) {
+                HStack(spacing: DesignSpacing.xxs) {
                     Image(systemName: "tag.fill")
-                        .font(Font.pCaption(12))
-                        .foregroundStyle(Color.pAccentPrimary)
+                        .font(.ssCaption)
+                        .foregroundStyle(palette.primaryAction)
                     Text("mood.selected.count \(viewModel.selectedMoodTags.count)")
-                        .font(Font.pCaption(12))
-                        .foregroundStyle(Color.pAccentPrimary)
+                        .font(.ssCaption)
+                        .foregroundStyle(palette.primaryAction)
                     Spacer()
                 }
-                .padding(.horizontal, PSpacing.lg)
-                .padding(.bottom, PSpacing.xs)
+                .padding(.horizontal, DesignSpacing.lg)
+                .padding(.bottom, DesignSpacing.xs)
             }
 
-            PDivider()
-                .padding(.horizontal, PSpacing.lg)
+            // 구분선 (PDivider 대체)
+            Divider()
+                .overlay(palette.border)
+                .padding(.horizontal, DesignSpacing.lg)
 
             // 감정 태그 그리드
             MoodChipGridView(selectedTags: $viewModel.selectedMoodTags)
         }
         .safeAreaInset(edge: .bottom) {
-            BottomPlacedButton(title: String(localized: "action.next")) {
+            RoundedActionButton(String(localized: "action.next")) {
                 viewModel.goToNextStep()
-                HapticManager.selection()
+                UISelectionFeedbackGenerator().selectionChanged()
             }
             .disabled(!viewModel.canProceedFromMoodSelection)
             .opacity(viewModel.canProceedFromMoodSelection ? 1 : 0.5)
+            .padding(.horizontal, DesignSpacing.lg)
+            .padding(.vertical, DesignSpacing.sm)
+            .background(palette.background)
             .accessibilityLabel(Text("action.next"))
         }
     }
 
     private func selectedSongBanner(_ song: SearchedSong) -> some View {
         GlassCard {
-            HStack(spacing: PSpacing.xs) {
-                AlbumArtworkView(urlString: song.artworkURL?.absoluteString, size: 44, cornerRadius: AppTheme.cornerRadiusXs)
+            HStack(spacing: DesignSpacing.xs) {
+                AlbumArtworkView(urlString: song.artworkURL?.absoluteString, size: 44, cornerRadius: DesignCornerRadius.sm)
 
-                VStack(alignment: .leading, spacing: PSpacing.xxs) {
+                VStack(alignment: .leading, spacing: DesignSpacing.xxs) {
                     Text(song.title)
-                        .font(Font.pBodyMedium(15))
-                        .foregroundStyle(Color.pTextPrimary)
+                        .font(.ssFootnote.weight(.medium))
+                        .foregroundStyle(palette.textPrimary)
                         .lineLimit(1)
                         .truncationMode(.tail)
                     Text(song.artistName)
-                        .font(Font.pBody(13))
-                        .foregroundStyle(Color.pTextSecondary)
+                        .font(.ssFootnote)
+                        .foregroundStyle(palette.textSecondary)
                         .lineLimit(1)
                         .truncationMode(.tail)
                 }
@@ -76,31 +82,31 @@ struct MoodSelectionView: View {
                 Spacer()
             }
         }
-        .padding(.horizontal, PSpacing.lg)
-        .padding(.vertical, PSpacing.xs)
+        .padding(.horizontal, DesignSpacing.lg)
+        .padding(.vertical, DesignSpacing.xs)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(String(localized: "action.selected")): \(song.title), \(song.artistName)")
     }
 
     private var manualSongBanner: some View {
         GlassCard {
-            HStack(spacing: PSpacing.xs) {
+            HStack(spacing: DesignSpacing.xs) {
                 Image(systemName: "music.note")
-                    .font(Font.pTitle(20))
-                    .foregroundStyle(Color.pAccentPrimary.opacity(0.7))
+                    .font(.ssTitle2)
+                    .foregroundStyle(palette.primaryAction.opacity(0.7))
                     .frame(width: 44, height: 44)
-                    .background(Color.pGlassFill)
-                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusXs))
+                    .background(palette.surface.opacity(0.6))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignCornerRadius.sm))
 
-                VStack(alignment: .leading, spacing: PSpacing.xxs) {
+                VStack(alignment: .leading, spacing: DesignSpacing.xxs) {
                     Text(viewModel.manualSongTitle)
-                        .font(Font.pBodyMedium(15))
-                        .foregroundStyle(Color.pTextPrimary)
+                        .font(.ssFootnote.weight(.medium))
+                        .foregroundStyle(palette.textPrimary)
                         .lineLimit(1)
                         .truncationMode(.tail)
                     Text(viewModel.manualArtistName)
-                        .font(Font.pBody(13))
-                        .foregroundStyle(Color.pTextSecondary)
+                        .font(.ssFootnote)
+                        .foregroundStyle(palette.textSecondary)
                         .lineLimit(1)
                         .truncationMode(.tail)
                 }
@@ -108,8 +114,8 @@ struct MoodSelectionView: View {
                 Spacer()
             }
         }
-        .padding(.horizontal, PSpacing.lg)
-        .padding(.vertical, PSpacing.xs)
+        .padding(.horizontal, DesignSpacing.lg)
+        .padding(.vertical, DesignSpacing.xs)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(String(localized: "action.selected")): \(viewModel.manualSongTitle), \(viewModel.manualArtistName)")
     }

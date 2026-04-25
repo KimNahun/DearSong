@@ -1061,3 +1061,136 @@ enum AppTheme {
 4. `Localizable.xcstrings` 업데이트
 5. 빌드 게이트 통과 확인
 6. 자가 점검: Acceptance Criteria 1~10번 grep으로 검증
+
+---
+
+# Round 3 — TopDesignSystem Migration
+
+## 목표
+PersonalColorDesignSystem(P-prefix)을 TopDesignSystem(.airbnb 테마)으로 1:1 코드 마이그레이션.
+기능/네비게이션/UI 구조 변경 금지. 토큰·컴포넌트 호출 사이트만 교체.
+SPM 패키지 swap은 오케스트레이터가 이미 완료했다(pbxproj/Package.resolved).
+
+## 사용 테마: .airbnb (확정)
+- 이유: DearSong은 "곡 하나에 얽힌 나만의 기억·감정을 따뜻하게 기록하는 가이드 다이어리".
+  WarmVibrant 팔레트(부드러운 핑크-레드 액센트, 따뜻한 톤)와 systemScale 타이포(여유로운 큰 글자)가
+  감정·노스탤지어 톤에 가장 어울린다.
+- `.linear` (생산성/Dense)는 차갑고 데이터 중심이라 기각.
+- `.revolut` (핀테크/블루)는 신뢰감·금융 톤이라 기각.
+- 적용 위치: App/DearSongApp.swift 의 WindowGroup 루트에 `.designTheme(.airbnb)` 한 줄.
+
+## 토큰 매핑표 (Generator는 이 표 그대로 사전 치환)
+
+### 색상 (모든 View에서)
+| 이전 (PersonalColor) | 신규 (TopDesignSystem) |
+|---|---|
+| `Color.pTextPrimary` | `palette.textPrimary` (또는 `WarmVibrant.textPrimary`) |
+| `Color.pTextSecondary` | `palette.textSecondary` |
+| `Color.pTextTertiary` | `palette.textSecondary.opacity(0.6)` (TopDesignSystem에 tertiary 미노출 — opacity 보정) |
+| `Color.pAccentPrimary` | `palette.primaryAction` |
+| `Color.pBackgroundTop/Mid/Bottom` | `palette.background` (단일 토큰. 그라디언트가 필요한 곳은 `LinearGradient(colors: [palette.background, palette.surface], ...)`) |
+| `Color.pGlassFill` | `palette.surface.opacity(0.6)` |
+| `Color.pGlassBorder` | `palette.border` |
+| `Color.pGlassSelected` | `palette.elevated` |
+| `Color.pSuccess` | `palette.success` |
+| `Color.pWarning` | `palette.warning` |
+| `Color.pDestructive` | `palette.error` |
+| `Color.pShadow` | (`.designShadow(.card)` 같은 modifier로 대체 — 직접 색상 사용 X) |
+| `Color.pToastBackground` | (BottomToast가 패키지 컴포넌트로 대체되므로 사용처 제거) |
+| `Color.pTabBarBackground` | (Tab 사용처 없음 — 제거) |
+
+> 컴포넌트 내부에서는 `@Environment(\.designPalette) private var palette` 를 선언해서 사용한다.
+> 정적 컨텍스트(struct property literal 등)에서는 `WarmVibrant.*` 직접 토큰을 사용해도 된다.
+
+### 폰트 (모든 View에서)
+| 이전 (PersonalColor) | 신규 (TopDesignSystem) |
+|---|---|
+| `Font.pDisplay(40)`, `Font.pDisplay(36)`, `Font.pDisplay(56)` | `Font.ssLargeTitle` (42pt) — 사이즈 미세 차이 무시. 큰 숫자는 `.ssTitle1` (36pt) 도 가능. |
+| `Font.pTitle(17)`, `Font.pTitle(20)` | `Font.ssTitle2` (20pt) 또는 `theme.typography.headline` |
+| `Font.pBody(15)`, `Font.pBody(14)`, `Font.pBody(13)` | `Font.ssBody` (16pt) 또는 `Font.ssFootnote` (14pt) — 13/14 → footnote, 15/16 → body |
+| `Font.pBodyMedium(14)`, `Font.pBodyMedium(15)` | `Font.ssBody.weight(.medium)` 또는 `Font.ssFootnote.weight(.medium)` |
+| `Font.pCaption(11)`, `Font.pCaption(12)`, `Font.pCaption(13)` | `Font.ssCaption` (12pt) |
+
+### 간격 / 코너 / 그림자
+| 이전 | 신규 |
+|---|---|
+| `PSpacing.xxs/xs/sm/md/lg/xl/xxl/xxxl` | `DesignSpacing.xxs/xs/sm/md/lg/xl/xxl/xxxl` |
+| `PRadius.sm/md/lg/xl` | `DesignCornerRadius.sm/md/lg/xl` |
+| `PRadius.pill` | `DesignCornerRadius.pill` |
+| `PBorder.thin / .hairline` | `1` / `0.5` (TopDesignSystem에 PBorder 토큰 없음 — 숫자 리터럴 OK) |
+
+### 컴포넌트
+| 이전 (PersonalColor) | 신규 (TopDesignSystem) |
+|---|---|
+| `PGradientBackground()` | 삭제 후 `palette.background.ignoresSafeArea()` 또는 `LinearGradient(colors:[palette.background, palette.surface], ...).ignoresSafeArea()` |
+| `GlassCard { ... }` | `GlassCard { ... }` (TopDesignSystem도 동일 이름. 그대로 사용 가능 — 단 `import TopDesignSystem` 이어야 함) |
+| `cardStyle()` ViewModifier (자체) | `view.surfaceContainer()` 또는 `SurfaceCard(elevation: .raised) { content }` |
+| `PSkeletonLoader(preset: .listRow / .card / .text(lines:))` | `ShimmerPlaceholder(height: 64)` (listRow), `ShimmerPlaceholder(height: 160)` (card). 텍스트 다중 라인은 `VStack { ShimmerPlaceholder(height: 12) ... }` 로 명시 구성. |
+| `PChip(_ title, isSelected: Binding<Bool>)` (toggle) | TopDesignSystem에 동등 컴포넌트 부재 → **인라인 Button + Capsule** 직접 구성 (R3에서 MoodChipGridView가 이미 한 패턴). 다른 사용처(TimelineEntryView의 라벨 칩 등)는 `Capsule().fill(palette.surface).overlay(Text)` 정적 표시로 변환. |
+| `PChip(_ title)` (label variant) | 정적 칩 — `Text(...).padding(.horizontal/.vertical).background(Capsule().fill(palette.surface))` |
+| `PFormField` | TopDesignSystem 부재 → 직접 `VStack { Text(label) ; content ; Text(message) }` 패턴. 또는 `view.borderedContainer()` 모디파이어 활용. |
+| `PTextField(placeholder:, text:, leadingIcon:?)` | TopDesignSystem 부재 → 표준 `TextField(placeholder, text:)` + `view.borderedContainer()` 또는 ContentListItem 스타일. leadingIcon 필요시 HStack 직접 구성. |
+| `PSecureField` | 표준 `SecureField(...)` + `borderedContainer()` |
+| `PBanner(type: .success/.warning/.error/.info, message:)` | TopDesignSystem 부재 → 인라인 `HStack(아이콘 + Text).padding().background(palette.surface).overlay(border)`. 또는 패키지의 `bottomToast(style:)` modifier로 동일 의미 전달. |
+| `PSectionHeader(_ title)` | 직접 `Text(title).font(theme.typography.headline).foregroundStyle(palette.textPrimary)` (간단함) |
+| `PDivider()` | 표준 SwiftUI `Divider().overlay(palette.border)` |
+| `PToastManager` + `.pGlobalToast` + `.pTheme(.autumn)` | `@State var showToast = false` 로컬 상태 + `.bottomToast(isPresented:$showToast, message:, style:)` modifier per-view 사용. 전역 toastManager 환경 객체 의존성 제거. |
+| `.pLoadingOverlay(isLoading: .constant(true), message:)` | TopDesignSystem 부재 → 인라인 `ZStack { content ; if isLoading { ProgressView(message) } }` 또는 `ShimmerPlaceholder` 활용 |
+| `.pressable(scale:, haptic:)` (자체 모디파이어) | `.buttonStyle(.pressScale)` (TopDesignSystem이 제공). 비-Button context면 `.scaleEffect`/`.gentleSpring` 조합. |
+| `HapticManager.impact(.light)` / `.selection()` | 표준 UIKit `UIImpactFeedbackGenerator(style: .light).impactOccurred()` 또는 `UISelectionFeedbackGenerator().selectionChanged()` (TopDesignSystem에 햅틱 헬퍼 부재 가정. 실제 패키지에 있으면 그걸 우선) |
+| `BottomPlacedButton(...)` (자체) | `RoundedActionButton(_ title) { action }` 또는 `PillButton`. `.safeAreaInset(edge: .bottom)` 으로 하단 고정. |
+| `FlowLayout` (자체 Layout) | TopDesignSystem 부재 → `LazyVGrid(columns: [GridItem(.adaptive(minimum: 84), spacing: 8)])` 으로 대체 |
+| `EmptyStateView(...)` (자체) | 직접 VStack { Image ; Text("...") } 인라인 구성. SurfaceCard 또는 .surfaceContainer() 위에 배치. |
+
+## 화면별 마이그레이션 체크리스트 (Generator는 이 표를 보고 화면 단위로 작업)
+
+| 파일 | 주요 마이그레이션 포인트 | 예상 난이도 |
+|---|---|---|
+| App/DearSongApp.swift | `.pTheme(.autumn)` → `.designTheme(.airbnb)`. `PToastManager()` + `.pGlobalToast` 제거 (per-view bottomToast로 변경). `PGradientBackground()` → `palette.background.ignoresSafeArea()`. `pLoadingOverlay` → 인라인 ZStack + ProgressView. | 중 |
+| Views/Auth/SignInView.swift | 폰트/색상 토큰만 교체. Sign in with Apple 버튼 그대로. | 하 |
+| Views/Collection/SongCollectionView.swift | 색상/폰트 + `PSkeletonLoader` → `ShimmerPlaceholder`. `BottomPlacedButton` → `RoundedActionButton` + safeAreaInset. `EmptyStateView` 인라인. | 중 |
+| Views/Detail/SongDetailView.swift | 폰트/색상 + GeometryReader 헤더 그대로. `Label { Text } icon: { Image }` 그대로. | 하 |
+| Views/Record/RecordFlowView.swift | `PAnimation.spring` → `SpringAnimation.gentle` 또는 `.snappy`. 색상/폰트. | 하 |
+| Views/Record/SongSearchView.swift | `PTextField(leadingIcon:)` → 인라인 HStack {Image + TextField} + `.borderedContainer()`. `PSkeletonLoader(.listRow)` → `ShimmerPlaceholder(height: 64)`. | 중 |
+| Views/Record/MoodSelectionView.swift | 칩 그리드 → 인라인 Button + Capsule (이미 R3 MoodChipGridView 패턴 차용). 색상/폰트. safeAreaInset 그대로. | 중 |
+| Views/Record/EntryWriteView.swift | TextEditor 인라인 그대로. 1000자 카운터 색상 `Color.pDestructive` → `palette.error`. 색상/폰트. | 하 |
+| Views/Record/ManualSongInputView.swift | `PBanner(type: .info)` → 인라인 HStack 배너 또는 `.bottomToast(style: .info)` 안내. `PTextField` → 표준 TextField. | 중 |
+| Views/Entry/AddEntryView.swift | EntryWriteView와 동일 패턴. | 하 |
+| Views/Components/AlbumArtworkView.swift | 색상 토큰만 교체. AsyncImage 그대로. | 하 |
+| Views/Components/MoodChipGridView.swift | R3에서 이미 인라인 Button+Capsule로 만들어둠 — 색상 토큰만 교체. `PSectionHeader` → 인라인 Text. `FlowLayout` → LazyVGrid adaptive. | 중 |
+| Views/Components/SongCardView.swift | `GlassCard` 그대로. `.pressable(scale:0.97, haptic:.light)` → `.buttonStyle(.pressScale)` (단 Button 안에서). 색상/폰트. | 중 |
+| Views/Components/TimelineEntryView.swift | `GlassCard` 그대로. `PChip(_ title)` → 정적 Capsule + Text. `PDivider()` → Divider. 색상/폰트. | 중 |
+| Shared/AppTheme.swift | **PRadius/PSpacing/PChipMath/등 전부 제거.** TopDesignSystem 토큰을 그대로 쓰므로 shim 불필요. **파일 자체를 삭제하거나, `AppPalette` 같은 한 줄 헬퍼만 남기고 비우기.** | 중 |
+| Resources/Localizable.xcstrings | 변경 없음. 그대로 보존. | 하 |
+
+## 작업 절차 (Generator에게)
+
+1. 모든 View 파일 상단 `import PersonalColorDesignSystem` → `import TopDesignSystem`.
+2. 위 토큰 매핑표 그대로 검색·치환.
+3. 환경 의존이 필요한 컴포넌트(palette/theme 사용)에는 `@Environment(\.designPalette) private var palette` (그리고 필요 시 `\.designTheme`) 선언 추가.
+4. 화면별 마이그레이션 체크리스트 따라 컴포넌트 호출 사이트 교체.
+5. `Shared/AppTheme.swift` 정리 — TopDesignSystem 토큰만 노출하는 파일이라면 삭제. 대체로 비울 것.
+6. 빌드 가능한 상태로 만들고, Generator 자체적으로 grep 검증:
+   - `import PersonalColorDesignSystem` 0건
+   - `Color.p*` 잔존 0건 (단 `palette.` 는 OK)
+   - `Font.p*` 잔존 0건
+   - `PSpacing/PRadius/PChip/PBanner/PFormField/PTextField/PSecureField/PSkeletonLoader/PSectionHeader/PDivider/PGradientBackground/PToastManager/pLoadingOverlay/pTheme/pGlobalToast/HapticManager` 잔존 0건
+
+## Acceptance Criteria (Evaluator R4가 검증)
+
+1. `import PersonalColorDesignSystem` grep 결과 0건
+2. `Color.p[A-Z]` (View 한정) grep 결과 0건
+3. `Font.p[A-Z]` grep 결과 0건
+4. `PSpacing|PRadius|PChip|PBanner|PFormField|PTextField|PSecureField|PSkeletonLoader|PSectionHeader|PDivider|PGradientBackground|PToastManager|pLoadingOverlay|pTheme|pGlobalToast` grep 결과 0건
+5. `import TopDesignSystem` 모든 View와 App에 추가됨
+6. App 루트에 `.designTheme(.airbnb)` 적용됨
+7. PROJECT_CONTEXT.md의 디자인 시스템 토큰만 사용
+8. 빌드 통과 (BUILD SUCCEEDED)
+9. 기능 회귀 없음 — SPEC R1의 모든 기능 유지
+10. Localizable.xcstrings 키 변경 없음 (마이그레이션 라운드는 코드만)
+
+## 범위 외
+- ViewModel/Service/Model 로직 변경 금지 (시그니처 호환).
+- 새 화면/네비게이션 금지.
+- 새 기능 금지.
+- Localizable.xcstrings 키 추가/제거 금지(폰트 토큰 이름이 키처럼 보일 수 있어도 마이그레이션 대상은 코드만).

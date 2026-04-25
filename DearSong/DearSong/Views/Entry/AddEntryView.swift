@@ -17,73 +17,47 @@ struct AddEntryView: View {
         _viewModel = State(initialValue: AddEntryViewModel(existingEntries: memory.entries))
     }
 
-    private var yearString: String {
-        DateFormatters.yearString(from: memory.listenedAt)
+    private var listenedYear: Int {
+        DateFormatters.year(from: memory.listenedAt)
     }
 
     var body: some View {
         ZStack {
-            AppBackground(showLines: true)
+            PGradientBackground()
+                .ignoresSafeArea()
+            // 줄선 패턴 (얇은 — NotebookTexture 대체)
+            Color.pGlassBorder.opacity(0.05)
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 sheetHeader
 
-                Rectangle()
-                    .fill(AppTheme.divider)
-                    .frame(height: 1)
+                PDivider()
 
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: PSpacing.lg) {
                         if !viewModel.existingEntries.isEmpty {
                             existingEntriesSection
                         }
                         newEntrySection
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-                    .padding(.bottom, 120)
+                    .padding(.horizontal, PSpacing.lg)
+                    .padding(.top, PSpacing.md)
+                    .padding(.bottom, PSpacing.xxl)
                 }
-            }
-
-            // 저장 버튼
-            VStack {
-                Spacer()
-                Button {
-                    isTextEditorFocused = false
-                    Task { await viewModel.save(memoryId: memory.id) }
-                } label: {
-                    Text("기록 추가")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            (viewModel.isSaving || viewModel.entryText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                                ? AppTheme.textTertiary
-                                : AppTheme.accent
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
-                }
-                .disabled(viewModel.isSaving || viewModel.entryText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 16)
-                .background(
-                    LinearGradient(
-                        colors: [AppTheme.background.opacity(0), AppTheme.background],
-                        startPoint: .top,
-                        endPoint: .center
-                    )
-                )
-                .accessibilityLabel("기록 추가 저장")
+                .scrollDismissesKeyboard(.interactively)
             }
 
             if viewModel.isSaving {
                 PLoadingOverlay()
             }
         }
+        .safeAreaInset(edge: .bottom) {
+            saveButton
+        }
         .onChange(of: viewModel.savedSuccessfully) { _, saved in
             if saved {
-                toastManager.show("기록이 추가되었어요", type: .success)
+                toastManager.show(String(localized: "toast.entry.added"), type: .success)
                 HapticManager.notification(.success)
                 onDismiss()
             }
@@ -97,93 +71,113 @@ struct AddEntryView: View {
 
     // MARK: - Subviews
 
+    private var saveButton: some View {
+        BottomPlacedButton(title: String(localized: "action.save.entry")) {
+            isTextEditorFocused = false
+            Task { await viewModel.save(memoryId: memory.id) }
+        }
+        .disabled(viewModel.isSaving || viewModel.entryText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        .opacity((viewModel.isSaving || viewModel.entryText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) ? 0.5 : 1)
+        .accessibilityLabel(Text("action.save.entry"))
+    }
+
     private var sheetHeader: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: PSpacing.xxs) {
                 Text(memory.songTitle)
-                    .font(.system(size: 17, weight: .bold))
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .font(Font.pBodyMedium(17))
+                    .foregroundStyle(Color.pTextPrimary)
                     .lineLimit(1)
-                Text("\(yearString)년 · \(memory.artistName)")
-                    .font(.system(size: 12))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .truncationMode(.tail)
+                Text("\(listenedYear)\(String(localized: "timeline.year_suffix")) · \(memory.artistName)")
+                    .font(Font.pCaption(12))
+                    .foregroundStyle(Color.pTextSecondary)
                     .lineLimit(1)
+                    .truncationMode(.tail)
             }
 
             Spacer()
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 24))
-                    .foregroundStyle(AppTheme.textTertiary)
+                    .font(Font.pTitle(24))
+                    .foregroundStyle(Color.pTextSecondary.opacity(0.7))
                     .frame(width: 44, height: 44)
             }
-            .accessibilityLabel("닫기")
+            .accessibilityLabel(Text("action.cancel"))
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
+        .padding(.horizontal, PSpacing.lg)
+        .padding(.vertical, PSpacing.sm)
     }
 
     private var existingEntriesSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("이전 기록들")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(AppTheme.textPrimary)
+        VStack(alignment: .leading, spacing: PSpacing.xs) {
+            Text("screen.addentry.previous")
+                .font(Font.pBodyMedium(15))
+                .foregroundStyle(Color.pTextPrimary)
 
             ForEach(viewModel.existingEntries) { entry in
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(entry.text)
-                        .font(.system(size: 14))
-                        .foregroundStyle(AppTheme.textPrimary)
-                        .fixedSize(horizontal: false, vertical: true)
+                GlassCard {
+                    VStack(alignment: .leading, spacing: PSpacing.xxs) {
+                        Text(entry.text)
+                            .font(Font.pBody(14))
+                            .foregroundStyle(Color.pTextPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
 
-                    Text(formattedDate(entry.writtenAt))
-                        .font(.system(size: 11))
-                        .foregroundStyle(AppTheme.textTertiary)
+                        Text(formattedDate(entry.writtenAt))
+                            .font(Font.pCaption(11))
+                            .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(14)
-                .background(AppTheme.chipBackground)
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusXs))
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel("이전 기록: \(entry.text)")
+                .accessibilityLabel(entry.text)
             }
         }
     }
 
     private var newEntrySection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("새 기록")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(AppTheme.textPrimary)
+        VStack(alignment: .leading, spacing: PSpacing.xs) {
+            Text("screen.addentry.new")
+                .font(Font.pBodyMedium(15))
+                .foregroundStyle(Color.pTextPrimary)
 
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm)
-                    .fill(AppTheme.cardBackground)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm)
-                            .stroke(isTextEditorFocused ? AppTheme.accent : AppTheme.border, lineWidth: 1.2)
-                    )
-
                 TextEditor(text: $viewModel.entryText)
-                    .font(.system(size: 15))
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .font(Font.pBody(15))
+                    .foregroundStyle(Color.pTextPrimary)
                     .scrollContentBackground(.hidden)
                     .background(.clear)
                     .frame(minHeight: 140)
-                    .padding(14)
+                    .padding(PSpacing.sm)
                     .focused($isTextEditorFocused)
-                    .accessibilityLabel("새 기록 입력")
+                    .accessibilityLabel(Text("screen.addentry.placeholder"))
 
                 if viewModel.entryText.isEmpty {
-                    Text("오늘 이 곡을 다시 들으며 느낀 점을 적어보세요.")
-                        .font(.system(size: 15))
-                        .foregroundStyle(AppTheme.textTertiary)
-                        .padding(18)
+                    Text("screen.addentry.placeholder")
+                        .font(Font.pBody(15))
+                        .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+                        .padding(PSpacing.sm + 2)
                         .allowsHitTesting(false)
                 }
             }
-            .animation(.easeOut(duration: 0.2), value: isTextEditorFocused)
+            .background(
+                RoundedRectangle(cornerRadius: PRadius.md)
+                    .fill(Color.pGlassFill)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: PRadius.md)
+                    .strokeBorder(isTextEditorFocused ? Color.pAccentPrimary.opacity(0.6) : Color.clear, lineWidth: 1)
+            )
+            .animation(PAnimation.easeOut, value: isTextEditorFocused)
+
+            // 1000자 카운터
+            HStack {
+                Spacer()
+                Text("\(viewModel.entryText.count)/1000")
+                    .font(Font.pCaption(11))
+                    .foregroundStyle(viewModel.entryText.count >= 1000 ? Color.pDestructive : Color.pTextSecondary.opacity(0.7))
+            }
         }
     }
 

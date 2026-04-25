@@ -1,4 +1,5 @@
 import SwiftUI
+import PersonalColorDesignSystem
 
 // MARK: - AlbumArtworkView
 
@@ -34,10 +35,10 @@ struct AlbumArtworkView: View {
 
     private var artworkPlaceholder: some View {
         ZStack {
-            AppTheme.chipBackground
+            Color.pGlassFill
             Image(systemName: "music.note")
-                .font(.system(size: (size ?? 48) * 0.35))
-                .foregroundStyle(AppTheme.textTertiary)
+                .font(Font.pBody((size ?? 48) * 0.35))
+                .foregroundStyle(Color.pTextSecondary.opacity(0.7))
         }
     }
 }

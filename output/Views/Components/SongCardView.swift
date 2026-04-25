@@ -1,4 +1,5 @@
 import SwiftUI
+import PersonalColorDesignSystem
 
 // MARK: - SongCardView
 
@@ -6,36 +7,40 @@ struct SongCardView: View {
     let groupedSong: GroupedSong
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            AlbumArtworkView(urlString: groupedSong.artworkUrl, size: nil, cornerRadius: AppTheme.cornerRadiusSm)
-                .aspectRatio(1, contentMode: .fit)
-                .frame(maxWidth: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
+        GlassCard {
+            VStack(alignment: .leading, spacing: PSpacing.xs) {
+                AlbumArtworkView(urlString: groupedSong.artworkUrl, size: nil, cornerRadius: AppTheme.cornerRadiusSm)
+                    .aspectRatio(1, contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(groupedSong.songTitle)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .lineLimit(2)
+                VStack(alignment: .leading, spacing: PSpacing.xxs) {
+                    Text(groupedSong.songTitle)
+                        .font(Font.pBodyMedium(14))
+                        .foregroundStyle(Color.pTextPrimary)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.9)
 
-                Text(groupedSong.artistName)
-                    .font(.system(size: 12))
-                    .foregroundStyle(AppTheme.textSecondary)
-                    .lineLimit(1)
+                    Text(groupedSong.artistName)
+                        .font(Font.pCaption(12))
+                        .foregroundStyle(Color.pTextSecondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
 
-                HStack(spacing: 4) {
-                    Image(systemName: "heart.fill")
-                        .font(.system(size: 10))
-                        .foregroundStyle(AppTheme.accent)
-                    Text("\(groupedSong.memoryCount)개의 기록")
-                        .font(.system(size: 11))
-                        .foregroundStyle(AppTheme.textTertiary)
+                    HStack(spacing: PSpacing.xxs) {
+                        Image(systemName: "heart.fill")
+                            .font(Font.pCaption(10))
+                            .foregroundStyle(Color.pAccentPrimary)
+                        Text("songcard.records.count \(groupedSong.memoryCount)")
+                            .font(Font.pCaption(11))
+                            .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+                    }
+                    .padding(.top, PSpacing.xxs)
                 }
-                .padding(.top, 2)
+                .padding(.horizontal, PSpacing.xs)
+                .padding(.bottom, PSpacing.xs)
             }
-            .padding(.horizontal, 10)
-            .padding(.bottom, 12)
         }
-        .cardStyle(cornerRadius: AppTheme.cornerRadius)
+        .pressable(scale: 0.97, haptic: .light)
     }
 }

@@ -7,93 +7,56 @@ struct ManualSongInputView: View {
     @Bindable var viewModel: RecordFlowViewModel
 
     var body: some View {
-        VStack(spacing: 24) {
-            // 안내 배너
-            HStack(spacing: 10) {
-                Image(systemName: "info.circle.fill")
-                    .foregroundStyle(AppTheme.accentSecondary)
-                Text("Apple Music 권한 없이 곡을 직접 입력합니다.")
-                    .font(.system(size: 13))
-                    .foregroundStyle(AppTheme.textSecondary)
-            }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppTheme.accentSecondary.opacity(0.1))
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusXs))
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
+        ScrollView {
+            VStack(spacing: PSpacing.lg) {
+                // 안내 배너
+                PBanner(type: .info, message: String(localized: "manualinput.banner"))
+                    .padding(.horizontal, PSpacing.lg)
+                    .padding(.top, PSpacing.md)
 
-            VStack(spacing: 20) {
-                // 곡 제목
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("곡 제목")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(AppTheme.textPrimary)
+                VStack(spacing: PSpacing.lg) {
+                    // 곡 제목
+                    VStack(alignment: .leading, spacing: PSpacing.xs) {
+                        Text("manualinput.song.label")
+                            .font(Font.pBodyMedium(14))
+                            .foregroundStyle(Color.pTextPrimary)
 
-                    HStack(spacing: 10) {
-                        Image(systemName: "music.note")
-                            .foregroundStyle(AppTheme.textTertiary)
-                        TextField("예: 봄날", text: $viewModel.manualSongTitle)
-                            .font(.system(size: 15))
-                            .foregroundStyle(AppTheme.textPrimary)
+                        PTextField(
+                            placeholder: String(localized: "placeholder.song.title"),
+                            text: $viewModel.manualSongTitle,
+                            leadingIcon: "music.note"
+                        )
+                        .accessibilityLabel(Text("manualinput.song.label"))
                     }
-                    .padding(14)
-                    .background(AppTheme.cardBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm)
-                            .stroke(titleBorderColor, lineWidth: 1)
-                    )
-                    .accessibilityLabel("곡 제목 입력")
-                }
 
-                // 아티스트
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("아티스트")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(AppTheme.textPrimary)
+                    // 아티스트
+                    VStack(alignment: .leading, spacing: PSpacing.xs) {
+                        Text("manualinput.artist.label")
+                            .font(Font.pBodyMedium(14))
+                            .foregroundStyle(Color.pTextPrimary)
 
-                    HStack(spacing: 10) {
-                        Image(systemName: "person")
-                            .foregroundStyle(AppTheme.textTertiary)
-                        TextField("예: BTS", text: $viewModel.manualArtistName)
-                            .font(.system(size: 15))
-                            .foregroundStyle(AppTheme.textPrimary)
+                        PTextField(
+                            placeholder: String(localized: "placeholder.artist.name"),
+                            text: $viewModel.manualArtistName,
+                            leadingIcon: "person"
+                        )
+                        .accessibilityLabel(Text("manualinput.artist.label"))
                     }
-                    .padding(14)
-                    .background(AppTheme.cardBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm)
-                            .stroke(artistBorderColor, lineWidth: 1)
-                    )
-                    .accessibilityLabel("아티스트명 입력")
                 }
-            }
-            .padding(.horizontal, 20)
+                .padding(.horizontal, PSpacing.lg)
 
-            Spacer()
+                Spacer(minLength: PSpacing.xl)
+            }
         }
-        .bottomButtons {
-            BottomPlacedButton(title: "다음") {
+        .scrollDismissesKeyboard(.interactively)
+        .safeAreaInset(edge: .bottom) {
+            BottomPlacedButton(title: String(localized: "action.next")) {
                 viewModel.goToNextStep()
                 HapticManager.selection()
             }
             .disabled(!viewModel.canProceedFromSongSearch)
             .opacity(viewModel.canProceedFromSongSearch ? 1 : 0.5)
-            .accessibilityLabel("다음 단계로 이동")
+            .accessibilityLabel(Text("action.next"))
         }
-    }
-
-    private var titleBorderColor: Color {
-        if viewModel.manualSongTitle.isEmpty { return AppTheme.border }
-        return viewModel.manualSongTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            ? Color.red.opacity(0.5) : AppTheme.border
-    }
-
-    private var artistBorderColor: Color {
-        if viewModel.manualArtistName.isEmpty { return AppTheme.border }
-        return viewModel.manualArtistName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            ? Color.red.opacity(0.5) : AppTheme.border
     }
 }

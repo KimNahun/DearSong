@@ -10,8 +10,7 @@ struct SongCollectionView: View {
     @Environment(PToastManager.self) private var toastManager
 
     private let columns = [
-        GridItem(.flexible(), spacing: 14),
-        GridItem(.flexible(), spacing: 14)
+        GridItem(.adaptive(minimum: 150), spacing: PSpacing.md)
     ]
 
     init(authViewModel: AuthViewModel) {
@@ -21,7 +20,8 @@ struct SongCollectionView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                AppBackground()
+                PGradientBackground()
+                    .ignoresSafeArea()
 
                 Group {
                     if viewModel.isLoading && viewModel.groupedSongs.isEmpty {
@@ -39,21 +39,23 @@ struct SongCollectionView: View {
                     HStack {
                         Spacer()
                         floatingAddButton
-                            .padding(.trailing, 24)
-                            .padding(.bottom, 24)
+                            .padding(.trailing, PSpacing.lg)
+                            .padding(.bottom, PSpacing.lg)
                     }
                 }
             }
-            .navigationTitle("DearSong")
+            .navigationTitle(Text("screen.home.title"))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("로그아웃") {
+                    Button {
                         Task { await authViewModel.signOut() }
+                    } label: {
+                        Text("action.signout")
+                            .font(Font.pBody(14))
+                            .foregroundStyle(Color.pTextSecondary.opacity(0.7))
                     }
-                    .font(.system(size: 14))
-                    .foregroundStyle(AppTheme.textTertiary)
-                    .accessibilityLabel("로그아웃")
+                    .accessibilityLabel(Text("action.signout"))
                 }
             }
             .refreshable {
@@ -79,59 +81,62 @@ struct SongCollectionView: View {
     // MARK: - Subviews
 
     private var loadingView: some View {
-        VStack(spacing: 16) {
-            HStack(spacing: 14) {
+        VStack(spacing: PSpacing.md) {
+            HStack(spacing: PSpacing.md) {
                 ForEach(0..<2, id: \.self) { _ in
-                    RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                        .fill(AppTheme.chipBackground)
-                        .frame(height: 200)
+                    PSkeletonLoader(preset: .card)
+                        .aspectRatio(1, contentMode: .fit)
                 }
             }
-            HStack(spacing: 14) {
+            HStack(spacing: PSpacing.md) {
                 ForEach(0..<2, id: \.self) { _ in
-                    RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                        .fill(AppTheme.chipBackground)
-                        .frame(height: 200)
+                    PSkeletonLoader(preset: .card)
+                        .aspectRatio(1, contentMode: .fit)
                 }
             }
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, PSpacing.lg)
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: PSpacing.lg) {
+            Spacer()
             Image(systemName: "music.note.list")
-                .font(.system(size: 56))
-                .foregroundStyle(AppTheme.textTertiary)
+                .font(Font.pDisplay(56))
+                .foregroundStyle(Color.pTextSecondary.opacity(0.7))
 
-            VStack(spacing: 8) {
-                Text("아직 기록된 곡이 없어요")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(AppTheme.textPrimary)
-                Text("오늘 들은 노래에\n어떤 감정이 담겨 있나요?")
-                    .font(.system(size: 14))
-                    .foregroundStyle(AppTheme.textSecondary)
+            VStack(spacing: PSpacing.xs) {
+                Text("empty.home.title")
+                    .font(Font.pTitle(17))
+                    .foregroundStyle(Color.pTextPrimary)
+                Text("empty.home.message")
+                    .font(Font.pBody(14))
+                    .foregroundStyle(Color.pTextSecondary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             Button {
                 showRecordFlow = true
             } label: {
-                Text("첫 기록 남기기")
-                    .font(.system(size: 15, weight: .semibold))
+                Text("action.first_record")
+                    .font(Font.pBodyMedium(15))
                     .foregroundStyle(.white)
-                    .padding(.horizontal, 28)
-                    .padding(.vertical, 14)
-                    .background(AppTheme.accent)
+                    .padding(.horizontal, PSpacing.xl)
+                    .padding(.vertical, PSpacing.sm)
+                    .background(Color.pAccentPrimary)
                     .clipShape(Capsule())
             }
+            .frame(minHeight: 44)
+            .accessibilityLabel(Text("action.first_record"))
+            Spacer()
         }
-        .padding(.horizontal, 32)
+        .padding(.horizontal, PSpacing.xl)
     }
 
     private var songGrid: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 14) {
+            LazyVGrid(columns: columns, spacing: PSpacing.md) {
                 ForEach(viewModel.groupedSongs) { group in
                     NavigationLink(destination: SongDetailView(groupedSong: group)) {
                         SongCardView(groupedSong: group)
@@ -139,9 +144,9 @@ struct SongCollectionView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
-            .padding(.bottom, 80)
+            .padding(.horizontal, PSpacing.lg)
+            .padding(.vertical, PSpacing.md)
+            .padding(.bottom, PSpacing.xxl + PSpacing.lg)
         }
     }
 
@@ -151,13 +156,13 @@ struct SongCollectionView: View {
             HapticManager.impact(.medium)
         } label: {
             Image(systemName: "plus")
-                .font(.system(size: 22, weight: .semibold))
+                .font(Font.pTitle(20))
                 .foregroundStyle(.white)
                 .frame(width: 56, height: 56)
-                .background(AppTheme.accent)
+                .background(Color.pAccentPrimary)
                 .clipShape(Circle())
-                .shadow(color: AppTheme.accent.opacity(0.3), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.pAccentPrimary.opacity(0.3), radius: 8, x: 0, y: 4)
         }
-        .accessibilityLabel("새 기록 작성")
+        .accessibilityLabel(Text("action.first_record"))
     }
 }

@@ -1,4 +1,5 @@
 import SwiftUI
+import PersonalColorDesignSystem
 
 // MARK: - TimelineEntryView
 
@@ -6,93 +7,88 @@ struct TimelineEntryView: View {
     let memory: SongMemory
     let onAddEntry: () -> Void
 
-    private var yearString: String {
-        DateFormatters.yearString(from: memory.listenedAt)
+    private var listenedYear: Int {
+        DateFormatters.year(from: memory.listenedAt)
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // 년도 헤더
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("\(yearString)년")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(AppTheme.textPrimary)
+        GlassCard {
+            VStack(alignment: .leading, spacing: PSpacing.sm) {
+                // 년도 헤더
+                HStack {
+                    VStack(alignment: .leading, spacing: PSpacing.xxs) {
+                        Text("timeline.year \(listenedYear)")
+                            .font(Font.pTitle(18))
+                            .foregroundStyle(Color.pTextPrimary)
 
-                    if let location = memory.location, !location.isEmpty {
-                        HStack(spacing: 4) {
-                            Image(systemName: "mappin.circle.fill")
-                                .font(.system(size: 12))
-                                .foregroundStyle(AppTheme.accentSecondary)
-                            Text(location)
-                                .font(.system(size: 12))
-                                .foregroundStyle(AppTheme.textSecondary)
+                        if let location = memory.location, !location.isEmpty {
+                            HStack(spacing: PSpacing.xxs) {
+                                Image(systemName: "mappin.circle.fill")
+                                    .font(Font.pCaption(12))
+                                    .foregroundStyle(Color.pAccentPrimary.opacity(0.7))
+                                Text(location)
+                                    .font(Font.pCaption(12))
+                                    .foregroundStyle(Color.pTextSecondary)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                            }
+                            .accessibilityElement(children: .combine)
+                            .accessibilityLabel("\(String(localized: "timeline.location_prefix"))\(location)")
                         }
-                        .accessibilityElement(children: .combine)
-                        .accessibilityLabel("장소: \(location)")
+                    }
+
+                    Spacer()
+
+                    Button(action: onAddEntry) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(Font.pTitle(22))
+                            .foregroundStyle(Color.pAccentPrimary)
+                    }
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityLabel(Text("timeline.add_entry_aria"))
+                }
+
+                // 구분선
+                PDivider()
+
+                // 감정 태그
+                if !memory.moodTags.isEmpty {
+                    FlowLayout(spacing: PSpacing.xxs) {
+                        ForEach(memory.moodTags, id: \.self) { tag in
+                            PChip(tag)
+                                .accessibilityLabel(tag)
+                        }
                     }
                 }
 
-                Spacer()
-
-                Button(action: onAddEntry) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 22))
-                        .foregroundStyle(AppTheme.accent)
-                }
-                .frame(minWidth: 44, minHeight: 44)
-                .accessibilityLabel("이 시기에 새 기록 추가")
-            }
-
-            // 구분선
-            Rectangle()
-                .fill(AppTheme.divider)
-                .frame(height: 1)
-
-            // 감정 태그
-            if !memory.moodTags.isEmpty {
-                FlowLayout(spacing: 6) {
-                    ForEach(memory.moodTags, id: \.self) { tag in
-                        Text(tag)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(AppTheme.accent)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(AppTheme.accentSoft)
-                            .clipShape(Capsule())
-                            .accessibilityLabel("감정: \(tag)")
-                    }
-                }
-            }
-
-            // 텍스트 엔트리들
-            if !memory.entries.isEmpty {
-                VStack(alignment: .leading, spacing: 10) {
-                    ForEach(memory.entries) { entry in
-                        entryRow(entry)
+                // 텍스트 엔트리들
+                if !memory.entries.isEmpty {
+                    VStack(alignment: .leading, spacing: PSpacing.xs) {
+                        ForEach(memory.entries) { entry in
+                            entryRow(entry)
+                        }
                     }
                 }
             }
         }
-        .padding(18)
-        .cardStyle()
     }
 
     @ViewBuilder
     private func entryRow(_ entry: Entry) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: PSpacing.xxs) {
             Text(entry.text)
-                .font(.system(size: 14))
-                .foregroundStyle(AppTheme.textPrimary)
+                .font(Font.pBody(14))
+                .foregroundStyle(Color.pTextPrimary)
                 .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(formattedDate(entry.writtenAt))
-                .font(.system(size: 11))
-                .foregroundStyle(AppTheme.textTertiary)
+                .font(Font.pCaption(11))
+                .foregroundStyle(Color.pTextSecondary.opacity(0.7))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(AppTheme.chipBackground)
+        .padding(PSpacing.xs)
+        .background(Color.pGlassFill)
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusXs))
     }
 

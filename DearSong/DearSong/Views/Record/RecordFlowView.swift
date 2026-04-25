@@ -15,7 +15,8 @@ struct RecordFlowView: View {
 
     var body: some View {
         ZStack {
-            AppBackground()
+            PGradientBackground()
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // 네비게이션 바
@@ -27,7 +28,7 @@ struct RecordFlowView: View {
         }
         .onChange(of: viewModel.savedSuccessfully) { _, saved in
             if saved {
-                toastManager.show("기록이 저장되었어요", type: .success)
+                toastManager.show(String(localized: "toast.save.success"), type: .success)
                 HapticManager.notification(.success)
                 onDismiss()
             }
@@ -46,31 +47,33 @@ struct RecordFlowView: View {
             if viewModel.currentStep != .songSearch {
                 Button(action: { viewModel.goToPreviousStep() }) {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 17, weight: .medium))
-                        .foregroundStyle(AppTheme.textPrimary)
+                        .font(Font.pTitle(17))
+                        .foregroundStyle(Color.pTextPrimary)
                         .frame(width: 44, height: 44)
                 }
-                .accessibilityLabel("이전 단계")
+                .accessibilityLabel(Text("action.previous"))
             } else {
                 Spacer().frame(width: 44)
             }
 
             Spacer()
 
-            VStack(spacing: 6) {
-                Text(stepTitle)
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(AppTheme.textPrimary)
+            VStack(spacing: PSpacing.xxs) {
+                Text(stepTitleKey)
+                    .font(Font.pBodyMedium(17))
+                    .foregroundStyle(Color.pTextPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
 
                 // 단계 인디케이터
-                HStack(spacing: 6) {
+                HStack(spacing: PSpacing.xxs) {
                     ForEach(0..<3, id: \.self) { index in
                         Capsule()
                             .fill(index == viewModel.currentStep.rawValue
-                                  ? AppTheme.accent
-                                  : AppTheme.border)
+                                  ? Color.pAccentPrimary
+                                  : Color.pGlassBorder)
                             .frame(width: index == viewModel.currentStep.rawValue ? 20 : 6, height: 6)
-                            .animation(.easeInOut(duration: 0.25), value: viewModel.currentStep)
+                            .animation(PAnimation.spring, value: viewModel.currentStep)
                     }
                 }
             }
@@ -79,21 +82,21 @@ struct RecordFlowView: View {
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(AppTheme.textTertiary)
+                    .font(Font.pBody(15))
+                    .foregroundStyle(Color.pTextSecondary.opacity(0.7))
                     .frame(width: 44, height: 44)
             }
-            .accessibilityLabel("기록 작성 취소")
+            .accessibilityLabel(Text("action.cancel"))
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .padding(.horizontal, PSpacing.md)
+        .padding(.vertical, PSpacing.xs)
     }
 
-    private var stepTitle: String {
+    private var stepTitleKey: LocalizedStringKey {
         switch viewModel.currentStep {
-        case .songSearch: return "곡 선택"
-        case .moodSelection: return "감정 선택"
-        case .entryWrite: return "기록 작성"
+        case .songSearch: return "screen.record.step.song"
+        case .moodSelection: return "screen.record.step.mood"
+        case .entryWrite: return "screen.record.step.write"
         }
     }
 

@@ -8,40 +8,68 @@ struct MoodChipGridView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: PSpacing.lg) {
                 ForEach(MoodCategory.allCases, id: \.rawValue) { category in
                     categorySection(category)
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
+            .padding(.horizontal, PSpacing.lg)
+            .padding(.vertical, PSpacing.md)
         }
     }
 
     @ViewBuilder
     private func categorySection(_ category: MoodCategory) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(category.displayName)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(AppTheme.textPrimary)
+        VStack(alignment: .leading, spacing: PSpacing.xs) {
+            PSectionHeader(category.displayName)
 
-            FlowLayout(spacing: 8) {
+            FlowLayout(spacing: PSpacing.xs) {
                 ForEach(category.tags, id: \.self) { tag in
-                    let isSelected = selectedTags.contains(tag)
-                    MoodChipButton(title: tag, isSelected: isSelected) {
-                        toggleTag(tag)
-                    }
-                    .accessibilityLabel("\(tag) 감정 태그")
-                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+                    moodChip(tag: tag)
                 }
             }
         }
     }
 
+    @ViewBuilder
+    private func moodChip(tag: String) -> some View {
+        let isSelected = selectedTags.contains(tag)
+        let isDisabled = !isSelected && selectedTags.count >= 3
+
+        Button {
+            if isDisabled {
+                HapticManager.impact(.light)
+            } else {
+                toggleTag(tag)
+            }
+        } label: {
+            Text(tag)
+                .font(isSelected ? Font.pBodyMedium(14) : Font.pBody(14))
+                .foregroundStyle(isSelected ? Color.pTextPrimary : Color.pTextSecondary)
+                .padding(.horizontal, PSpacing.md)
+                .padding(.vertical, PSpacing.xs)
+                .frame(minHeight: 36)
+                .background(
+                    Capsule()
+                        .fill(isSelected ? Color.pAccentPrimary.opacity(0.25) : Color.pGlassFill)
+                )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(isSelected ? Color.pAccentPrimary : Color.pGlassBorder, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .opacity(isDisabled ? 0.4 : 1.0)
+        .contentShape(Capsule())
+        .accessibilityLabel(tag)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityHint(isDisabled ? String(localized: "mood.max_selected_hint") : "")
+    }
+
     private func toggleTag(_ tag: String) {
         if selectedTags.contains(tag) {
             selectedTags.remove(tag)
-        } else {
+        } else if selectedTags.count < 3 {
             selectedTags.insert(tag)
         }
         HapticManager.selection()

@@ -19,38 +19,30 @@ struct SongDetailView: View {
             backgroundView
 
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: PSpacing.lg) {
                     // 헤더: 앨범 커버 + 곡 정보
                     songHeader
 
                     // "새 시기 추가" 버튼
                     addNewPeriodButton
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, PSpacing.lg)
 
                     // 타임라인
                     if viewModel.isLoading {
-                        ProgressView()
-                            .tint(AppTheme.accent)
-                            .padding(.top, 40)
+                        PSkeletonLoader(preset: .card)
+                            .padding(.horizontal, PSpacing.lg)
+                            .padding(.top, PSpacing.xl)
+                        PSkeletonLoader(preset: .card)
+                            .padding(.horizontal, PSpacing.lg)
+                        PSkeletonLoader(preset: .card)
+                            .padding(.horizontal, PSpacing.lg)
                     } else if viewModel.memories.isEmpty {
-                        VStack(spacing: 16) {
-                            Image(systemName: "book.closed")
-                                .font(.system(size: 40))
-                                .foregroundStyle(AppTheme.textTertiary)
-                            Text("아직 기록이 없어요")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(AppTheme.textPrimary)
-                            Text("이 곡을 들었던 시기를\n기록해보세요")
-                                .font(.system(size: 14))
-                                .foregroundStyle(AppTheme.textSecondary)
-                                .multilineTextAlignment(.center)
-                        }
-                        .padding(.top, 40)
+                        emptyMemoriesView
                     } else {
                         timelineSection
                     }
                 }
-                .padding(.bottom, 60)
+                .padding(.bottom, PSpacing.xxl)
             }
         }
         .navigationTitle(groupedSong.songTitle)
@@ -96,7 +88,7 @@ struct SongDetailView: View {
         }
         .actionCheckModal(
             isPresented: $showDeleteConfirm,
-            title: "이 기록을 삭제할까요?",
+            title: String(localized: "action.delete_confirm"),
             onConfirm: {
                 if let memory = memoryToDelete {
                     Task { await viewModel.deleteMemory(id: memory.id) }
@@ -116,7 +108,8 @@ struct SongDetailView: View {
     @ViewBuilder
     private var backgroundView: some View {
         ZStack {
-            AppBackground()
+            PGradientBackground()
+                .ignoresSafeArea()
             if let urlString = groupedSong.artworkUrl, let url = URL(string: urlString) {
                 AsyncImage(url: url) { phase in
                     if case .success(let image) = phase {
@@ -134,64 +127,101 @@ struct SongDetailView: View {
     }
 
     private var songHeader: some View {
-        VStack(spacing: 16) {
-            AlbumArtworkView(urlString: groupedSong.artworkUrl, size: 160, cornerRadius: AppTheme.cornerRadius)
-                .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
+        VStack(spacing: PSpacing.md) {
+            GeometryReader { geo in
+                let size = min(geo.size.width * 0.5, 200)
+                AlbumArtworkView(urlString: groupedSong.artworkUrl, size: size, cornerRadius: AppTheme.cornerRadius)
+                    .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
+                    .frame(maxWidth: .infinity)
+            }
+            .frame(height: 200)
 
-            VStack(spacing: 6) {
+            VStack(spacing: PSpacing.xxs) {
                 Text(groupedSong.songTitle)
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .font(Font.pTitle(20))
+                    .foregroundStyle(Color.pTextPrimary)
                     .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
 
                 Text(groupedSong.artistName)
-                    .font(.system(size: 15))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .font(Font.pBody(15))
+                    .foregroundStyle(Color.pTextSecondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
         }
-        .padding(.top, 20)
+        .padding(.top, PSpacing.lg)
     }
 
     private var addNewPeriodButton: some View {
         Button {
             showRecordFlow = true
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: PSpacing.xs) {
                 Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 16))
-                Text("이 곡의 새 시기 추가")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(Font.pBody(16))
+                Text("action.add_period")
+                    .font(Font.pBodyMedium(15))
             }
-            .foregroundStyle(AppTheme.accent)
+            .foregroundStyle(Color.pAccentPrimary)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(AppTheme.accentSoft)
+            .padding(.vertical, PSpacing.sm)
+            .background(Color.pAccentPrimary.opacity(0.12))
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm))
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSm)
-                    .stroke(AppTheme.accent.opacity(0.3), lineWidth: 1)
+                    .stroke(Color.pAccentPrimary.opacity(0.3), lineWidth: 1)
             )
         }
-        .accessibilityLabel("이 곡의 새 시기 기록 추가")
+        .frame(minHeight: 44)
+        .accessibilityLabel(Text("action.add_period"))
+    }
+
+    private var emptyMemoriesView: some View {
+        VStack(spacing: PSpacing.md) {
+            Spacer(minLength: PSpacing.xl)
+            Image(systemName: "book.closed")
+                .font(Font.pDisplay(40))
+                .foregroundStyle(Color.pTextSecondary.opacity(0.7))
+            VStack(spacing: PSpacing.xxs) {
+                Text("empty.songdetail.title")
+                    .font(Font.pTitle(17))
+                    .foregroundStyle(Color.pTextPrimary)
+                Text("empty.songdetail.message")
+                    .font(Font.pBody(14))
+                    .foregroundStyle(Color.pTextSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: PSpacing.xl)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, PSpacing.xl)
+        .padding(.top, PSpacing.xl)
     }
 
     private var timelineSection: some View {
-        LazyVStack(spacing: 16) {
+        LazyVStack(spacing: PSpacing.md) {
             ForEach(viewModel.memories) { memory in
                 TimelineEntryView(memory: memory, onAddEntry: {
                     selectedMemory = memory
                     showAddEntry = true
                 })
-                .padding(.horizontal, 20)
+                .padding(.horizontal, PSpacing.lg)
                 .contextMenu {
                     Button(role: .destructive) {
                         memoryToDelete = memory
                         showDeleteConfirm = true
                     } label: {
-                        Label("삭제", systemImage: "trash")
+                        Label {
+                            Text("action.delete")
+                        } icon: {
+                            Image(systemName: "trash")
+                        }
                     }
                 }
-                .accessibilityAction(named: "삭제") {
+                .accessibilityAction(named: Text("action.delete")) {
                     memoryToDelete = memory
                     showDeleteConfirm = true
                 }

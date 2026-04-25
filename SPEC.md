@@ -625,3 +625,439 @@ enum AppError: Error, LocalizedError
 - 검색/필터 기능 (곡 컬렉션 내)
 - 다국어 지원
 - Widget / AppIntent
+
+---
+
+# Round 2 — UI Polish
+
+> 이 섹션은 1차 파이프라인 산출물의 UI 마감 품질을 끌어올리는 **별도 라운드**다.
+> Generator는 이 섹션의 작업 지시서를 그대로 따라 기존 화면을 수정한다.
+> **새로운 기능 추가 금지.** 화면 구조/네비게이션은 그대로 두고, 디자인 시스템 일관성/반응형/HIG 준수만 끌어올린다.
+
+## 목표
+
+기존 1차 Generator 산출물(`output/Views/*`)의 UI를 다음 기준으로 전수 점검·수정한다:
+
+1. **PROJECT_CONTEXT.md 디자인 시스템(`PersonalColorDesignSystem`) 토큰 100% 적용**
+2. **반응형 레이아웃**: iPhone SE 3rd (4.7") ~ iPhone 17 Pro Max (6.9") + Dynamic Island/노치/홈인디케이터 모두 대응
+3. **HIG 필수 항목**: Dynamic Type, 44pt 터치 영역, Safe Area 정확 처리, Empty/Loading/Error 상태
+4. **String Catalog 키 100% 적용** (`Localizable.xcstrings` 누락 키 자동 추가)
+5. **존댓말 톤 유지** (PROJECT_CONTEXT 명시)
+
+---
+
+## 1차 점검 결과 — 발견된 위반 사항
+
+### CRITICAL: AppTheme.swift 자체 구현 (디자인 시스템 위반)
+
+`output/Shared/AppTheme.swift`는 PROJECT_CONTEXT가 명시한 `PersonalColorDesignSystem` 패키지를 우회하여 다음을 자체 정의함:
+
+```
+- AppTheme.background / cardBackground / accent / accentSecondary / accentSoft
+- AppTheme.textPrimary / textSecondary / textTertiary
+- AppTheme.divider / border / chipBackground
+- AppTheme.cornerRadius / cornerRadiusSm / cornerRadiusXs
+- struct NotebookTexture, struct AppBackground (PGradientBackground 대체)
+- struct FlowLayout (Layout)
+- struct MoodChipButton (PChip 대체)
+- View.cardStyle() (GlassCard 대체)
+```
+
+→ 이 모든 토큰은 raw `Color(red: 0.97, green: 0.95, blue: 0.91)` 형태로 정의되어 PROJECT_CONTEXT의 "하드코딩 색상 금지" 규칙을 직접 위반함. 또한 패키지에 이미 있는 `GlassCard`, `GradientBackground`, `PChip` 등을 자체 재구현했음.
+
+### 하드코딩 폰트 크기
+
+다음 13개 View 파일에서 `.font(.system(size:))`가 광범위하게 사용됨 (총 80건+ 추정):
+- `SignInView.swift` (line 21, 27, 31, 61)
+- `SongCollectionView.swift` (line 54, 104, 109, 112, 121, 154)
+- `SongDetailView.swift` (line 38, 41, 44, 143, 148, 161, 163)
+- `RecordFlowView.swift` (line 49, 62, 82)
+- `SongSearchView.swift` (line 37, 54, 98, 101, 107, 119, 124, 152, 157, 163, 174)
+- `MoodSelectionView.swift` (line 21, 29, 32, 64, 68, 84, 93, 97)
+- `EntryWriteView.swift` (line 42, 104, 108, 117, 139, 151, 162, 177, 194, 201)
+- `ManualSongInputView.swift` (line 17, 30, 38, 53, 61)
+- `AddEntryView.swift` (line 56, 104, 108, 117, 130, 136, 141, 156, 169, 180)
+- `SongCardView.swift` (line 17, 22, 28, 31)
+- `MoodChipGridView.swift` (line 25)
+- `TimelineEntryView.swift` (line 19, 25, 28, 40, 57, 85, 90)
+
+### 하드코딩 한국어 리터럴 (String Catalog 키 미사용)
+
+거의 모든 Text/placeholder가 한국어 리터럴 그대로. 예: `Text("로그아웃")`, `Text("DearSong")`, `TextField("곡 제목 또는 아티스트 검색", ...)`. PROJECT_CONTEXT의 로컬라이제이션 규칙 위반.
+
+### 반응형/디바이스 대응 미흡
+
+- **고정 height 의존**: `SignInView` `.frame(height: 52)` (Apple 버튼), `SongDetailView` 헤더 아트워크 `size: 160` 고정
+- **PLoadingOverlay/ProgressView 일관성**: `SongDetailView`만 `ProgressView()` 사용, 나머지는 `PLoadingOverlay`
+- **수동 입력 필드 빨간 보더**: `Color.red.opacity(0.5)` raw 색상
+- **AsyncImage 실패 폴백**에 `Color.brown` 사용 (AppTheme 안)
+
+---
+
+## 변경 영향 매트릭스
+
+| 파일 | 핵심 점검/패치 항목 | 우선순위 |
+|---|---|---|
+| `Shared/AppTheme.swift` | **삭제 또는 어댑터화**. PersonalColorDesignSystem 토큰으로 1:1 매핑하는 thin shim만 유지하거나, 모든 호출 사이트를 직접 패키지 토큰으로 교체 후 파일 삭제 | **CRITICAL** |
+| `Localizable.xcstrings` | 누락 키(`screen.*`, `action.*`, `empty.*`, `error.*`, `placeholder.*` 등) 추가 — ko/en 모두 | **High** |
+| `Views/Auth/SignInView.swift` | 로고 영역 폰트/색상, Apple 버튼 height 적응형, 작은 화면 ScrollView 감싸기 | High |
+| `Views/Collection/SongCollectionView.swift` | 그리드 컬럼이 작은 화면(SE)에서 깨지지 않도록 컬럼 spacing 검토, 로딩 스켈레톤이 디자인 시스템 컴포넌트로 교체, 빈 상태 CTA 44pt | High |
+| `Views/Detail/SongDetailView.swift` | `ProgressView` → `PLoadingOverlay`/`PSkeletonLoader` 일관화, 헤더 아트워크 GeometryReader 비율, 빈 상태 정렬 | High |
+| `Views/Record/RecordFlowView.swift` | 단계 인디케이터 색상/폰트 토큰화, navbar 좌우 버튼 44pt 보장(현재 OK), 작은 화면 navbar 텍스트 잘림 검토 | Med |
+| `Views/Record/SongSearchView.swift` | 검색바 폰트, 결과 셀의 체크 아이콘 hit target, 검색 결과 행 전체 ScrollView 안전 영역 처리 | High |
+| `Views/Record/MoodSelectionView.swift` | FlowLayout(자체) → 디자인 시스템 패턴으로, MoodChipButton → `PChip(variant: .toggle)`, 카테고리 헤더 → `PSectionHeader`, 안내 텍스트 폰트 토큰, **3개 선택 시 4번째 비활성/햅틱 처리는 PROJECT_CONTEXT 규칙(SPEC 1차 명세는 "최소 1개"로만 명시되어 있으나 PROJECT_CONTEXT의 최대 3개 규칙은 v1 우선 — 이번 라운드는 우선 폰트/색상/칩 컴포넌트 교체에 집중하고 3개 제한 로직은 ViewModel 수정 범위로 별도 표기) | **CRITICAL** |
+| `Views/Record/EntryWriteView.swift` | TextEditor 키보드 회피(`.scrollDismissesKeyboard(.interactively)` + `.safeAreaInset`), 1000자 카운터(현재 누락), 저장 버튼 그라데이션 배경 토큰, 폰트/색상 전수 교체 | **CRITICAL** |
+| `Views/Record/ManualSongInputView.swift` | 빨간 에러 보더 → 디자인 시스템 에러 색 토큰, 폰트/배경 교체, ScrollView 감싸기 | High |
+| `Views/Entry/AddEntryView.swift` | 시트 헤더 폰트/색상 토큰, 기존 entries 카드 토큰화, TextEditor 키보드 회피, 저장 버튼 통일 | High |
+| `Views/Components/SongCardView.swift` | 폰트/색상 토큰화, `.pressable(scale: 0.97, haptic: true)` 추가, lineLimit/minimumScaleFactor 적용 | Med |
+| `Views/Components/MoodChipGridView.swift` | 자체 `MoodChipButton` → `PChip(variant: .toggle)`, FlowLayout 유지 OK | High |
+| `Views/Components/TimelineEntryView.swift` | 자체 `cardStyle()` → `GlassCard`, FlowLayout 그대로, 폰트/색상 전수 교체, mood pill을 PChip(variant: .display)로 통일 | High |
+| `Views/Components/AlbumArtworkView.swift` | 폴백 placeholder 색상 토큰화, size: nil 케이스 aspectRatio 보장 | Med |
+
+---
+
+## 작업 지시 (Generator에게)
+
+### Step 1 — `Shared/AppTheme.swift` 처리 (선택지 둘 중 하나)
+
+**선택지 A (권장): AppTheme.swift 삭제 + 모든 호출 사이트 직접 교체.**
+
+각 토큰을 다음 매핑으로 일괄 치환:
+
+| 기존 (AppTheme) | 교체 (PersonalColorDesignSystem) |
+|---|---|
+| `AppTheme.background` | `Color.pBackgroundTop` (혹은 `PGradientBackground()` 컨테이너) |
+| `AppTheme.cardBackground` | `Color.pGlassFill` (또는 GlassCard 안으로 이동) |
+| `AppTheme.accent` | `Color.pAccentPrimary` |
+| `AppTheme.accentSecondary` | `Color.pAccentSecondary` (없으면 `pAccentPrimary.opacity(0.7)`) |
+| `AppTheme.accentSoft` | `Color.pAccentPrimary.opacity(0.12)` 또는 `Color.pAccentSoft`가 있으면 그것 |
+| `AppTheme.textPrimary` | `Color.pTextPrimary` |
+| `AppTheme.textSecondary` | `Color.pTextSecondary` |
+| `AppTheme.textTertiary` | `Color.pTextTertiary` (없으면 `pTextSecondary.opacity(0.7)`) |
+| `AppTheme.divider` | `Color.pDivider` 또는 `Color.pGlassBorder` |
+| `AppTheme.border` | `Color.pGlassBorder` |
+| `AppTheme.chipBackground` | `Color.pGlassFill` (PChip 컴포넌트로 대체 시 불필요) |
+| `AppTheme.chipSelectedBackground` | `Color.pAccentPrimary.opacity(0.15)` |
+| `AppTheme.chipSelectedBorder` | `Color.pAccentPrimary.opacity(0.5)` |
+| `AppTheme.cornerRadius` (16) | `PRadius.lg` |
+| `AppTheme.cornerRadiusSm` (12) | `PRadius.md` |
+| `AppTheme.cornerRadiusXs` (8) | `PRadius.sm` |
+| `struct AppBackground` | `PGradientBackground()` |
+| `struct NotebookTexture` | **삭제**. 노트 줄선 무늬는 디자인 시스템 토큰만으로 표현 가능한 범위로 축소. 굳이 줄선이 필요한 화면(EntryWriteView/AddEntryView)은 `PGradientBackground()` 위에 매우 얇은 `Color.pGlassBorder.opacity(0.05)` 횡선 패턴만 옵션으로 유지. |
+| `struct FlowLayout` | **유지 OK** (디자인 시스템에 동등 컴포넌트 없음). 다만 `Layout` 구현은 `PSpacing.sm`(8) 기본값 사용. |
+| `struct MoodChipButton` | **삭제**. 모든 호출을 `PChip(variant: .toggle, isSelected: ...) { Text(tag) }` 형태로 교체. 시그니처가 다르면 `PChipToggle` 등 패키지가 제공하는 동등 API 사용. |
+| `View.cardStyle()` | **삭제**. 모든 호출을 `GlassCard { ... }` 컨테이너로 감싸는 방식으로 변경. |
+| `accentGradient()` | `PAccentGradient()` 또는 `LinearGradient` + `pAccentPrimary/pAccentSecondary` |
+
+**선택지 B (시간 부족 시 fallback): AppTheme.swift를 thin shim으로 변환.**
+
+```swift
+import SwiftUI
+import PersonalColorDesignSystem
+
+enum AppTheme {
+    static let background = Color.pBackgroundTop
+    static let cardBackground = Color.pGlassFill
+    static let accent = Color.pAccentPrimary
+    static let accentSecondary = Color.pAccentSecondary  // 또는 pAccentPrimary.opacity(0.7)
+    static let textPrimary = Color.pTextPrimary
+    static let textSecondary = Color.pTextSecondary
+    static let textTertiary = Color.pTextTertiary
+    static let divider = Color.pDivider
+    static let border = Color.pGlassBorder
+    static let chipBackground = Color.pGlassFill
+    static let chipSelectedBackground = Color.pAccentPrimary.opacity(0.15)
+    static let chipSelectedBorder = Color.pAccentPrimary.opacity(0.5)
+    static let cornerRadius: CGFloat = PRadius.lg
+    static let cornerRadiusSm: CGFloat = PRadius.md
+    static let cornerRadiusXs: CGFloat = PRadius.sm
+}
+```
+
+이 경우라도 `AppBackground`/`NotebookTexture`/`MoodChipButton`/`cardStyle()`/`FlowLayout` 중 디자인 시스템에 동등 컴포넌트가 있는 것은 호출부에서 패키지 컴포넌트로 직접 교체하라.
+
+> Generator 판단: 패키지 API 존재 여부를 컴파일/문서로 확인 후 **선택지 A를 우선 시도**. 패키지에 일부 토큰(예: `pAccentSecondary`, `pTextTertiary`)이 없으면 가까운 토큰(`pAccentPrimary.opacity(0.7)`, `pTextSecondary.opacity(0.7)`)으로 fallback하되, raw `Color(red:green:blue:)`는 절대 금지.
+
+### Step 2 — 폰트 일괄 교체
+
+모든 `.font(.system(size: N, weight: W))`를 다음 매핑으로 교체:
+
+| 기존 size | 교체 |
+|---|---|
+| 11~12 | `Font.pCaption(12)` 또는 `.font(.caption2)` (둘 다 디자인 시스템에 있는 쪽 우선) |
+| 13~14 | `Font.pBody(14)` |
+| 15~16 (regular) | `Font.pBody(15)` 또는 `Font.pBodyMedium(15)` (weight=.medium 일 때) |
+| 15~16 (semibold/bold) | `Font.pBodyMedium(16)` |
+| 17~18 | `Font.pTitle(17)` |
+| 20~24 | `Font.pTitle(20)` |
+| 28~36 | `Font.pDisplay(32)` |
+| 40+ | `Font.pDisplay(40)` |
+| design: .serif (SignInView 로고) | `Font.pDisplay(36)` (디자인 시스템 폰트가 충분히 표현력 있다면 serif 옵션 제거) |
+
+또한 모든 텍스트에 다음을 적절히 추가:
+- 타이틀/제목류(곡 제목, 화면 제목): `.minimumScaleFactor(0.85)` + `.lineLimit(2)` (이미 있는 곳은 유지)
+- 본문(answers, 빈 상태 메시지): `.fixedSize(horizontal: false, vertical: true)`
+- 한 줄 메타(아티스트명, 년도): `.lineLimit(1)` + `.truncationMode(.tail)` (이미 있는 곳은 유지)
+
+### Step 3 — 화면별 패치
+
+#### 3.1 `SignInView.swift`
+- 전체를 `ScrollView` + `.frame(minHeight: geometry.size.height)` 또는 단순 `VStack` + `Spacer()` 비율 유지로 작은 화면(SE 3rd, 4.7")에서도 잘리지 않게 한다.
+- 로고 `Image(systemName: "music.note.list")` → `Font.pDisplay(56)` (또는 패키지 아이콘 사이즈 토큰)
+- "DearSong" 로고 텍스트: `Font.pDisplay(36)` + `Color.pTextPrimary`
+- 부제 "노래에 감정을 기록하는…" → `Text("screen.signin.tagline")` 키
+- Apple 버튼 `.frame(height: 52)` → `.frame(minHeight: 50, maxHeight: 56)` 적응형
+- 약관 문구 영역(`Text("Apple ID로 안전하게…")`) → `Text("screen.signin.subtitle")` 키 + `.fixedSize(horizontal: false, vertical: true)`
+- 백그라운드 `AppBackground()` → `PGradientBackground()`
+- 모든 색상 토큰 교체
+
+#### 3.2 `SongCollectionView.swift`
+- 그리드 컬럼: 현재 2열 고정. 작은 화면(SE)에서도 카드 세로 비율(`aspectRatio(1, contentMode: .fit)`) 유지되므로 OK. 다만 `LazyVGrid spacing: 14` → `PSpacing.md` 토큰으로 교체.
+- `loadingView`(자체 스켈레톤 그리드) → `PSkeletonLoader(preset: .card)` × 4 또는 디자인 시스템 스켈레톤 컴포넌트 사용. 자체 RoundedRectangle 제거.
+- `emptyStateView` → `EmptyStateView(icon: ..., title: Text("empty.home.title"), message: Text("empty.home.message"), action: ...)` 디자인 시스템 컴포넌트로 교체. 만약 디자인 시스템에 없으면 직접 구성하되 모든 폰트/색상은 토큰.
+- 빈 상태 CTA 버튼 `.frame(...)` → `BottomPlacedButton` 또는 `CommonButton` 사용. 최소 44pt height 보장.
+- 플로팅 + 버튼: `.frame(width: 56, height: 56)` 유지(HIG 권장 FAB 크기). 색상 토큰 교체.
+- `.toolbar`의 "로그아웃" Button: `Text("action.signout")` 키 + 폰트 토큰
+- `navigationTitle("DearSong")` → `navigationTitle(Text("screen.home.title"))` 키 + LocalizedStringKey
+- 모든 `.padding(20)` → `PSpacing.lg`, `.padding(.bottom, 80)` → `PSpacing.xxl + PSpacing.lg` 등
+
+#### 3.3 `SongDetailView.swift`
+- 헤더 아트워크 `size: 160` → 작은 화면 대응:
+  ```swift
+  GeometryReader { geo in
+      let size = min(geo.size.width * 0.5, 200)
+      AlbumArtworkView(urlString: ..., size: size, ...)
+  }
+  .frame(height: 200)  // 또는 .aspectRatio
+  ```
+  또는 단순히 `.frame(maxWidth: 200)` + `.aspectRatio(1, contentMode: .fit)`로 비율 유지.
+- 로딩 상태 `ProgressView()` → `PSkeletonLoader(preset: .card)` × 3 (다른 화면 일관성)
+- 빈 상태 `VStack` → `EmptyStateView` 컴포넌트로
+- 배경의 `AppBackground()` → `PGradientBackground()`
+- 곡 제목/아티스트명 폰트 토큰 교체 + `.minimumScaleFactor(0.8)` 추가
+- "이 곡의 새 시기 추가" 버튼: 자체 구현 → `CommonButton(style: .secondary)` 또는 동등 컴포넌트
+- contextMenu 라벨 → `Label(Text("action.delete"), systemImage: "trash")`
+- 모든 텍스트를 `Text("screen.songdetail.*")` 키로
+
+#### 3.4 `RecordFlowView.swift`
+- 네비바 stepTitle `Text(stepTitle)`: 폰트 토큰 + `Text("screen.record.step.songsearch")` 등 키 매핑 (`stepTitle` computed property를 LocalizedStringKey 반환으로 변경)
+- 단계 인디케이터 Capsule: 토큰 색상 사용
+- chevron.left / xmark 버튼: 이미 44x44 OK. 색상만 토큰 교체.
+- `.padding(.horizontal, 16)` → `PSpacing.md`
+
+#### 3.5 `SongSearchView.swift`
+- 검색바 자체 구현 → `PTextField(placeholder: "placeholder.search.song", text: $query, leadingIcon: "magnifyingglass")` (패키지 컴포넌트 사용)
+- 스켈레톤 자체 구현(line 70~92) → `PSkeletonLoader(preset: .row)` × 5
+- 빈 결과/초기 상태: `EmptyStateView` 컴포넌트
+- "직접 입력하기" 버튼: `CommonButton(style: .text)` 또는 `Button` + `.font(Font.pBodyMedium(15))` + `.frame(minHeight: 44)`
+- songResultRow의 체크 아이콘 hit target: 현재 Image만 있어 hit target 부족. 부모 Button이 row 전체이므로 OK이지만, 체크 아이콘 자체를 `Color.pAccentPrimary` 토큰으로
+- 모든 폰트/색상 토큰 교체
+- 결과 행에 `.frame(minHeight: 64)` 추가 (현재 padding으로 약 60pt — 안전하게 64pt 보장)
+- 모든 텍스트 String Catalog 키화
+
+#### 3.6 `MoodSelectionView.swift`
+- `MoodChipButton`(자체) → `PChip(variant: .toggle, isSelected:)` 사용으로 변경 (`MoodChipGridView` 안에서)
+- 카테고리 헤더 `Text(category.displayName)` → `PSectionHeader(title: category.displayName)`
+- 안내 텍스트 `"이 곡을 들었을 때의 감정을 선택하세요"` → `Text("screen.mood.guide")` 키 + `Font.pBody(14)`
+- 선택된 태그 수 표시 영역 → `Font.pCaption(12)` + 색상 토큰
+- selectedSongBanner / manualSongBanner의 폰트/색상 토큰 교체, `GlassCard` 컨테이너 사용
+- 백그라운드는 RecordFlowView가 이미 `AppBackground()` → `PGradientBackground()` 깔고 있으므로 자체 background 추가 금지
+
+#### 3.7 `EntryWriteView.swift`
+- 가장 큰 화면. 키보드 회피 필수:
+  ```swift
+  ScrollView { ... }
+      .scrollDismissesKeyboard(.interactively)
+  ```
+- 저장 버튼: 현재 `VStack { Spacer(); Button { ... } }` 오버레이 → `.safeAreaInset(edge: .bottom) { saveButton }` 패턴으로 변경
+- 저장 버튼 자체: 자체 구현 → `BottomPlacedButton(title: Text("action.save.record"), action: { ... })` 사용
+- TextEditor 영역: 현재 ZStack + RoundedRectangle 자체 구현 → `PFormField(state: .normal) { TextEditor(...) }` 또는 디자인 시스템 텍스트에디터 컴포넌트
+- 1000자 카운터: PROJECT_CONTEXT의 "각 DiaryEntry.answer 최대 1000자, 실시간 카운터 `n/1000`" 규칙에 따라 추가:
+  ```swift
+  HStack {
+      Spacer()
+      Text("\(viewModel.entryText.count)/1000")
+          .font(Font.pCaption(11))
+          .foregroundStyle(viewModel.entryText.count > 1000 ? Color.red : Color.pTextTertiary)
+  }
+  ```
+- 년도 선택 `PDropdownButton`: 이미 패키지 컴포넌트 사용 OK. 라벨 폰트 토큰만 교체.
+- 장소 입력 TextField → `PTextField(placeholder: "placeholder.location", text: $location, leadingIcon: "mappin.circle")`
+- 모든 라벨/플레이스홀더 String Catalog 키
+- summaryCard `.cardStyle()` → `GlassCard { ... }` 컨테이너
+
+#### 3.8 `ManualSongInputView.swift`
+- 안내 배너 → `PBanner(style: .info, message: ...)` 또는 동등 컴포넌트
+- 입력 필드 → `PTextField` × 2
+- 빨간 보더 `Color.red.opacity(0.5)` → `Color.pError` 또는 `Color.pAccentPrimary.opacity(0.5)` (패키지에 에러 토큰 없으면 후자)
+- 전체를 `ScrollView`로 감싸기 (작은 화면에서 키보드 올라오면 잘림)
+- `Spacer()` → `Spacer(minLength: PSpacing.xl)`
+
+#### 3.9 `AddEntryView.swift`
+- 시트 헤더 폰트/색상 토큰
+- xmark.circle.fill 닫기 버튼: 이미 44x44 OK. 색상 토큰만.
+- 기존 entries 카드: 자체 RoundedRectangle → `GlassCard` 또는 `PCard` 컴포넌트
+- TextEditor: EntryWriteView와 동일 패턴 (`PFormField`/`safeAreaInset`)
+- 저장 버튼: `BottomPlacedButton`
+- 모든 폰트/색상 토큰
+
+#### 3.10 `Components/SongCardView.swift`
+- 자체 `cardStyle()` → `GlassCard` 컨테이너
+- 폰트 토큰 교체
+- `.pressable(scale: 0.97, haptic: true)` 추가 (Evaluator R2 권고 사항)
+- 곡 제목 `.lineLimit(2)` 유지 + `.minimumScaleFactor(0.9)` 추가
+- "n개의 기록" → `Text("songcard.records.count \(count)")` 또는 `String(localized: "songcard.records.count")` 패턴
+
+#### 3.11 `Components/MoodChipGridView.swift`
+- `MoodChipButton`(자체) → `PChip(variant: .toggle, isSelected: isSelected) { Text(tag) }` 형태
+- 카테고리 헤더 → `PSectionHeader(title: category.displayName)`
+- ScrollView 유지 OK
+
+#### 3.12 `Components/TimelineEntryView.swift`
+- 자체 `cardStyle()` → `GlassCard { ... }`
+- mood pill → `PChip(variant: .display) { Text(tag) }`
+- 폰트/색상 토큰 일괄 교체
+- 년도 헤더 `\(yearString)년` → `Text("timeline.year \(year)")` String Catalog 패턴
+- entry 카드 `Color.chipBackground` → `Color.pGlassFill` 또는 nested GlassCard
+
+#### 3.13 `Components/AlbumArtworkView.swift`
+- placeholder 색상 `AppTheme.chipBackground` → `Color.pGlassFill`
+- placeholder 아이콘 색상 토큰 교체
+- size: nil 케이스 (`SongCardView`에서 사용) `.aspectRatio(1, contentMode: .fit)` 자동 보장 OK
+- placeholder의 `Image(systemName: "music.note")`도 디자인 시스템에 동등 아이콘 토큰이 있으면 사용
+
+### Step 4 — String Catalog (`Localizable.xcstrings`) 업데이트
+
+기존 mood.* / prompt.* 외에 다음 키 추가 (ko/en 표):
+
+| 키 | ko (존댓말) | en |
+|---|---|---|
+| `screen.signin.tagline` | 노래에 감정을 기록하는 음악 다이어리 | A music diary for the feelings in your songs |
+| `screen.signin.subtitle` | Apple ID로 안전하게 로그인하실 수 있어요 | Sign in securely with your Apple ID |
+| `screen.home.title` | DearSong | DearSong |
+| `screen.songdetail.add_period` | 이 곡의 새 시기를 추가하실까요? | Add a new period for this song |
+| `screen.record.step.song` | 곡 선택 | Choose a song |
+| `screen.record.step.mood` | 감정 선택 | Choose moods |
+| `screen.record.step.write` | 기록 작성 | Write |
+| `screen.mood.guide` | 이 곡을 들으셨을 때의 감정을 선택해주세요 | Choose the feelings you had with this song |
+| `screen.entry.title` | 이 곡과 함께했던 순간 | The moment with this song |
+| `screen.entry.year_label` | 들으셨던 시기 | When you listened |
+| `screen.entry.location_label` | 들으셨던 장소 (선택) | Where you listened (optional) |
+| `screen.entry.placeholder` | 이 노래를 들으셨을 때 어떤 감정이 드셨나요?\n그때의 기억을 자유롭게 적어주세요. | What did this song feel like? Write your memory freely. |
+| `screen.addentry.previous` | 이전 기록들 | Previous entries |
+| `screen.addentry.new` | 새 기록 | New entry |
+| `screen.addentry.placeholder` | 오늘 이 곡을 다시 들으시며 느끼신 점을 적어주세요. | Write what you feel listening to this song today. |
+| `placeholder.search.song` | 곡 제목 또는 아티스트 검색 | Search by title or artist |
+| `placeholder.location` | 예: 학교 옥상, 버스 안, 카페... | e.g. School rooftop, bus, café... |
+| `placeholder.song.title` | 예: 봄날 | e.g. Spring Day |
+| `placeholder.artist.name` | 예: BTS | e.g. BTS |
+| `action.signout` | 로그아웃 | Sign out |
+| `action.delete` | 삭제 | Delete |
+| `action.next` | 다음 | Next |
+| `action.previous` | 이전 단계 | Previous |
+| `action.save.record` | 기록 남기기 | Save |
+| `action.save.entry` | 기록 추가 | Add entry |
+| `action.first_record` | 첫 기록 남기기 | Add your first record |
+| `action.add_period` | 이 곡의 새 시기 추가 | Add a new period |
+| `action.manual_input` | 직접 입력하기 | Enter manually |
+| `action.cancel` | 닫기 | Close |
+| `empty.home.title` | 아직 기록된 곡이 없어요 | No songs recorded yet |
+| `empty.home.message` | 오늘 들으신 노래에\n어떤 감정이 담겨 있었나요? | What feelings did today's songs carry? |
+| `empty.songdetail.title` | 아직 기록이 없어요 | No entries yet |
+| `empty.songdetail.message` | 이 곡을 들으셨던 시기를\n기록해보세요 | Record a period when you heard this song |
+| `empty.search.title` | 검색 결과가 없어요 | No results |
+| `empty.search.placeholder` | 검색어를 입력하시면\n곡을 찾아드려요 | Type to search for songs |
+| `manualinput.banner` | Apple Music 권한 없이 곡을 직접 입력합니다. | Enter song manually without Apple Music access. |
+| `manualinput.song.label` | 곡 제목 | Song title |
+| `manualinput.artist.label` | 아티스트 | Artist |
+| `mood.selected.count` | %d개 선택됨 | %d selected |
+| `songcard.records.count` | %d개의 기록 | %d records |
+| `timeline.year` | %d년 | %d |
+| `timeline.add_entry_aria` | 이 시기에 새 기록 추가 | Add a new entry to this period |
+| `toast.save.success` | 기록이 저장되었어요 | Saved |
+| `toast.entry.added` | 기록이 추가되었어요 | Entry added |
+| `error.network` | 네트워크 연결을 확인해주세요. | Please check your network connection. |
+| `error.server` | 잠시 후 다시 시도해주세요. | Please try again later. |
+| `error.auth_expired` | 세션이 만료되었습니다. 다시 로그인해주세요. | Session expired. Please sign in again. |
+
+→ Generator는 `Localizable.xcstrings`를 열어 위 키를 ko/en 모두 추가한다. 기존 키는 보존.
+
+### Step 5 — 반응형/Safe Area 점검 체크리스트
+
+각 ScrollView/Background에 다음 확인:
+
+1. **모든 fullScreenCover/sheet의 최외곽 컨테이너**: `PGradientBackground().ignoresSafeArea()` 또는 동등 처리. 내용은 safe area 안.
+2. **하단 고정 버튼이 있는 화면(EntryWriteView, AddEntryView, MoodSelectionView)**: `.safeAreaInset(edge: .bottom) { saveButton }` 패턴으로 변경. ZStack 오버레이 제거.
+3. **TextEditor가 있는 화면**: `.scrollDismissesKeyboard(.interactively)` 추가. 키보드 올라올 때 본문이 안 가려지도록.
+4. **NavigationStack large title**: `SongCollectionView`에서 large title 사용 중. iPhone SE 등 작은 화면에서 검색바/그리드와 겹치지 않게 spacing 검토.
+5. **고정 width/height 제거**:
+   - `Apple SignInButton .frame(height: 52)` → `.frame(minHeight: 50, maxHeight: 56)`
+   - `SongDetailView` 헤더 `size: 160` → `.frame(maxWidth: 200)` + aspectRatio
+   - 플로팅 + 버튼 `56x56`은 HIG FAB 가이드 — 유지
+   - 모든 chevron/xmark 버튼 `44x44` — 유지
+
+### Step 6 — Dynamic Type 점검
+
+각 화면에서 `Environment(\.dynamicTypeSize)` 까지 강제로 테스트할 필요 없이, 다음 코드 레벨 보장만 확인하면 된다:
+
+1. 모든 폰트가 `Font.pXxx(N)` 토큰(=내부적으로 Dynamic Type 지원) 또는 `.font(.body)` 등 semantic font 사용
+2. 다중 행 텍스트(빈 상태 메시지, 답변 텍스트, placeholder)에 `.fixedSize(horizontal: false, vertical: true)`
+3. 카드 내 텍스트 영역에 `maxWidth: .infinity` + `alignment: .leading`로 너비 안정
+4. 한 줄 메타에 `.lineLimit(1)` + `.truncationMode(.tail)` + 필요시 `.minimumScaleFactor(0.85)`
+
+### Step 7 — 빌드/실행 시 확인 사항 (Generator가 self-check)
+
+- iPhone SE (3rd gen) / iPhone 17 Pro Max 시뮬레이터로 빌드 후 다음 화면이 잘리지 않는지 코드 레벨 확인:
+  - SignInView 로고 + Apple 버튼이 한 화면 안에 들어옴
+  - SongCollectionView 그리드 카드가 2열 정상 배치
+  - EntryWriteView TextEditor + 1000자 카운터 + 저장 버튼이 키보드 올라와도 안 가려짐
+  - SongDetailView 타임라인 헤더 + 첫 카드가 한 화면에 들어옴
+
+- 빌드 명령은 PROJECT_CONTEXT.md `BUILD_COMMAND`로 실행. **BUILD SUCCEEDED** 필수.
+- Generator가 이 라운드 종료 시 `output/` 아래 모든 변경 파일을 저장. `Shared/AppTheme.swift`는 삭제 또는 thin shim 둘 중 한 형태로 남김.
+
+---
+
+## Acceptance Criteria (Evaluator R3가 검증)
+
+이 라운드 통과 기준:
+
+1. **하드코딩 색상 0건**: `output/Views/**/*.swift` 와 `output/Shared/AppTheme.swift`에서 다음 패턴 0건
+   - `Color(red:` (raw RGB)
+   - `Color.red`, `Color.blue`, `Color.brown`, `Color.green` 등 시스템 리터럴 색상 (단, `.white` 는 토큰화 어려운 contrast 용도로 `BottomPlacedButton` 내부 전경색에 한해 허용)
+   - `UIColor(red:`
+2. **하드코딩 폰트 0건**: `.font(.system(size:`) 패턴 0건. 모든 폰트는 `Font.pXxx(N)` 또는 `.font(.body)` 등 semantic.
+3. **자체 컴포넌트 미사용**: `MoodChipButton`, `cardStyle()`, `NotebookTexture`, `AppBackground` 호출 사이트 0건. (struct 자체는 thin shim AppTheme 안에서만 잔존 가능)
+4. **String Catalog 적용**: 모든 사용자 대면 `Text("...")`, `TextField("...placeholder...", ...)`, `navigationTitle("...")`이 LocalizedStringKey 또는 `String(localized:)` 패턴. 한국어 리터럴 직접 사용 0건.
+5. **Hit target 44pt+**: 모든 인터랙티브 요소(버튼, chip, navigation icon)에 `.frame(minWidth: 44, minHeight: 44)` 또는 부모가 보장.
+6. **Dynamic Type 안전**:
+   - 다중 행 텍스트에 `.fixedSize(horizontal: false, vertical: true)` 적용
+   - 한 줄 텍스트에 `.lineLimit(1)` + `.truncationMode(.tail)`
+   - 큰 타이틀에 `.minimumScaleFactor(0.85)` 이상
+7. **반응형**:
+   - SignInView가 작은 화면(SE 3rd, 667pt height)에서 잘리지 않음 (코드 레벨: ScrollView 또는 비율 기반 layout)
+   - EntryWriteView/AddEntryView가 키보드 회피 (`safeAreaInset` 또는 `scrollDismissesKeyboard`)
+   - 모든 LazyVGrid 컬럼이 작은 화면에서도 깨지지 않음 (코드 레벨: GridItem `.flexible()` + 적절한 spacing)
+8. **존댓말 톤**: 새로 추가/수정한 한국어 리터럴(이번 라운드는 String Catalog 키 안에서만)이 모두 존댓말. (예: "선택해주세요", "기록해주세요", "확인해주세요")
+9. **빌드 성공**: `xcodebuild ... | grep -E 'BUILD (SUCCEEDED|FAILED)'`이 SUCCEEDED.
+10. **회귀 없음**: 기존 SPEC R1의 7개 기능이 모두 정상 동작. ViewModel/Service/Model 레이어는 이번 라운드에서 변경 금지(EntryWriteView 1000자 카운터 표시는 View-only이며 ViewModel `entryText.count` 읽기만 수행).
+
+### 아웃 오브 스코프 (이번 라운드에서 만지지 않음)
+
+- ViewModel/Service/Model 레이어 로직 변경
+- 새 화면/네비게이션 추가
+- Apple Sign In 흐름 변경
+- Supabase 스키마/쿼리 변경
+- MusicKit 호출 변경
+- 테스트 코드 (단, View 변경에 따라 컴파일이 깨지면 최소 수정 허용)
+
+---
+
+## Generator 진행 순서 권장
+
+1. PersonalColorDesignSystem 패키지의 실제 공개 API 확인 (있으면 docs/, 없으면 패키지 소스에서 import 후 컴파일러 에러로 검증)
+2. `Shared/AppTheme.swift` thin shim 또는 삭제 결정
+3. View 파일을 `Components → Auth → Collection → Detail → Record/* → Entry` 순서로 패치 (의존도 낮은 순)
+4. `Localizable.xcstrings` 업데이트
+5. 빌드 게이트 통과 확인
+6. 자가 점검: Acceptance Criteria 1~10번 grep으로 검증

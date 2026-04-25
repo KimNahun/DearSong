@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		DE01AA0005AA05AA0005AA05 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = DE01AA0004AA04AA0004AA04 /* Supabase */; };
-		DE81DCFB2F9A676A0045FDC5 /* PersonalColorDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = DE81DCFA2F9A676A0045FDC5 /* PersonalColorDesignSystem */; };
+		DE81DCFB2F9A676A0045FDC5 /* TopDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = DE81DCFA2F9A676A0045FDC5 /* TopDesignSystem */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,7 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DE81DCFB2F9A676A0045FDC5 /* PersonalColorDesignSystem in Frameworks */,
+				DE81DCFB2F9A676A0045FDC5 /* TopDesignSystem in Frameworks */,
 				DE01AA0005AA05AA0005AA05 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -122,7 +122,7 @@
 			);
 			name = DearSong;
 			packageProductDependencies = (
-				DE81DCFA2F9A676A0045FDC5 /* PersonalColorDesignSystem */,
+				DE81DCFA2F9A676A0045FDC5 /* TopDesignSystem */,
 				DE01AA0004AA04AA0004AA04 /* Supabase */,
 			);
 			productName = DearSong;
@@ -158,7 +158,7 @@
 			mainGroup = DE81DCC02F9A60D40045FDC5;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				DE81DCF92F9A676A0045FDC5 /* XCRemoteSwiftPackageReference "PersonalColorDesignSystem" */,
+				DE81DCF92F9A676A0045FDC5 /* XCRemoteSwiftPackageReference "TopDesignSystem" */,
 				DE01AA0003AA03AA0003AA03 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -489,9 +489,9 @@
 				minimumVersion = 2.0.0;
 			};
 		};
-		DE81DCF92F9A676A0045FDC5 /* XCRemoteSwiftPackageReference "PersonalColorDesignSystem" */ = {
+		DE81DCF92F9A676A0045FDC5 /* XCRemoteSwiftPackageReference "TopDesignSystem" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/KimNahun/PersonalColorDesignSystem.git";
+			repositoryURL = "https://github.com/KimNahun/TopDesignSystem.git";
 			requirement = {
 				branch = main;
 				kind = branch;
@@ -505,10 +505,10 @@
 			package = DE01AA0003AA03AA0003AA03 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
 		};
-		DE81DCFA2F9A676A0045FDC5 /* PersonalColorDesignSystem */ = {
+		DE81DCFA2F9A676A0045FDC5 /* TopDesignSystem */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = DE81DCF92F9A676A0045FDC5 /* XCRemoteSwiftPackageReference "PersonalColorDesignSystem" */;
-			productName = PersonalColorDesignSystem;
+			package = DE81DCF92F9A676A0045FDC5 /* XCRemoteSwiftPackageReference "TopDesignSystem" */;
+			productName = TopDesignSystem;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -1,15 +1,6 @@
 {
-  "originHash" : "e7bb17cc87e429039874307cac789d523ed28c1a57000af9eb33e1099ae151a5",
+  "originHash" : "5cea09e9eccbc4d152970675d2df7ee91c9a5c061cf4c45dfa5364fb0735c535",
   "pins" : [
-    {
-      "identity" : "personalcolordesignsystem",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/KimNahun/PersonalColorDesignSystem.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "e112400e158b514d77be3996e8c54f316b17d3e6"
-      }
-    },
     {
       "identity" : "supabase-swift",
       "kind" : "remoteSourceControl",
@@ -62,6 +53,15 @@
       "state" : {
         "revision" : "45eb0224913ea070ec4fba17291b9e7ecf4749ca",
         "version" : "1.5.1"
+      }
+    },
+    {
+      "identity" : "topdesignsystem",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/KimNahun/TopDesignSystem.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "c81b168edb090f1b686aaa5e9362320f063091df"
       }
     },
     {

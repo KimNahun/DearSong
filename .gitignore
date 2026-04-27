@@ -20,6 +20,7 @@ fastlane/test_output
 *.bak
 
 # Secrets (절대 커밋 금지)
+.mcp.json
 Secrets.xcconfig
 *.p12
 *.pem

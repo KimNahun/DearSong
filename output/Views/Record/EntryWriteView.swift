@@ -36,6 +36,9 @@ struct EntryWriteView: View {
                 .padding(.bottom, DesignSpacing.xxl)
             }
             .scrollDismissesKeyboard(.interactively)
+            .safeAreaInset(edge: .bottom) {
+                saveButton
+            }
 
             if viewModel.isSaving {
                 ZStack {
@@ -45,9 +48,6 @@ struct EntryWriteView: View {
                         .scaleEffect(1.5)
                 }
             }
-        }
-        .safeAreaInset(edge: .bottom) {
-            saveButton
         }
         .onChange(of: viewModel.errorMessage) { _, message in
             if let message {

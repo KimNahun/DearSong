@@ -106,9 +106,22 @@ struct SongCollectionView: View {
     private var emptyStateView: some View {
         VStack(spacing: DesignSpacing.lg) {
             Spacer()
-            Image(systemName: "music.note.list")
-                .font(.ssLargeTitle)
-                .foregroundStyle(palette.textSecondary.opacity(0.7))
+
+            // 감성적 아이콘: 노트 + 하트 조합
+            ZStack {
+                Circle()
+                    .fill(palette.primaryAction.opacity(0.08))
+                    .frame(width: 100, height: 100)
+                VStack(spacing: DesignSpacing.xxs) {
+                    Image(systemName: "music.note")
+                        .font(.ssTitle1)
+                        .foregroundStyle(palette.primaryAction.opacity(0.7))
+                    Image(systemName: "heart.fill")
+                        .font(.ssFootnote)
+                        .foregroundStyle(palette.primaryAction.opacity(0.5))
+                }
+            }
+            .accessibilityHidden(true)
 
             VStack(spacing: DesignSpacing.xs) {
                 Text("empty.home.title")
@@ -121,19 +134,12 @@ struct SongCollectionView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            Button {
+            PillButton(String(localized: "action.first_record")) {
                 showRecordFlow = true
-            } label: {
-                Text("action.first_record")
-                    .font(.ssBody.weight(.medium))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, DesignSpacing.xl)
-                    .padding(.vertical, DesignSpacing.sm)
-                    .background(palette.primaryAction)
-                    .clipShape(Capsule())
             }
             .frame(minHeight: 44)
             .accessibilityLabel(Text("action.first_record"))
+
             Spacer()
         }
         .padding(.horizontal, DesignSpacing.xl)

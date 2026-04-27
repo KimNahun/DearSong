@@ -8,38 +8,31 @@ struct EntryWriteView: View {
     @FocusState private var isTextEditorFocused: Bool
     @Environment(\.designPalette) private var palette
 
-    @State private var showSuccessToast = false
     @State private var showErrorToast = false
     @State private var errorToastMessage = ""
 
-    private var yearOptions: [String] {
-        DateFormatters.selectableYears.map { String($0) }
-    }
-
     var body: some View {
-        ZStack {
-            artworkBackground
+        ScrollView {
+            VStack(spacing: DesignSpacing.lg) {
+                // 선택된 곡 + 태그 요약
+                summaryCard
 
-            ScrollView {
-                VStack(spacing: DesignSpacing.lg) {
-                    // 선택된 곡 + 태그 요약
-                    summaryCard
+                // 텍스트 에디터
+                textEditorSection
 
-                    // 텍스트 에디터
-                    textEditorSection
-
-                    // 년도 + 장소
-                    metadataSection
-                }
-                .padding(.horizontal, DesignSpacing.lg)
-                .padding(.top, DesignSpacing.md)
-                .padding(.bottom, DesignSpacing.xxl)
+                // 년도 + 장소
+                metadataSection
             }
-            .scrollDismissesKeyboard(.interactively)
-            .safeAreaInset(edge: .bottom) {
-                saveButton
-            }
-
+            .padding(.horizontal, DesignSpacing.lg)
+            .padding(.top, DesignSpacing.md)
+            .padding(.bottom, DesignSpacing.xxl + 80)   // safeAreaInset 버튼 높이만큼 여유 확보
+        }
+        .background(artworkBackground)
+        .scrollDismissesKeyboard(.interactively)
+        .safeAreaInset(edge: .bottom) {
+            saveButton
+        }
+        .overlay {
             if viewModel.isSaving {
                 ZStack {
                     Color.black.opacity(0.3).ignoresSafeArea()
@@ -68,19 +61,22 @@ struct EntryWriteView: View {
         .disabled(viewModel.isSaving)
         .opacity(viewModel.isSaving ? 0.6 : 1)
         .padding(.horizontal, DesignSpacing.lg)
-        .padding(.vertical, DesignSpacing.sm)
-        .background(palette.background)
+        .padding(.top, DesignSpacing.xs)
+        .padding(.bottom, DesignSpacing.md)
+        .background(
+            palette.background
+                .opacity(0.95)
+                .ignoresSafeArea(edges: .bottom)
+        )
         .accessibilityLabel(Text("action.save.record"))
     }
 
+    // background modifier 용 — 레이아웃 흐름에서 완전 분리
     @ViewBuilder
     private var artworkBackground: some View {
         ZStack {
             palette.background
-                .ignoresSafeArea()
-            // 줄선 패턴 (얇은 수평선만)
-            palette.border.opacity(0.05)
-                .ignoresSafeArea()
+
             if let urlString = viewModel.effectiveArtworkURL, let url = URL(string: urlString) {
                 AsyncImage(url: url) { phase in
                     if case .success(let image) = phase {
@@ -89,9 +85,9 @@ struct EntryWriteView: View {
                             .aspectRatio(contentMode: .fill)
                             .blur(radius: 60)
                             .opacity(0.06)
-                            .ignoresSafeArea()
                     }
                 }
+                .ignoresSafeArea()
             }
         }
         .ignoresSafeArea()
@@ -188,28 +184,32 @@ struct EntryWriteView: View {
 
     private var metadataSection: some View {
         VStack(spacing: DesignSpacing.lg) {
-            // 년도 선택
+            // 년도 선택 — Picker(.menu): 고정 높이 의존 없는 컴팩트 드롭다운
             VStack(alignment: .leading, spacing: DesignSpacing.xs) {
                 Text("screen.entry.year_label")
                     .font(.ssTitle2)
                     .foregroundStyle(palette.textPrimary)
 
-                // PDropdownButton 대체: Picker wheel
                 HStack {
+                    Image(systemName: "calendar")
+                        .font(.ssBody)
+                        .foregroundStyle(palette.textSecondary)
+
                     Picker(String(localized: "screen.entry.year_label"), selection: $viewModel.selectedYear) {
                         ForEach(DateFormatters.selectableYears, id: \.self) { year in
                             Text(String(year)).tag(year)
                         }
                     }
-                    .pickerStyle(.wheel)
-                    .frame(height: 120)
-                    .clipped()
+                    .pickerStyle(.menu)
+                    .tint(palette.primaryAction)
+                    .accessibilityLabel("\(String(localized: "screen.entry.year_label")): \(viewModel.selectedYear)")
+
+                    Spacer()
                 }
-                .borderedContainer(padding: DesignSpacing.xs)
-                .accessibilityLabel("\(String(localized: "screen.entry.year_label")): \(viewModel.selectedYear)")
+                .borderedContainer(padding: DesignSpacing.sm)
             }
 
-            // 장소 입력 — PTextField 대체: HStack + TextField + borderedContainer
+            // 장소 입력
             VStack(alignment: .leading, spacing: DesignSpacing.xs) {
                 Text("screen.entry.location_label")
                     .font(.ssTitle2)

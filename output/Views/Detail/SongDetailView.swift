@@ -123,8 +123,9 @@ struct SongDetailView: View {
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .blur(radius: 60)
-                            .opacity(0.08)
+                            // linear 테마(CleanNeutral/white 배경)에서 더 섬세한 앨범 아트 틴트
+                            .blur(radius: 70)
+                            .opacity(0.05)
                             .ignoresSafeArea()
                     }
                 }

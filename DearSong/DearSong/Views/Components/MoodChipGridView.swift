@@ -27,8 +27,8 @@ struct MoodChipGridView: View {
                 .font(.ssTitle2)
                 .foregroundStyle(palette.textPrimary)
 
-            // FlowLayout 대체: LazyVGrid adaptive
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 84), spacing: DesignSpacing.xs)], spacing: DesignSpacing.xs) {
+            // FlowLayout: 텍스트 intrinsic 너비 기반 가변 너비 칩
+            FlowLayout(horizontalSpacing: DesignSpacing.xs, verticalSpacing: DesignSpacing.xs) {
                 ForEach(category.tags, id: \.self) { tag in
                     moodChip(tag: tag)
                 }

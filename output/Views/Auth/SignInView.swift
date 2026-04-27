@@ -22,10 +22,18 @@ struct SignInView: View {
 
                     // 앱 로고 영역
                     VStack(spacing: DesignSpacing.lg) {
-                        Image(systemName: "music.note.list")
-                            .font(.ssLargeTitle)
-                            .foregroundStyle(palette.primaryAction)
-                            .accessibilityLabel(Text("screen.signin.app_icon_label"))
+                        // 음악 + 감정 조합 아이콘: 노트 위에 하트가 겹쳐진 감성적 심볼
+                        ZStack {
+                            Image(systemName: "music.note")
+                                .font(.ssLargeTitle)
+                                .foregroundStyle(palette.primaryAction)
+                            Image(systemName: "heart.fill")
+                                .font(.ssCaption)
+                                .foregroundStyle(palette.primaryAction.opacity(0.8))
+                                .offset(x: 12, y: -14)
+                        }
+                        .accessibilityLabel(Text("screen.signin.app_icon_label"))
+                        .accessibilityHidden(false)
 
                         VStack(spacing: DesignSpacing.xs) {
                             Text("screen.home.title")

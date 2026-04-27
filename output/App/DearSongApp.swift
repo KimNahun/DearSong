@@ -10,7 +10,7 @@ struct DearSongApp: App {
     var body: some Scene {
         WindowGroup {
             rootView
-                .designTheme(.airbnb)
+                .designTheme(.linear)
                 .task {
                     await authViewModel.checkSession()
                 }

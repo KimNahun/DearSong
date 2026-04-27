@@ -53,12 +53,9 @@ struct TimelineEntryView: View {
                 Divider()
                     .overlay(palette.border)
 
-                // 감정 태그 — PChip 대체: 정적 Capsule + Text
+                // 감정 태그 — FlowLayout: 텍스트 intrinsic 너비 기반 가변 너비 칩
                 if !memory.moodTags.isEmpty {
-                    LazyVGrid(
-                        columns: [GridItem(.adaptive(minimum: 84), spacing: DesignSpacing.xs)],
-                        spacing: DesignSpacing.xs
-                    ) {
+                    FlowLayout(horizontalSpacing: DesignSpacing.xs, verticalSpacing: DesignSpacing.xs) {
                         ForEach(memory.moodTags, id: \.self) { tag in
                             Text(tag)
                                 .font(.ssCaption)

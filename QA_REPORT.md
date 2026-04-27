@@ -1,96 +1,127 @@
-RESULT: pass
-SCORE: 9.2
+RESULT: conditional_pass
+SCORE: 7.8
 DATE: 2026-04-27
-ROUND: 4 (EntryWriteView Layout Fix + Mood Chip Dynamic Width + Design Theme)
-BLOCKERS: 0
+ROUND: 4 (사용자 피드백 8항목)
+BLOCKERS: 5
 
 ---
 
-# QA Report -- Round 4
-
-## 검수 대상
-
-사용자 요청 3건:
-1. EntryWriteView 레이아웃 짤림 버그 수정 (감정 선택 이후 기록 작성 시 최초 렌더링에서 레이아웃 초과)
-2. 감정 태그 칩 너비를 텍스트 크기에 맞게 동적으로 (글씨크기 + 양쪽여��� 5)
-3. 디자인 테마 전면 개선 - red 색상에서 감성적이고 따뜻한 톤으로
-
----
+# QA Report — Round 4 (사용자 피드백 8항목 검수)
 
 ## 1단계: 파일 구조 분석
 
-### 파일 목록 및 레이어 분류
+output/ 폴더에 34개 Swift 파일이 존재하며, SPEC.md의 파일 구조와 완전 일치.
 
-| 레이어 | 파일 |
-|--------|------|
-| App | `App/DearSongApp.swift` |
-| Views/Auth | `Views/Auth/SignInView.swift` |
-| Views/Collection | `Views/Collection/SongCollectionView.swift` |
-| Views/Detail | `Views/Detail/SongDetailView.swift` |
-| Views/Record | `RecordFlowView.swift`, `SongSearchView.swift`, `MoodSelectionView.swift`, `EntryWriteView.swift`, `ManualSongInputView.swift` |
-| Views/Entry | `Views/Entry/AddEntryView.swift` |
-| Views/Components | `SongCardView.swift`, `MoodChipGridView.swift`, `TimelineEntryView.swift`, `AlbumArtworkView.swift` |
-| ViewModels | `AuthViewModel.swift`, `SongCollectionViewModel.swift`, `SongDetailViewModel.swift`, `RecordFlowViewModel.swift`, `SongSearchViewModel.swift`, `AddEntryViewModel.swift` |
-| Models | `SongMemory.swift`, `MoodTag.swift`, `SearchedSong.swift` |
-| Services | `AuthService.swift`, `SongMemoryService.swift`, `MusicSearchService.swift`, `SupabaseClientProvider.swift` |
-| Shared | `AppError.swift`, `AppTheme.swift`, `DateFormatters.swift`, `FlowLayout.swift` |
-
-SPEC.md 파일 구조와 일치 확인: **일치**. SPEC에 정의된 모든 파일이 존재함.
+| 레이어 | 파일 수 | 주요 파일 |
+|--------|---------|----------|
+| App | 1 | DearSongApp.swift |
+| Views | 13 | SignInView, SongCollectionView, SongDetailView, RecordFlowView, SongSearchView, MoodSelectionView, EntryWriteView, ManualSongInputView, AddEntryView, SongCardView, MoodChipGridView, TimelineEntryView, AlbumArtworkView |
+| ViewModels | 6 | AuthViewModel, SongCollectionViewModel, SongDetailViewModel, RecordFlowViewModel, SongSearchViewModel, AddEntryViewModel |
+| Models | 3 | SongMemory, MoodTag, SearchedSong |
+| Services | 4 | AuthService, SongMemoryService, MusicSearchService, SupabaseClientProvider |
+| Shared | 2 | AppError, DateFormatters |
+| Tests | 5 | Mocks, MoodTagTests, AuthServiceTests, SongMemoryServiceTests, RecordFlowViewModelTests |
 
 ---
 
-## 2단계: SPEC 기능 검증 + 사용자 요청 반영 확인
+## 2단계: 사용자 요청 8항목 기능 검증
 
-### 사용자 요청 1: EntryWriteView 레이아웃 짤림 버그 수정
+### 항목 1: 바깥 탭 시 키보드 닫기 (글로벌) — [FAIL]
 
-[PASS] `EntryWriteView.swift`에서 레이아웃 구조가 올바르게 수정됨:
-- ScrollView가 최외곽 콘텐츠 컨테이너로 사용됨 (line 15)
-- `.safeAreaInset(edge: .bottom)` 패턴으로 저장 버튼을 ScrollView 밖으로 분리 (line 32-34)
-- ScrollView 내부 하단에 `padding(.bottom, DesignSpacing.xxl + 80)`으로 safeAreaInset 버튼 높이만큼 여유 확보 (line 28)
-- `.scrollDismissesKeyboard(.interactively)` 적용 (line 31)
-- 배경은 `.background(artworkBackground)`로 레이아웃 흐름에서 분리 (line 30)
+**증거**: output/ 전체에서 keyboard dismiss 관련 글로벌 처리가 없음.
+- `EntryWriteView.swift`와 `AddEntryView.swift`에 `.scrollDismissesKeyboard(.interactively)`가 있지만, 이는 ScrollView 내 드래그 시에만 동작.
+- 바깥 영역(배경, 비입력 영역) 탭으로 키보드를 닫는 글로벌 제스처가 없음.
+- `SongSearchView.swift`의 검색 필드, `ManualSongInputView.swift`의 입력 필드에도 키보드 닫기 처리 없음.
+- `DearSongApp.swift` 또는 공통 ViewModifier에도 `UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), ...)` 같은 글로벌 키보드 닫기 처리 없음.
+- `onTapGesture`로 키보드를 닫는 로직도 어디에도 없음.
 
-이전 라운드에서 발생했던 "최초 렌���링에서 레이아웃 초과" 문제가 해결된 구조임. ScrollView + safeAreaInset 조합이 올바르게 적용됨.
+**결론**: 미구현.
 
-### ���용자 요청 2: 감정 태그 칩 너비를 텍스트 크기에 맞게 동적으로
+### 항목 2: count 값을 사용자 친화적 텍스트로 (예: "3개 선택됨") — [PASS]
 
-[PASS] `MoodChipGridView.swift`에서 FlowLayout + 동적 너비 칩 구현 확인:
-- `FlowLayout(horizontalSpacing: DesignSpacing.xs, verticalSpacing: DesignSpacing.xs)` 사용 (line 31)
-- 칩 라벨: `Text(tag)` + `.padding(.horizontal, DesignSpacing.md)` + `.padding(.vertical, DesignSpacing.xs)` (line 52-55)
-  - `DesignSpacing.md` = 12pt 양쪽 패딩
-- `FlowLayout.swift`가 `Layout` 프로토콜 기반으로 올바르게 구현됨 (line 7)
-  - `sizeThatFits()`: 컨테이너 너비 기반 줄 바꿈 계산
-  - `placeSubviews()`: `.unspecified` proposal로 intrinsic 너비 사용
-- 칩이 고정 width 없이 텍스트 intrinsic 너비를 그대로 사용하므로 동적 너비 요구사항 충족
-- `TimelineEntryView.swift`에서도 동일한 FlowLayout 패턴으로 mood 태그 칩 표시 (line 58)
+**증거**:
+- `MoodSelectionView.swift` line 33: `Text("mood.selected.count \(viewModel.selectedMoodTags.count)")` — String Catalog 키 사용 ("N개 선택됨").
+- `SongCardView.swift` line 35: `Text("songcard.records.count \(groupedSong.memoryCount)")` — String Catalog 키 사용 ("N개의 기록").
 
-**경미 사항**: 사용자가 "양쪽여백 5"를 요청했으나 실제 구현은 `DesignSpacing.md`(12pt). 디자인 시스템 토큰 사용이 우선이므로 허용. `minHeight: 36` (line 56)으로 터치 영역도 확보됨.
+**결론**: 구현됨.
 
-### 사용자 요청 3: 디자인 테마 전면 개선
+### 항목 3: 메인 컬렉션 새로고침 시 정렬 고정 — [PASS]
 
-[PASS] `DearSongApp.swift`에서 `.designTheme(.linear)` 테마 적용 (line 13). 이전 라운드의 red 색상 기반에서 TopDesignSystem의 `.linear` 테마로 전환됨.
+**증거**:
+- `SongCollectionViewModel.swift` line 40-42: `refresh()`는 `loadMemories()`를 호출.
+- `groupMemories()` (line 46-66)에서 매번 `sorted { lDate > rDate }` (listened_at 내림차순) 적���.
+- 서버 쿼리도 `SongMemoryService.swift` line 71: `.order("listened_at", ascending: false)`.
 
-모든 View 파일에서 `@Environment(\.designPalette) private var palette` 환경값을 통해 테마 색상을 사용:
-- `palette.primaryAction` -- 액센트 색상 (이전 red 대체)
-- `palette.background` -- 배경색
-- `palette.textPrimary` / `palette.textSecondary` -- 텍스트 색상
-- `palette.surface` -- 표면 색상
-- `palette.border` -- 보더 색상
-- `palette.error` -- 에러 색상
+**결론**: 구현됨.
 
-하드코딩 색상이 제거되고 디자인 시스템 토큰으로 전면 교체된 것을 확인.
+### 항목 4: AddEntryView 가로 레이아웃 짤림 수정 — [PASS]
 
-### 기존 기능 보존 검증
+**증거**:
+- `AddEntryView.swift`: ScrollView (line 43) + `.scrollDismissesKeyboard(.interactively)` (line 54) + `.safeAreaInset(edge: .bottom)` (line 66-68).
+- `.padding(.horizontal, DesignSpacing.lg)` 좌우 여백 확보.
+- `.frame(maxWidth: .infinity, alignment: .leading)` 적용.
 
-| 기능 | 상태 | 근거 |
-|------|------|------|
-| 기능 1: Apple Sign In 인증 | [PASS] | `SignInView.swift`: SignInWithAppleButton + AuthViewModel 연동 정상, 세션 체크/로그아웃 구현 |
-| 기능 2: 곡 컬렉션 메인 화면 | [PASS] | `SongCollectionView.swift`: NavigationStack + LazyVGrid + 플로팅 버튼 + pull-to-refresh + 빈 상태 |
-| 기능 3: 곡 상세 타임라인 | [PASS] | `SongDetailView.swift`: 시기별 타임라인 + contextMenu 삭제 + 엔트리 추가 ��트 |
-| 기능 4: 새 기록 작성 플로우 | [PASS] | `RecordFlowView.swift`: 3단계 step navigation + SongSearch -> MoodSelection -> EntryWrite |
-| 기능 5: 기존 곡+시기에 엔트리 추가 | [PASS] | `AddEntryView.swift`: 기존 entries 읽기 전용 표시 + 새 텍스트 추가 + Supabase UPDATE |
-| 기능 6: MusicKit 곡 검색 | [PASS] | `MusicSearchService.swift`: MusicCatalogSearchRequest + 권한 요청 + 수동 입력 폴백 |
-| 기능 7: 감정 태그 시스템 | [PASS] | `MoodTag.swift`: 9개 카테고리, 총 62개 태그. `MoodChipGridView.swift`: FlowLayout 기반 동적 칩 |
+**결론**: 구현됨.
+
+### 항목 5: 년도 "2,026" -> "2026" 포맷 수정 — [FAIL]
+
+**증거**:
+- `TimelineEntryView.swift` line 21: `Text("timeline.year \(listenedYear)")` — `listenedYear`는 `Int`. Swift의 `Text(LocalizedStringKey)` 보간에서 Int는 NumberFormatter를 적용하여 한국어 로케일에서 "2,026"으로 표시됨.
+- `AddEntryView.swift` line 109: `Text("\(listenedYear)\(String(localized: "timeline.year_suffix")) · \(memory.artistName)")` — 동일 문제.
+- `EntryWriteView.swift` line 201: `Text(String(year)).tag(year)` — 이것은 `String(year)`로 명시 변환되어 정상.
+- `DateFormatters.yearString(from:)`: `date.formatted(.dateTime.year())` — 로케일에 따라 쉼표 포함 가능.
+
+**결론**: 미수정. TimelineEntryView와 AddEntryView에서 Int→LocalizedStringKey 보간으로 "2,026" 표시 위험.
+
+### 항목 6: 감정 칩 섹션 제거 + 높이 축소 — [FAIL]
+
+**증거**:
+- `TimelineEntryView.swift` line 57-72: 감정 태그 LazyVGrid 섹션이 그대로 존재.
+```swift
+if !memory.moodTags.isEmpty {
+    LazyVGrid(...) {
+        ForEach(memory.moodTags, id: \.self) { tag in ... }
+    }
+}
+```
+- 사용자 요청 "감정 칩 섹션 제거"가 이루어지지 않음.
+
+**���론**: 미구현.
+
+### 항목 7: 감정 선택 단계에서 장소 필드 제거 — [PASS]
+
+**증거**:
+- `MoodSelectionView.swift`: 전체 코드에 location/장소 관련 입력 필드 없음.
+- 장소 입력은 `EntryWriteView.swift`의 Step 3에서만 존재.
+
+**결론**: 구현됨.
+
+### 항목 8: 날씨 관련 UI/태그 제거 — [FAIL]
+
+**증거**:
+- `MoodTag.swift` line 13: `case season` 카테고리 존재.
+- line 25: `case .season: return "계절/날씨"`.
+- line 46-47: `case .season: return ["비 오는 날", "눈 오는 날", "바람 부는 날", "여름밤", "가을 햇살", "봄바람"]` — 날씨 관련 태그 6개.
+- `MoodChipGridView.swift` line 13: `ForEach(MoodCategory.allCases, ...)` — allCases에 `.season` 포함.
+
+**결론**: 미구현.
+
+---
+
+### 기능 검증 요약
+
+| # | 항목 | 판정 |
+|---|------|------|
+| 1 | 바깥 탭 시 키보드 닫기 (글로벌) | **FAIL** |
+| 2 | count 값 사용자 친화적 텍스트 | PASS |
+| 3 | 메인 컬렉션 새로고침 시 정렬 고정 | PASS |
+| 4 | AddEntryView 가로 레이아웃 짤림 수정 | PASS |
+| 5 | 년도 "2,026" -> "2026" 포맷 수정 | **FAIL** |
+| 6 | 감정 칩 섹션 제거 + 높이 축소 | **FAIL** |
+| 7 | 감정 선택 단계에서 장소 필드 제거 | PASS |
+| 8 | 날씨 관련 UI/태그 제거 | **FAIL** |
+
+**합격: 4/8, 불합격: 4/8**
 
 ---
 
@@ -98,110 +129,108 @@ SPEC.md 파일 구조와 일치 확인: **일치**. SPEC에 정의된 모든 파
 
 ### 1. Swift 6 동시성: 9/10
 
-**근거:**
+- 모든 ViewModel: `@MainActor` + `@Observable` ✓
+- 모든 Service: `actor` ✓
+- 모든 Model: `struct` + `Sendable` ✓
+- `DispatchQueue`/`@Published`/`ObservableObject` 사용 0건 ✓
+- Protocol 기반 DI ✓
+- 감점: `nonisolated` 불필요 사용 (MoodTag.swift, SongMemory.swift 등) -1
 
-- [PASS] 모든 ViewModel: `@MainActor` + `@Observable` 선언
-  - `AuthViewModel.swift` (line 9-10), `SongCollectionViewModel.swift` (line 7-8), `SongDetailViewModel.swift` (line 8-9), `RecordFlowViewModel.swift` (line 14-15), `SongSearchViewModel.swift` (line 8-9), `AddEntryViewModel.swift` (line 7-8)
-- [PASS] 모든 Service: `actor` 선언
-  - `AuthService.swift` (line 17), `SongMemoryService.swift` (line 19), `MusicSearchService.swift` (line 23)
-- [PASS] 모든 Model: `struct` + `Sendable` 준수
-  - `SongMemory` (line 5), `Entry` (line 39), `Attachment` (line 53), `GroupedSong` (line 61), `SearchedSong` (line 5), `MoodTag` (line 56)
-- [PASS] `DispatchQueue.main` 사용 없음
-- [PASS] `@Published` + `ObservableObject` 사용 없음
-- [PASS] Sendable 경계 안전 -- 모든 모델이 `Sendable`, Service는 `actor`
-- [경미] `nonisolated` 키워드가 struct/enum에 불필요하게 붙어 있음 (`nonisolated struct SongMemory`, `nonisolated enum RecordStep` 등). Swift 6에서 value type은 기본 nonisolated이므로 코드 노이즈.
-- [경미] `UIImpactFeedbackGenerator(style: .light).impactOccurred()` (MoodChipGridView line 46) -- View 내에서 UIKit haptic 직접 호출. PROJECT_CONTEXT의 `HapticManager` 사용 권장.
+### 2. MVVM 아키텍처 분리: 9/10
 
-**감점 -1**: nonisolated 불필요 어노테이션 다수 + UIKit haptic 직접 호출 (디자인 시스템 HapticManager 미사용)
+- View→ViewModel→Service 단방향 흐름 ✓
+- ViewModel에 `import SwiftUI` 없음 ✓
+- Service가 ViewModel/View 미참조 ✓
+- 감점: `AuthViewModel.swift` line 39에 한국어 리터럴 하드코딩 -0.5
+- 감점: 일부 ViewModel 프로퍼티에 `private(set)` 미적용 (RecordFlowViewModel의 `selectedSong`, `entryText` 등이 `var`로 공개) -0.5
 
-### 2. MVVM 아키텍처 분리: 10/10
+### 3. HIG 준수 + 디자인 시스템: 8/10
 
-**근거:**
+- TopDesignSystem 토큰 대부분 적용 ✓
+- 44pt 터치 영역 대부분 보장 ✓
+- .accessibilityLabel 다수 적용 ✓
+- 로딩/에러 상태 UI ✓
+- 감점: `SongCardView.swift` line 33: `.font(.system(size: 10))` — 하드코딩 폰트 잔존 -0.5
+- ���점: `Color.black.opacity(0.3)` 2곳 (EntryWriteView line 42, AddEntryView line 59) -0.5
+- 감점: `.shadow(color: .black.opacity(0.15), ...)` (SongDetailView line 141) -0.5
+- 감점: 글로벌 키보드 닫기 미구현 -0.5
 
-- [PASS] View에서 Service 직접 호출 없음 -- 모든 View는 ViewModel만 참조
-- [PASS] View에 비즈니스 로직 없음 -- UI ���언만 존재
-- [PASS] ViewModel에 `import SwiftUI` ���음 -- 모든 ViewModel은 `import Foundation` + `import Observation`만 사용
-- [PASS] ViewModel에 UI 타입(`Color`, `Font`) 없음
-- [PASS] Service가 ViewModel/View 참조 없음
-- [PASS] 의존성 단방향: View -> ViewModel -> Service
-- [PASS] Protocol 기반 Service 주입: `AuthServiceProtocol`, `SongMemoryServiceProtocol`, `MusicSearchServiceProtocol`
-- [PASS] 모든 ViewModel이 init에서 Protocol 기반 DI 지원 (`service: any XxxProtocol = Xxx()`)
-- [PASS] 접근 제어 적절: `private(set)` 사용 (예: `RecordFlowViewModel.currentStep`, `isSaving`, `errorMessage` 등)
+### 4. API 활용: 10/10
 
-### 3. HIG 준수 + 디자인 시스템: 9/10
+- MusicKit: 카탈로그 검색 + 권한 요청 + 폴백 ✓
+- Supabase Auth: signInWithIdToken + session 확인 + signOut ✓
+- Supabase Database: CRUD 전체 Service 레이어에서 구현 ✓
+- 에러 처리: AppError enum ✓
 
-**근거:**
+### 5. 기능성 및 코드 가독성: 5/10
 
-- [PASS] Dynamic Type: 모든 폰트가 `.ssBody`, `.ssTitle2`, `.ssFootnote`, `.ssCaption` 등 TopDesignSystem semantic font 사용
-- [PASS] Semantic color: `palette.primaryAction`, `palette.textPrimary`, `palette.background` 등 디자인 시스템 토큰 전면 사���
-- [PASS] 터�� 영역 44x44pt: `.frame(width: 44, height: 44)` (RecordFlowView line 59), `.frame(minHeight: 44)` (SongCollectionView line 141), `.frame(minWidth: 44, minHeight: 44)` (TimelineEntryView line 48)
-- [PASS] Safe Area 준수: 배��만 `.ignoresSafeArea()`, 콘텐츠는 safe area 내
-- [PASS] 접근성 레이블: `.accessibilityLabel` 주요 인터랙션에 적용
-- [PASS] 로딩/에러/빈 상태 UI 제공
-- [PASS] 플랫폼 기본 내비게이션 패턴: `NavigationStack`, `.fullScreenCover`, `.sheet`
-- [PASS] GlassCard 컨테이너, confirmationModal 등 디자인 시스템 컴포넌트 활용
-- [경미] `SongCardView.swift` line 33: `.font(.system(size: 10))` -- 하트 아���콘에 하드코딩 폰트 크기 1건 잔존
-- [경미] `AppTheme.swift`: 빈 `enum AppTheme {}` 잔여 파일
-
-**감점 -1**: SongCardView 하드코딩 폰트 1건 + AppTheme.swift 빈 잔여 파일
-
-### 4. API 활용: 9/10
-
-**근거:**
-
-- [PASS] MusicKit: `MusicAuthorization.request()`, `MusicCatalogSearchRequest`, `Song` -> `SearchedSong` 매핑, 검색 limit 25
-- [PASS] Supabase Auth: `signInWithIdToken` + `OpenIDConnectCredentials`, 세션 확인, `signOut()`
-- [PASS] Supabase Database: CRUD 전체 구현 (fetchAll, fetchBySong, fetchByTitle, create, addEntry, delete, findExisting)
-- [PASS] 권한 요청 흐름: MusicKit 거부 시 수동 입력 폴백
-- [PASS] API 호출이 Service 레이어에만 존재
-- [PASS] 에러 처리: `AppError` 도메인별 분류 + 사용자 친화 메시지
-- [경미] `SupabaseClientProvider` (line 6): `final class`로 선언, `Sendable` 프로토콜 미명시. 불변 `let` 프로퍼티만 있으나 Swift 6 엄격 모드에서 컴파일러 경고 가능성.
-
-**감점 -1**: SupabaseClientProvider Sendable 명시 부재
-
-### 5. 기능성 및 코드 가독성: 10/10
-
-**근거:**
-
-- [PASS] SPEC의 ��든 7개 기능 구현됨
-- [PASS] 접근 제어자 명시: `private(set)` 광범위 사용, `private` 함수 적절
-- [PASS] 에러 타입: `enum AuthError: Error`, `enum SongMemoryError: Error`, `enum MusicSearchError: Error`, `enum AppError: Error` 도메인별 정의
-- [PASS] 파일��� SPEC 컨벤션 일치
-- [PASS] 코드 중복 최소화: `AlbumArtworkView` 재사용, `FlowLayout` 공유, `GlassCard` 일관 사용
-- [PASS] 로깅: `os.Logger` 사용 (AuthService, SongMemoryService, MusicSearchService)
-- [PASS] String Catalog 키 전면 사용
-- [PASS] 1000자 카운터 구현 (EntryWriteView line 177-181, AddEntryView line 192-196)
-- [PASS] 최대 3개 감정 태그 선택 제한 (MoodChipGridView line 42-43, 74-79)
+- SPEC R1 7개 기능 유지 ✓
+- 접근 제어자 명시 ✓
+- 에러 타입 체계 ✓
+- 파일 구조 일치 ✓
+- **치명적 감점: 사용자 요청 8항목 중 4항목(50%) 미구현 -4**
+- 감점: 년도 ���맷 잠재 버그 -0.5
+- 감점: AuthViewModel 에러 메시지 한국어 하드코딩 -0.5
 
 ---
 
-## 4단계: 최종 판정
-
-**전체 판정**: 합격 (pass)
-**가중 점수**: 9.2 / 10.0
+## 최종 점수 계산
 
 ```
-가중 점수 = (9 x 0.30) + (10 x 0.25) + (9 x 0.20) + (9 x 0.15) + (10 x 0.10)
-         = 2.70 + 2.50 + 1.80 + 1.35 + 1.00
-         = 9.35 -> 9.2 (���미 이슈 감안 보정)
+가중 점수 = (9 x 0.30) + (9 x 0.25) + (8 x 0.20) + (10 x 0.15) + (5 x 0.10)
+         = 2.70 + 2.25 + 1.60 + 1.50 + 0.50
+         = 8.55
 ```
+
+사용자 피드백 라운드에서 요청 반영률 50%는 중대한 미완성이므로 보정 적용: **7.8/10**
+
+---
+
+**전체 판정**: 조건부 합격 (conditional_pass)
+**가중 점수**: 7.8 / 10.0
 
 **항목별 점수**:
-- Swift 6 동시성: 9/10 -- 모든 레이어 ���바른 동시성 모델 적용. nonisolated 불필요 어노테이션 + UIKit haptic 직접 호출 경미 사항.
-- MVVM 분리: 10/10 -- 완벽한 단방향 의존. ViewModel에 SwiftUI 없음. Protocol 기반 DI 완비.
-- HIG 준수: 9/10 -- ��자인 시스템 토큰 전면 적용. SongCardView 하드코딩 폰트 1건.
-- API 활용: 9/10 -- MusicKit/Supabase Auth/Database 전체 올바르게 구현. SupabaseClientProvider Sendable 명시 부재.
-- 기능성/가독성: 10/10 -- 7개 ��능 전체 구현. 접근 제어/로깅/에러 처리 완��.
+- Swift 6 동시성: 9/10 — @MainActor/@Observable 일관 적용. nonisolated 경미한 남용.
+- MVVM 분리: 9/10 — 레이어 분리 우수. AuthViewModel에 한국어 하드코딩 경미.
+- HIG 준수: 8/10 — TopDesignSystem 토큰 적용 양호. `.font(.system(size:10))` 잔존, 글로벌 키보드 닫기 미구현.
+- API 활용: 10/10 — MusicKit/Supabase Auth/Database 정상 구현.
+- 기능성/가독성: 5/10 — 사용자 요청 8항목 중 4항목(50%) 미구현.
 
----
+**구체적 개선 지시**:
 
-## 경미 사항 (BLOCKER 아님, 추후 개선 권장)
+1. **[BLOCKER] `App/DearSongApp.swift`**: 글로벌 키보드 닫기 구현. `rootView`��� 아래 ��드 추가:
+   ```swift
+   .onTapGesture {
+       UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+   }
+   ```
+   또는 공통 ViewModifier를 만들어 키보드가 표시되는 모든 화면에 적용.
 
-1. **`SongCardView.swift` line 33**: `.font(.system(size: 10))` -> `.font(.ssCaption)` 또는 ��자인 시스템 소형 폰트로 교체 권장
-2. **`AppTheme.swift`**: 빈 `enum AppTheme {}` -- 파일 삭제 권장
-3. **nonisolated 어노테이��**: `SongMemory.swift`, `MoodTag.swift`, `SearchedSong.swift`, `AppError.swift`, `DateFormatters.swift`에서 불���요한 `nonisolated` 제거 권장
-4. **`SupabaseClientProvider.swift`**: `final class SupabaseClientProvider: Sendable` 명시 추가 권장
-5. **MoodChipGridView 칩 패딩**: 사용자 요청 "양쪽여백 5"에 대해 현재 `DesignSpacing.md`(12pt) 사용. 디자인 시스템 토큰 단위 준수가 우선이므로 허용하나, 사용자와 확인 권장
-6. **UIKit haptic 직접 호출**: `UIImpactFeedbackGenerator`, `UISelectionFeedbackGenerator`, `UINotificationFeedbackGenerator` -> PROJECT_CONTEXT�� `HapticManager` 유틸리티 사용 통일 권장
+2. **[BLOCKER] `Views/Components/TimelineEntryView.swift` line 21**: `Text("timeline.year \(listenedYear)")` → Int를 String으로 명시 변환하여 NumberFormatter 적용 방지:
+   ```swift
+   Text("\(String(listenedYear))년")
+   ```
+   또는 `Text(verbatim: "\(listenedYear)년")` 사용.
 
-**방향 판단**: 현재 방향 유지
+3. **[BLOCKER] `Views/Entry/AddEntryView.swift` line 109**: 동일 년도 포맷 문제. `\(listenedYear)` → `\(String(listenedYear))` 로 변경.
+
+4. **[BLOCKER] `Views/Components/TimelineEntryView.swift` line 57-72**: 감정 태그 LazyVGrid 섹션 전체 삭제:
+   ```swift
+   // 이 블록 전체 제거:
+   if !memory.moodTags.isEmpty {
+       LazyVGrid(...) { ... }
+   }
+   ```
+
+5. **[BLOCKER] `Models/MoodTag.swift`**: `case season` 카테고리 및 관련 코드 전부 제거:
+   - line 13: `case season` 삭제
+   - line 25: `case .season: return "계절/날씨"` 삭제
+   - line 46-47: `case .season: return [...]` 삭���
+
+6. **[경미] `Views/Components/SongCardView.swift` line 33**: `.font(.system(size: 10))` → `.font(.ssCaption)` 교체.
+
+7. **[경미] `Views/Record/EntryWriteView.swift` line 42, `Views/Entry/AddEntryView.swift` line 59**: `Color.black.opacity(0.3)` → `palette.textPrimary.opacity(0.3)`.
+
+8. **[경미] `Views/Detail/SongDetailView.swift` line 141**: `.shadow(color: .black.opacity(0.15), ...)` → semantic 토큰 사용.
+
+**방향 판단**: 현재 방향 유지. 아키텍처 우수하며, 누락 항목은 국소적 코드 수��으로 해결 가능.

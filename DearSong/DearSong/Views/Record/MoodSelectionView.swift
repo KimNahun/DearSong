@@ -30,7 +30,7 @@ struct MoodSelectionView: View {
                     Image(systemName: "tag.fill")
                         .font(.ssCaption)
                         .foregroundStyle(palette.primaryAction)
-                    Text("mood.selected.count \(viewModel.selectedMoodTags.count)")
+                    Text(verbatim: "\(viewModel.selectedMoodTags.count)개 선택됨")
                         .font(.ssCaption)
                         .foregroundStyle(palette.primaryAction)
                     Spacer()

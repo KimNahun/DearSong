@@ -28,9 +28,11 @@ struct DearSongApp: App {
             .ignoresSafeArea()
         } else if authViewModel.isAuthenticated {
             SongCollectionView(authViewModel: authViewModel)
+                .dismissKeyboardOnTap()
         } else {
             SignInView()
                 .environment(authViewModel)
+                .dismissKeyboardOnTap()
         }
     }
 }

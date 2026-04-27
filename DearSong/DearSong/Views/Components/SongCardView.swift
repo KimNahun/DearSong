@@ -32,7 +32,7 @@ struct SongCardView: View {
                         Image(systemName: "heart.fill")
                             .font(.system(size: 10))
                             .foregroundStyle(palette.primaryAction)
-                        Text("songcard.records.count \(groupedSong.memoryCount)")
+                        Text(verbatim: "기록 \(groupedSong.memoryCount)개")
                             .font(.ssCaption)
                             .foregroundStyle(palette.textSecondary.opacity(0.7))
                     }

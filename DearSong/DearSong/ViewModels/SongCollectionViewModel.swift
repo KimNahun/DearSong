@@ -57,11 +57,20 @@ final class SongCollectionViewModel {
         }
 
         return groups.values
-            .map { GroupedSong(memories: $0) }
+            .map { memories -> GroupedSong in
+                // 그룹 내 memories를 updatedAt 내림차순으로 정렬하여 결정적 순서 보장
+                let sorted = memories.sorted { $0.updatedAt > $1.updatedAt }
+                return GroupedSong(memories: sorted)
+            }
             .sorted { lhs, rhs in
-                let lDate = lhs.memories.first?.listenedAt ?? Date.distantPast
-                let rDate = rhs.memories.first?.listenedAt ?? Date.distantPast
-                return lDate > rDate
+                // 그룹 간: 가장 최근 updatedAt 기준 내림차순 (최근 활동 곡이 위)
+                let lDate = lhs.memories.first?.updatedAt ?? Date.distantPast
+                let rDate = rhs.memories.first?.updatedAt ?? Date.distantPast
+                if lDate != rDate {
+                    return lDate > rDate
+                }
+                // 동일 시간 시 songTitle 오름차순 2차 정렬 (결정적 순서 보장)
+                return lhs.songTitle < rhs.songTitle
             }
     }
 }

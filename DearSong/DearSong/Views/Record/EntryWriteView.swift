@@ -197,12 +197,12 @@ struct EntryWriteView: View {
 
                     Picker(String(localized: "screen.entry.year_label"), selection: $viewModel.selectedYear) {
                         ForEach(DateFormatters.selectableYears, id: \.self) { year in
-                            Text(String(year)).tag(year)
+                            Text(verbatim: DateFormatters.yearDisplayString(year)).tag(year)
                         }
                     }
                     .pickerStyle(.menu)
                     .tint(palette.primaryAction)
-                    .accessibilityLabel("\(String(localized: "screen.entry.year_label")): \(viewModel.selectedYear)")
+                    .accessibilityLabel("\(String(localized: "screen.entry.year_label")): \(DateFormatters.yearDisplayString(viewModel.selectedYear))")
 
                     Spacer()
                 }

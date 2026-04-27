@@ -36,4 +36,10 @@ nonisolated enum DateFormatters: Sendable {
     nonisolated static func mediumDateString(from date: Date) -> String {
         date.formatted(.dateTime.year().month().day().locale(Locale(identifier: "ko_KR")))
     }
+
+    /// 년도 Int → 표시 문자열 (예: 2026 → "2026년")
+    /// Int를 직접 interpolation 하면 NumberFormatter가 "2,026년"으로 표시하는 버그를 방지한다.
+    nonisolated static func yearDisplayString(_ year: Int) -> String {
+        "\(year)년"
+    }
 }

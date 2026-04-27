@@ -18,7 +18,7 @@ struct TimelineEntryView: View {
                 // 년도 헤더
                 HStack {
                     VStack(alignment: .leading, spacing: DesignSpacing.xxs) {
-                        Text("timeline.year \(listenedYear)")
+                        Text(verbatim: DateFormatters.yearDisplayString(listenedYear))
                             .font(.ssTitle2)
                             .foregroundStyle(palette.textPrimary)
 

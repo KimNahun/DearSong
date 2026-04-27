@@ -10,7 +10,6 @@ nonisolated enum MoodCategory: String, CaseIterable, Sendable {
     case energy
     case calm
     case comfort
-    case season
     case situation
 
     var displayName: String {
@@ -22,7 +21,6 @@ nonisolated enum MoodCategory: String, CaseIterable, Sendable {
         case .energy: return "에너지/자신감"
         case .calm: return "차분/몽환"
         case .comfort: return "위로/치유"
-        case .season: return "계절/날씨"
         case .situation: return "장소/상황"
         }
     }
@@ -43,10 +41,10 @@ nonisolated enum MoodCategory: String, CaseIterable, Sendable {
             return ["잔잔함", "몽환", "여유", "나른함", "고요함", "사색"]
         case .comfort:
             return ["위로", "치유", "공감", "다독임", "희망", "용서"]
-        case .season:
-            return ["비 오는 날", "눈 오는 날", "바람 부는 날", "여름밤", "가을 햇살", "봄바람"]
         case .situation:
-            return ["드라이브", "새벽", "밤산책", "혼자인 시간", "여행 중", "카페에서"]
+            // 기존 .situation 태그 + .season에서 병합된 계절 감성 태그 (순수 날씨 태그는 제거)
+            return ["드라이브", "새벽", "밤산책", "혼자인 시간", "여행 중", "카페에서",
+                    "여름밤", "가을 햇살", "봄바람"]
         }
     }
 }

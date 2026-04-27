@@ -7,32 +7,20 @@ struct MoodChipGridView: View {
     @Binding var selectedTags: Set<String>
     @Environment(\.designPalette) private var palette
 
+    /// 모든 카테고리의 태그를 평탄화한 전체 목록
+    private var allTags: [String] {
+        MoodCategory.allCases.flatMap { $0.tags }
+    }
+
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: DesignSpacing.lg) {
-                ForEach(MoodCategory.allCases, id: \.rawValue) { category in
-                    categorySection(category)
+            FlowLayout(horizontalSpacing: DesignSpacing.xs, verticalSpacing: DesignSpacing.xs) {
+                ForEach(allTags, id: \.self) { tag in
+                    moodChip(tag: tag)
                 }
             }
             .padding(.horizontal, DesignSpacing.lg)
             .padding(.vertical, DesignSpacing.md)
-        }
-    }
-
-    @ViewBuilder
-    private func categorySection(_ category: MoodCategory) -> some View {
-        VStack(alignment: .leading, spacing: DesignSpacing.xs) {
-            // PSectionHeader 대체: 인라인 Text
-            Text(category.displayName)
-                .font(.ssTitle2)
-                .foregroundStyle(palette.textPrimary)
-
-            // FlowLayout: 텍스트 intrinsic 너비 기반 가변 너비 칩
-            FlowLayout(horizontalSpacing: DesignSpacing.xs, verticalSpacing: DesignSpacing.xs) {
-                ForEach(category.tags, id: \.self) { tag in
-                    moodChip(tag: tag)
-                }
-            }
         }
     }
 
@@ -49,11 +37,10 @@ struct MoodChipGridView: View {
             }
         } label: {
             Text(tag)
-                .font(isSelected ? .ssFootnote.weight(.medium) : .ssFootnote)
+                .font(isSelected ? .ssCaption.weight(.medium) : .ssCaption)
                 .foregroundStyle(isSelected ? palette.textPrimary : palette.textSecondary)
-                .padding(.horizontal, DesignSpacing.md)
-                .padding(.vertical, DesignSpacing.xs)
-                .frame(minHeight: 36)
+                .padding(.horizontal, DesignSpacing.sm)
+                .padding(.vertical, DesignSpacing.xxs)
                 .background(
                     Capsule()
                         .fill(isSelected ? palette.primaryAction.opacity(0.25) : palette.surface)

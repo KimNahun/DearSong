@@ -99,21 +99,20 @@ struct AddEntryView: View {
     }
 
     private var sheetHeader: some View {
-        HStack {
+        HStack(alignment: .center, spacing: DesignSpacing.xs) {
             VStack(alignment: .leading, spacing: DesignSpacing.xxs) {
                 Text(memory.songTitle)
                     .font(.ssBody.weight(.medium))
                     .foregroundStyle(palette.textPrimary)
                     .lineLimit(1)
                     .truncationMode(.tail)
-                Text("\(listenedYear)\(String(localized: "timeline.year_suffix")) · \(memory.artistName)")
+                Text(verbatim: "\(DateFormatters.yearDisplayString(listenedYear)) · \(memory.artistName)")
                     .font(.ssCaption)
                     .foregroundStyle(palette.textSecondary)
                     .lineLimit(1)
                     .truncationMode(.tail)
             }
-
-            Spacer()
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark.circle.fill")

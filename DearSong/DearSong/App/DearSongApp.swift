@@ -6,11 +6,14 @@ import TopDesignSystem
 @main
 struct DearSongApp: App {
     @State private var authViewModel = AuthViewModel()
+    @State private var toastManager = ToastManager()
 
     var body: some Scene {
         WindowGroup {
             rootView
                 .designTheme(.linear)
+                .environment(toastManager)
+                .globalToast(toastManager)
                 .task {
                     await authViewModel.checkSession()
                 }

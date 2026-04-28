@@ -6,11 +6,8 @@ import TopDesignSystem
 struct RecordFlowView: View {
     @State private var viewModel: RecordFlowViewModel
     @Environment(\.designPalette) private var palette
+    @Environment(ToastManager.self) private var toastManager
     let onDismiss: () -> Void
-
-    @State private var showSuccessToast = false
-    @State private var showErrorToast = false
-    @State private var errorToastMessage = ""
 
     init(preselectedSong: SearchedSong? = nil, onDismiss: @escaping () -> Void) {
         _viewModel = State(initialValue: RecordFlowViewModel(preselectedSong: preselectedSong))
@@ -32,19 +29,16 @@ struct RecordFlowView: View {
         }
         .onChange(of: viewModel.savedSuccessfully) { _, saved in
             if saved {
-                showSuccessToast = true
+                toastManager.show(String(localized: "toast.save.success"), style: .success)
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
                 onDismiss()
             }
         }
         .onChange(of: viewModel.errorMessage) { _, message in
             if let message {
-                errorToastMessage = message
-                showErrorToast = true
+                toastManager.show(message, style: .error)
             }
         }
-        .bottomToast(isPresented: $showSuccessToast, message: String(localized: "toast.save.success"), style: .success)
-        .bottomToast(isPresented: $showErrorToast, message: errorToastMessage, style: .error)
     }
 
     // MARK: - Subviews

@@ -7,9 +7,7 @@ struct EntryWriteView: View {
     @Bindable var viewModel: RecordFlowViewModel
     @FocusState private var isTextEditorFocused: Bool
     @Environment(\.designPalette) private var palette
-
-    @State private var showErrorToast = false
-    @State private var errorToastMessage = ""
+    @Environment(ToastManager.self) private var toastManager
 
     var body: some View {
         ScrollView {
@@ -44,11 +42,9 @@ struct EntryWriteView: View {
         }
         .onChange(of: viewModel.errorMessage) { _, message in
             if let message {
-                errorToastMessage = message
-                showErrorToast = true
+                toastManager.show(message, style: .error)
             }
         }
-        .bottomToast(isPresented: $showErrorToast, message: errorToastMessage, style: .error)
     }
 
     // MARK: - Subviews

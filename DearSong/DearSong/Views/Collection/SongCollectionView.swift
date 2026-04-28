@@ -8,9 +8,7 @@ struct SongCollectionView: View {
     @State private var authViewModel: AuthViewModel
     @State private var showRecordFlow = false
     @Environment(\.designPalette) private var palette
-
-    @State private var showErrorToast = false
-    @State private var errorToastMessage = ""
+    @Environment(ToastManager.self) private var toastManager
 
     private let columns = [
         GridItem(.adaptive(minimum: 150), spacing: DesignSpacing.md)
@@ -78,11 +76,9 @@ struct SongCollectionView: View {
         }
         .onChange(of: viewModel.errorMessage) { _, message in
             if let message {
-                errorToastMessage = message
-                showErrorToast = true
+                toastManager.show(message, style: .error)
             }
         }
-        .bottomToast(isPresented: $showErrorToast, message: errorToastMessage, style: .error)
     }
 
     // MARK: - Subviews

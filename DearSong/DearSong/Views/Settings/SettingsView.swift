@@ -10,8 +10,7 @@ struct SettingsView: View {
 
     private let authViewModel: AuthViewModel
     @State private var showSignOutConfirm: Bool = false
-    @State private var showErrorToast: Bool = false
-    @State private var errorToastMessage: String = ""
+    @Environment(ToastManager.self) private var toastManager
 
     init(authViewModel: AuthViewModel) {
         self.authViewModel = authViewModel
@@ -71,17 +70,14 @@ struct SettingsView: View {
         }
         .onChange(of: viewModel.errorMessage) { _, message in
             if let message {
-                errorToastMessage = message
-                showErrorToast = true
+                toastManager.show(message, style: .error)
             }
         }
         .onChange(of: authViewModel.errorMessage) { _, message in
             if let message {
-                errorToastMessage = message
-                showErrorToast = true
+                toastManager.show(message, style: .error)
             }
         }
-        .bottomToast(isPresented: $showErrorToast, message: errorToastMessage, style: .error)
     }
 
     // MARK: - Sections

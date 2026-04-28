@@ -10,10 +10,7 @@ struct AddEntryView: View {
     @State private var viewModel: AddEntryViewModel
     @FocusState private var isTextEditorFocused: Bool
     @Environment(\.designPalette) private var palette
-
-    @State private var showSuccessToast = false
-    @State private var showErrorToast = false
-    @State private var errorToastMessage = ""
+    @Environment(ToastManager.self) private var toastManager
 
     init(memory: SongMemory, onDismiss: @escaping () -> Void) {
         self.memory = memory
@@ -68,19 +65,16 @@ struct AddEntryView: View {
         }
         .onChange(of: viewModel.savedSuccessfully) { _, saved in
             if saved {
-                showSuccessToast = true
+                toastManager.show(String(localized: "toast.entry.added"), style: .success)
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
                 onDismiss()
             }
         }
         .onChange(of: viewModel.errorMessage) { _, message in
             if let message {
-                errorToastMessage = message
-                showErrorToast = true
+                toastManager.show(message, style: .error)
             }
         }
-        .bottomToast(isPresented: $showSuccessToast, message: String(localized: "toast.entry.added"), style: .success)
-        .bottomToast(isPresented: $showErrorToast, message: errorToastMessage, style: .error)
     }
 
     // MARK: - Subviews

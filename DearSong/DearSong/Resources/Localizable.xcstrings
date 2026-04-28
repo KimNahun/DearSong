@@ -937,6 +937,7 @@
       }
     },
     "screen.mood.guide" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1000,6 +1001,22 @@
         }
       }
     },
+    "screen.settings.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정"
+          }
+        }
+      }
+    },
     "screen.signin.app_icon_label" : {
       "localizations" : {
         "en" : {
@@ -1032,22 +1049,6 @@
         }
       }
     },
-    "screen.settings.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "설정"
-          }
-        }
-      }
-    },
     "screen.signin.tagline" : {
       "localizations" : {
         "en" : {
@@ -1064,50 +1065,19 @@
         }
       }
     },
-    "settings.section.account" : {
+    "screen.songdetail.add_period" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Account"
+            "value" : "Add a new period for this song"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "계정"
-          }
-        }
-      }
-    },
-    "settings.section.app" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱 정보"
-          }
-        }
-      }
-    },
-    "settings.section.account_actions" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Account actions"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "계정 관리"
+            "value" : "이 곡의 새 시기를 추가하실까요?"
           }
         }
       }
@@ -1144,22 +1114,6 @@
         }
       }
     },
-    "settings.app.version" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "버전"
-          }
-        }
-      }
-    },
     "settings.app.build" : {
       "localizations" : {
         "en" : {
@@ -1176,34 +1130,66 @@
         }
       }
     },
-    "settings.value.unknown" : {
+    "settings.app.version" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "—"
+            "value" : "Version"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "—"
+            "value" : "버전"
           }
         }
       }
     },
-    "settings.signout.confirm_title" : {
+    "settings.section.account" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sign out?"
+            "value" : "Account"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "로그아웃하시겠어요?"
+            "value" : "계정"
+          }
+        }
+      }
+    },
+    "settings.section.account_actions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account actions"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "계정 관리"
+          }
+        }
+      }
+    },
+    "settings.section.app" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 정보"
           }
         }
       }
@@ -1224,19 +1210,34 @@
         }
       }
     },
-    "screen.songdetail.add_period" : {
-      "extractionState" : "stale",
+    "settings.signout.confirm_title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add a new period for this song"
+            "value" : "Sign out?"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 곡의 새 시기를 추가하실까요?"
+            "value" : "로그아웃하시겠어요?"
+          }
+        }
+      }
+    },
+    "settings.value.unknown" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—"
           }
         }
       }

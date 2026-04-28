@@ -139,25 +139,18 @@ struct EntryWriteView: View {
                 .font(.ssTitle2)
                 .foregroundStyle(palette.textPrimary)
 
-            ZStack(alignment: .topLeading) {
-                TextEditor(text: $viewModel.entryText)
-                    .font(.ssBody)
-                    .foregroundStyle(palette.textPrimary)
-                    .scrollContentBackground(.hidden)
-                    .background(.clear)
-                    .frame(minHeight: 160)
-                    .padding(DesignSpacing.sm)
-                    .focused($isTextEditorFocused)
-                    .accessibilityLabel(Text("screen.entry.placeholder"))
-
-                if viewModel.entryText.isEmpty {
-                    Text("screen.entry.placeholder")
-                        .font(.ssBody)
-                        .foregroundStyle(palette.textSecondary.opacity(0.7))
-                        .padding(DesignSpacing.sm + 2)
-                        .allowsHitTesting(false)
-                }
-            }
+            TextField(
+                String(localized: "screen.entry.placeholder"),
+                text: $viewModel.entryText,
+                axis: .vertical
+            )
+            .font(.ssBody)
+            .foregroundStyle(palette.textPrimary)
+            .lineLimit(6...20)
+            .padding(DesignSpacing.sm)
+            .frame(minHeight: 160, alignment: .topLeading)
+            .focused($isTextEditorFocused)
+            .accessibilityLabel(Text("screen.entry.placeholder"))
             .background(
                 RoundedRectangle(cornerRadius: DesignCornerRadius.md)
                     .fill(palette.surface.opacity(0.6))

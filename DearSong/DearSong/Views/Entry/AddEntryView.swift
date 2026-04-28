@@ -63,6 +63,7 @@ struct AddEntryView: View {
         .safeAreaInset(edge: .bottom) {
             saveButton
         }
+        .dismissKeyboardOnTap()
         .onChange(of: viewModel.savedSuccessfully) { _, saved in
             if saved {
                 toastManager.show(String(localized: "toast.entry.added"), style: .success)
@@ -152,25 +153,18 @@ struct AddEntryView: View {
                 .font(.ssBody.weight(.medium))
                 .foregroundStyle(palette.textPrimary)
 
-            ZStack(alignment: .topLeading) {
-                TextEditor(text: $viewModel.entryText)
-                    .font(.ssBody)
-                    .foregroundStyle(palette.textPrimary)
-                    .scrollContentBackground(.hidden)
-                    .background(.clear)
-                    .frame(minHeight: 140)
-                    .padding(DesignSpacing.sm)
-                    .focused($isTextEditorFocused)
-                    .accessibilityLabel(Text("screen.addentry.placeholder"))
-
-                if viewModel.entryText.isEmpty {
-                    Text("screen.addentry.placeholder")
-                        .font(.ssBody)
-                        .foregroundStyle(palette.textSecondary.opacity(0.7))
-                        .padding(DesignSpacing.sm + 2)
-                        .allowsHitTesting(false)
-                }
-            }
+            TextField(
+                String(localized: "screen.addentry.placeholder"),
+                text: $viewModel.entryText,
+                axis: .vertical
+            )
+            .font(.ssBody)
+            .foregroundStyle(palette.textPrimary)
+            .lineLimit(5...18)
+            .padding(DesignSpacing.sm)
+            .frame(minHeight: 140, alignment: .topLeading)
+            .focused($isTextEditorFocused)
+            .accessibilityLabel(Text("screen.addentry.placeholder"))
             .background(
                 RoundedRectangle(cornerRadius: DesignCornerRadius.md)
                     .fill(palette.surface.opacity(0.6))

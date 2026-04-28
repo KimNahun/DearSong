@@ -27,6 +27,7 @@ struct RecordFlowView: View {
                 stepContent
             }
         }
+        .dismissKeyboardOnTap()
         .onChange(of: viewModel.savedSuccessfully) { _, saved in
             if saved {
                 toastManager.show(String(localized: "toast.save.success"), style: .success)

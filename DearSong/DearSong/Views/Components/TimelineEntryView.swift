@@ -77,6 +77,7 @@ struct TimelineEntryView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 

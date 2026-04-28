@@ -58,13 +58,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add a new period"
+            "value" : "Record another time"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 곡의 새 시기 추가"
+            "value" : "다른 시기 기록하기"
           }
         }
       }

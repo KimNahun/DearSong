@@ -21,7 +21,7 @@ struct SongDetailView: View {
             backgroundView
 
             ScrollView {
-                VStack(spacing: DesignSpacing.lg) {
+                VStack(spacing: DesignSpacing.xl) {
                     // 헤더: 앨범 커버 + 곡 정보
                     songHeader
 
@@ -31,13 +31,13 @@ struct SongDetailView: View {
 
                     // 타임라인
                     if viewModel.isLoading {
-                        ShimmerPlaceholder(height: 160, cornerRadius: DesignCornerRadius.md)
-                            .padding(.horizontal, DesignSpacing.lg)
-                            .padding(.top, DesignSpacing.xl)
-                        ShimmerPlaceholder(height: 160, cornerRadius: DesignCornerRadius.md)
-                            .padding(.horizontal, DesignSpacing.lg)
-                        ShimmerPlaceholder(height: 160, cornerRadius: DesignCornerRadius.md)
-                            .padding(.horizontal, DesignSpacing.lg)
+                        VStack(spacing: DesignSpacing.md) {
+                            ShimmerPlaceholder(height: 160, cornerRadius: DesignCornerRadius.lg)
+                            ShimmerPlaceholder(height: 160, cornerRadius: DesignCornerRadius.lg)
+                            ShimmerPlaceholder(height: 160, cornerRadius: DesignCornerRadius.lg)
+                        }
+                        .padding(.horizontal, DesignSpacing.lg)
+                        .padding(.top, DesignSpacing.sm)
                     } else if viewModel.memories.isEmpty {
                         emptyMemoriesView
                     } else {
@@ -45,6 +45,13 @@ struct SongDetailView: View {
                     }
                 }
                 .padding(.bottom, DesignSpacing.xxl)
+            }
+            .refreshable {
+                await viewModel.loadMemories(
+                    appleMusicId: groupedSong.appleMusicId,
+                    songTitle: groupedSong.songTitle,
+                    artistName: groupedSong.artistName
+                )
             }
         }
         .navigationTitle(groupedSong.songTitle)
@@ -125,10 +132,21 @@ struct SongDetailView: View {
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            // linear 테마(CleanNeutral/white 배경)에서 더 섬세한 앨범 아트 틴트
-                            .blur(radius: 70)
-                            .opacity(0.05)
+                            .blur(radius: 80)
+                            .opacity(0.18)
                             .ignoresSafeArea()
+                            .overlay(
+                                LinearGradient(
+                                    colors: [
+                                        palette.background.opacity(0.0),
+                                        palette.background.opacity(0.6),
+                                        palette.background
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                                .ignoresSafeArea()
+                            )
                     }
                 }
             }
@@ -139,16 +157,17 @@ struct SongDetailView: View {
     private var songHeader: some View {
         VStack(spacing: DesignSpacing.md) {
             GeometryReader { geo in
-                let size = min(geo.size.width * 0.5, 200)
+                let size = min(geo.size.width * 0.62, 240)
                 AlbumArtworkView(urlString: groupedSong.artworkUrl, size: size, cornerRadius: DesignCornerRadius.lg)
-                    .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
+                    .shadow(color: .black.opacity(0.22), radius: 24, x: 0, y: 12)
                     .frame(maxWidth: .infinity)
             }
-            .frame(height: 200)
+            .frame(height: 240)
 
             VStack(spacing: DesignSpacing.xxs) {
                 Text(groupedSong.songTitle)
-                    .font(.ssTitle2)
+                    .font(.ssTitle1)
+                    .fontWeight(.semibold)
                     .foregroundStyle(palette.textPrimary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
@@ -160,30 +179,56 @@ struct SongDetailView: View {
                     .lineLimit(1)
                     .truncationMode(.tail)
             }
+
+            // 메모리 카운트 칩 — 더 풍부한 정보 전달
+            if !viewModel.memories.isEmpty {
+                HStack(spacing: DesignSpacing.xxs) {
+                    Image(systemName: "book.pages.fill")
+                        .font(.ssCaption)
+                    Text(verbatim: "\(viewModel.memories.count)개의 시기")
+                        .font(.ssCaption.weight(.medium))
+                }
+                .foregroundStyle(palette.primaryAction)
+                .padding(.horizontal, DesignSpacing.sm)
+                .padding(.vertical, DesignSpacing.xxs)
+                .background(
+                    Capsule().fill(palette.primaryAction.opacity(0.12))
+                )
+                .accessibilityElement(children: .combine)
+            }
         }
-        .padding(.top, DesignSpacing.lg)
+        .padding(.horizontal, DesignSpacing.lg)
+        .padding(.top, DesignSpacing.md)
     }
 
     private var addNewPeriodButton: some View {
         Button {
             showRecordFlow = true
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } label: {
             HStack(spacing: DesignSpacing.xs) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.ssBody)
+                Image(systemName: "plus")
+                    .font(.ssBody.weight(.semibold))
                 Text("action.add_period")
-                    .font(.ssBody.weight(.medium))
+                    .font(.ssBody.weight(.semibold))
             }
-            .foregroundStyle(palette.primaryAction)
+            .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSpacing.sm)
-            .background(palette.primaryAction.opacity(0.12))
-            .clipShape(RoundedRectangle(cornerRadius: DesignCornerRadius.sm))
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignCornerRadius.sm)
-                    .stroke(palette.primaryAction.opacity(0.3), lineWidth: 1)
+            .padding(.vertical, DesignSpacing.sm + 2)
+            .background(
+                LinearGradient(
+                    colors: [
+                        palette.primaryAction,
+                        palette.primaryAction.opacity(0.85)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
             )
+            .clipShape(RoundedRectangle(cornerRadius: DesignCornerRadius.md))
+            .shadow(color: palette.primaryAction.opacity(0.25), radius: 12, x: 0, y: 6)
         }
+        .buttonStyle(.pressScale)
         .frame(minHeight: 44)
         .accessibilityLabel(Text("action.add_period"))
     }
@@ -191,9 +236,16 @@ struct SongDetailView: View {
     private var emptyMemoriesView: some View {
         VStack(spacing: DesignSpacing.md) {
             Spacer(minLength: DesignSpacing.xl)
-            Image(systemName: "book.closed")
-                .font(.ssLargeTitle)
-                .foregroundStyle(palette.textSecondary.opacity(0.7))
+            ZStack {
+                Circle()
+                    .fill(palette.primaryAction.opacity(0.08))
+                    .frame(width: 84, height: 84)
+                Image(systemName: "book.closed")
+                    .font(.ssTitle1)
+                    .foregroundStyle(palette.primaryAction.opacity(0.7))
+            }
+            .accessibilityHidden(true)
+
             VStack(spacing: DesignSpacing.xxs) {
                 Text("empty.songdetail.title")
                     .font(.ssTitle2)
@@ -213,28 +265,51 @@ struct SongDetailView: View {
 
     private var timelineSection: some View {
         LazyVStack(spacing: DesignSpacing.md) {
-            ForEach(viewModel.memories) { memory in
-                TimelineEntryView(memory: memory, onAddEntry: {
-                    selectedMemory = memory
-                    showAddEntry = true
-                })
-                .padding(.horizontal, DesignSpacing.lg)
-                .contextMenu {
-                    Button(role: .destructive) {
-                        memoryToDelete = memory
-                        showDeleteConfirm = true
-                    } label: {
-                        Label {
-                            Text("action.delete")
-                        } icon: {
-                            Image(systemName: "trash")
+            ForEach(Array(viewModel.memories.enumerated()), id: \.element.id) { index, memory in
+                HStack(alignment: .top, spacing: DesignSpacing.sm) {
+                    // 타임라인 인디케이터 (도트 + 라인)
+                    VStack(spacing: 0) {
+                        Circle()
+                            .fill(palette.primaryAction)
+                            .frame(width: 10, height: 10)
+                            .overlay(
+                                Circle()
+                                    .stroke(palette.primaryAction.opacity(0.3), lineWidth: 4)
+                            )
+                            .padding(.top, DesignSpacing.md)
+
+                        if index < viewModel.memories.count - 1 {
+                            Rectangle()
+                                .fill(palette.border.opacity(0.5))
+                                .frame(width: 2)
+                                .frame(maxHeight: .infinity)
                         }
                     }
+                    .frame(width: 14)
+                    .accessibilityHidden(true)
+
+                    TimelineEntryView(memory: memory, onAddEntry: {
+                        selectedMemory = memory
+                        showAddEntry = true
+                    })
+                    .contextMenu {
+                        Button(role: .destructive) {
+                            memoryToDelete = memory
+                            showDeleteConfirm = true
+                        } label: {
+                            Label {
+                                Text("action.delete")
+                            } icon: {
+                                Image(systemName: "trash")
+                            }
+                        }
+                    }
+                    .accessibilityAction(named: Text("action.delete")) {
+                        memoryToDelete = memory
+                        showDeleteConfirm = true
+                    }
                 }
-                .accessibilityAction(named: Text("action.delete")) {
-                    memoryToDelete = memory
-                    showDeleteConfirm = true
-                }
+                .padding(.horizontal, DesignSpacing.lg)
             }
         }
     }

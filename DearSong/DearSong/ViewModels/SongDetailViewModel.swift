@@ -39,15 +39,33 @@ final class SongDetailViewModel {
 
         do {
             let ownerId = try await authService.getCurrentUserId()
-            let result: [SongMemory]
+            var result: [SongMemory] = []
 
             if let musicId = appleMusicId, !musicId.isEmpty {
                 result = try await memoryService.fetchMemoriesBySong(ownerId: ownerId, appleMusicId: musicId)
+                // apple_music_id 매칭 실패 시 title+artist로 fallback
+                // (PostgREST 타입 캐스팅 또는 그룹 내 일부 메모리 누락 대비)
+                if result.isEmpty {
+                    logger.warning("apple_music_id로 0건 — title+artist fallback 시도")
+                    result = try await memoryService.fetchMemoriesBySongTitle(
+                        ownerId: ownerId, songTitle: songTitle, artistName: artistName
+                    )
+                }
             } else {
-                result = try await memoryService.fetchMemoriesBySongTitle(ownerId: ownerId, songTitle: songTitle, artistName: artistName)
+                result = try await memoryService.fetchMemoriesBySongTitle(
+                    ownerId: ownerId, songTitle: songTitle, artistName: artistName
+                )
             }
 
             logger.info("상세 기억 로딩 완료 — \(result.count)건")
+
+            // 서버 0건 + 로컬 시드 존재 → 시드 보존(덮어쓰기 방지).
+            // 컬렉션에서 이미 본 데이터가 사라지는 시각적 깜빡임 차단.
+            if result.isEmpty && hasSeed {
+                logger.warning("서버 응답 0건 — 로컬 시드 \(self.memories.count)건 유지")
+                return
+            }
+
             memories = result.sorted { $0.listenedAt > $1.listenedAt }
         } catch let error as AppError {
             logger.error("상세 기억 로딩 실패(AppError): \(error.errorDescription ?? "")")

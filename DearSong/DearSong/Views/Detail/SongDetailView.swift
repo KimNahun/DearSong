@@ -127,30 +127,33 @@ struct SongDetailView: View {
     private var backgroundView: some View {
         ZStack {
             palette.background
-                .ignoresSafeArea()
             if let urlString = groupedSong.artworkUrl, let url = URL(string: urlString) {
-                AsyncImage(url: url) { phase in
-                    if case .success(let image) = phase {
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .blur(radius: 80)
-                            .opacity(0.18)
-                            .ignoresSafeArea()
-                            .overlay(
-                                LinearGradient(
-                                    colors: [
-                                        palette.background.opacity(0.0),
-                                        palette.background.opacity(0.6),
-                                        palette.background
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                                .ignoresSafeArea()
-                            )
+                GeometryReader { geo in
+                    AsyncImage(url: url) { phase in
+                        if case .success(let image) = phase {
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: geo.size.width, height: geo.size.height)
+                                .clipped()
+                                .blur(radius: 80)
+                                .opacity(0.18)
+                        }
                     }
+                    .frame(width: geo.size.width, height: geo.size.height)
+                    .clipped()
                 }
+                .overlay(
+                    LinearGradient(
+                        colors: [
+                            palette.background.opacity(0.0),
+                            palette.background.opacity(0.6),
+                            palette.background
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
             }
         }
         .ignoresSafeArea()

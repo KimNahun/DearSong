@@ -53,18 +53,20 @@ struct TimelineEntryView: View {
                 Divider()
                     .overlay(palette.border)
 
-                // 감정 태그 — FlowLayout: 텍스트 intrinsic 너비 기반 가변 너비 칩
+                // 감정 태그 — 최대 3개 제한이라 단일 행 HStack으로 충분
                 if !memory.moodTags.isEmpty {
-                    FlowLayout(horizontalSpacing: DesignSpacing.xs, verticalSpacing: DesignSpacing.xs) {
+                    HStack(spacing: DesignSpacing.xs) {
                         ForEach(memory.moodTags, id: \.self) { tag in
                             Text(tag)
                                 .font(.ssCaption)
                                 .foregroundStyle(palette.textSecondary)
+                                .lineLimit(1)
                                 .padding(.horizontal, DesignSpacing.sm)
                                 .padding(.vertical, DesignSpacing.xxs)
                                 .background(Capsule().fill(palette.surface))
                                 .accessibilityLabel(tag)
                         }
+                        Spacer(minLength: 0)
                     }
                 }
 

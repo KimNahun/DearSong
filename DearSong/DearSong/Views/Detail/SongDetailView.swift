@@ -44,8 +44,10 @@ struct SongDetailView: View {
                         timelineSection
                     }
                 }
+                .frame(maxWidth: .infinity)
                 .padding(.bottom, DesignSpacing.xxl)
             }
+            .scrollIndicators(.hidden)
             .refreshable {
                 await viewModel.loadMemories(
                     appleMusicId: groupedSong.appleMusicId,
@@ -172,12 +174,14 @@ struct SongDetailView: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
+                    .frame(maxWidth: .infinity)
 
                 Text(groupedSong.artistName)
                     .font(.ssBody)
                     .foregroundStyle(palette.textSecondary)
                     .lineLimit(1)
                     .truncationMode(.tail)
+                    .frame(maxWidth: .infinity)
             }
 
             // 메모리 카운트 칩 — 더 풍부한 정보 전달
@@ -197,6 +201,7 @@ struct SongDetailView: View {
                 .accessibilityElement(children: .combine)
             }
         }
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, DesignSpacing.lg)
         .padding(.top, DesignSpacing.md)
     }
@@ -309,9 +314,11 @@ struct SongDetailView: View {
                         showDeleteConfirm = true
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, DesignSpacing.lg)
             }
         }
+        .frame(maxWidth: .infinity)
     }
 
     private var preselectedSong: SearchedSong? {

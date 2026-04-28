@@ -80,6 +80,7 @@ actor SongMemoryService: SongMemoryServiceProtocol {
     }
 
     func fetchMemoriesBySong(ownerId: UUID, appleMusicId: String) async throws -> [SongMemory] {
+        logger.info("곡별 기억 로딩 시작 — appleMusicId=\(appleMusicId, privacy: .public)")
         do {
             let memories: [SongMemory] = try await supabase
                 .from(tableName)
@@ -89,13 +90,16 @@ actor SongMemoryService: SongMemoryServiceProtocol {
                 .order("listened_at", ascending: false)
                 .execute()
                 .value
+            logger.info("곡별 기억 로딩 완료 — \(memories.count)건")
             return memories
         } catch {
+            logger.error("곡별 기억 로딩 실패: \(error)")
             throw AppError.songMemory(.fetchFailed)
         }
     }
 
     func fetchMemoriesBySongTitle(ownerId: UUID, songTitle: String, artistName: String) async throws -> [SongMemory] {
+        logger.info("제목별 기억 로딩 시작 — title=\(songTitle, privacy: .public), artist=\(artistName, privacy: .public)")
         do {
             let memories: [SongMemory] = try await supabase
                 .from(tableName)
@@ -106,8 +110,10 @@ actor SongMemoryService: SongMemoryServiceProtocol {
                 .order("listened_at", ascending: false)
                 .execute()
                 .value
+            logger.info("제목별 기억 로딩 완료 — \(memories.count)건")
             return memories
         } catch {
+            logger.error("제목별 기억 로딩 실패: \(error)")
             throw AppError.songMemory(.fetchFailed)
         }
     }

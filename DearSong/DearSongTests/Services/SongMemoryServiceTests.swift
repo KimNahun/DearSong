@@ -112,4 +112,58 @@ struct SongDetailViewModelTests {
         await viewModel.deleteMemory(id: memId)
         #expect(viewModel.memories.isEmpty)
     }
+
+    @Test("seed — 컬렉션에서 가져온 데이터로 즉시 시드, listenedAt 내림차순 정렬")
+    @MainActor
+    func seedSortsByListenedAtDesc() {
+        let ownerId = UUID()
+        let older = SongMemory(
+            id: UUID(), ownerId: ownerId, appleMusicId: "1",
+            songTitle: "S", artistName: "A",
+            artworkUrl: nil, listenedAt: DateFormatters.date(fromYear: 2020),
+            moodTags: [], location: nil, entries: [], attachments: [],
+            createdAt: Date(), updatedAt: Date()
+        )
+        let newer = SongMemory(
+            id: UUID(), ownerId: ownerId, appleMusicId: "1",
+            songTitle: "S", artistName: "A",
+            artworkUrl: nil, listenedAt: DateFormatters.date(fromYear: 2024),
+            moodTags: [], location: nil, entries: [], attachments: [],
+            createdAt: Date(), updatedAt: Date()
+        )
+        let viewModel = SongDetailViewModel(
+            memoryService: MockSongMemoryService(memoriesStore: []),
+            authService: MockAuthService(sessionUserId: ownerId)
+        )
+
+        viewModel.seed([older, newer])
+
+        #expect(viewModel.memories.count == 2)
+        #expect(viewModel.memories[0].id == newer.id)
+        #expect(viewModel.memories[1].id == older.id)
+    }
+
+    @Test("loadMemories — 시드 후 서비스 에러 시 시드 데이터 보존, errorMessage 미설정")
+    @MainActor
+    func loadMemoriesPreservesSeedOnError() async {
+        let ownerId = UUID()
+        let seedMemory = SongMemory(
+            id: UUID(), ownerId: ownerId, appleMusicId: "x",
+            songTitle: "Cached", artistName: "Cached",
+            artworkUrl: nil, listenedAt: DateFormatters.date(fromYear: 2023),
+            moodTags: [], location: nil, entries: [], attachments: [],
+            createdAt: Date(), updatedAt: Date()
+        )
+        let viewModel = SongDetailViewModel(
+            memoryService: MockSongMemoryService(memoriesStore: [], shouldFail: true),
+            authService: MockAuthService(sessionUserId: ownerId)
+        )
+        viewModel.seed([seedMemory])
+
+        await viewModel.loadMemories(appleMusicId: "x", songTitle: "Cached", artistName: "Cached")
+
+        #expect(viewModel.memories.count == 1)
+        #expect(viewModel.memories.first?.id == seedMemory.id)
+        #expect(viewModel.errorMessage == nil)
+    }
 }

@@ -49,6 +49,11 @@ struct SongDetailView: View {
         }
         .navigationTitle(groupedSong.songTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            if viewModel.memories.isEmpty {
+                viewModel.seed(groupedSong.memories)
+            }
+        }
         .task {
             await viewModel.loadMemories(
                 appleMusicId: groupedSong.appleMusicId,

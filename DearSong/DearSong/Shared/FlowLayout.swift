@@ -15,14 +15,27 @@ struct FlowLayout: Layout {
     // MARK: - Layout
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) -> CGSize {
+        // proposal.width가 nil/∞이면 그대로 ∞를 반환하면 안 된다.
+        // 부모(HStack/VStack)가 자식의 ideal width를 묻는 측정 패스에서
+        // ∞가 새어 나가면 부모 분배가 깨져 좌우로 콘텐츠가 흘러나간다.
         let containerWidth = proposal.width ?? .infinity
         let rows = computeRows(containerWidth: containerWidth, subviews: subviews)
         let totalHeight = rows.map { $0.maxHeight }.reduce(0, +)
             + CGFloat(max(0, rows.count - 1)) * verticalSpacing
-        return CGSize(
-            width: containerWidth,
-            height: totalHeight
-        )
+
+        let resolvedWidth: CGFloat
+        if containerWidth.isFinite {
+            resolvedWidth = containerWidth
+        } else {
+            // 측정 패스: 가장 넓은 행의 실제 너비를 반환
+            resolvedWidth = rows.map { row -> CGFloat in
+                let itemsWidth = row.items.reduce(CGFloat(0)) { $0 + $1.width }
+                let spacingWidth = CGFloat(max(0, row.items.count - 1)) * horizontalSpacing
+                return itemsWidth + spacingWidth
+            }.max() ?? 0
+        }
+
+        return CGSize(width: resolvedWidth, height: totalHeight)
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) {

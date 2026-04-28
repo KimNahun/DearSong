@@ -6,11 +6,18 @@ import Supabase
 
 struct MockAuthService: AuthServiceProtocol {
     var sessionUserId: UUID? = nil
+    var sessionEmail: String? = nil
     var shouldFailSignIn: Bool = false
     var shouldFailSignOut: Bool = false
 
-    init(sessionUserId: UUID? = nil, shouldFailSignIn: Bool = false, shouldFailSignOut: Bool = false) {
+    init(
+        sessionUserId: UUID? = nil,
+        sessionEmail: String? = nil,
+        shouldFailSignIn: Bool = false,
+        shouldFailSignOut: Bool = false
+    ) {
         self.sessionUserId = sessionUserId
+        self.sessionEmail = sessionEmail
         self.shouldFailSignIn = shouldFailSignIn
         self.shouldFailSignOut = shouldFailSignOut
     }
@@ -29,6 +36,10 @@ struct MockAuthService: AuthServiceProtocol {
             throw AppError.auth(.noSession)
         }
         return userId
+    }
+
+    func getCurrentUserEmail() async throws -> String? {
+        return sessionEmail
     }
 
     func signOut() async throws {

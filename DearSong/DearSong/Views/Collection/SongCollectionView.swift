@@ -51,14 +51,16 @@ struct SongCollectionView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        Task { await authViewModel.signOut() }
+                    NavigationLink {
+                        SettingsView(authViewModel: authViewModel)
                     } label: {
-                        Text("action.signout")
-                            .font(.ssFootnote)
-                            .foregroundStyle(palette.textSecondary.opacity(0.7))
+                        Image(systemName: "gearshape")
+                            .font(.ssBody)
+                            .foregroundStyle(palette.textSecondary)
+                            .frame(width: 44, height: 44, alignment: .trailing)
+                            .contentShape(Rectangle())
                     }
-                    .accessibilityLabel(Text("action.signout"))
+                    .accessibilityLabel(Text("screen.settings.title"))
                 }
             }
             .refreshable {

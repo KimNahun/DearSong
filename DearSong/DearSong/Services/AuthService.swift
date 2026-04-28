@@ -9,6 +9,7 @@ protocol AuthServiceProtocol: Sendable {
     func signInWithApple(idToken: String, nonce: String) async throws -> UUID
     func getCurrentSession() async throws -> Session?
     func getCurrentUserId() async throws -> UUID
+    func getCurrentUserEmail() async throws -> String?
     func signOut() async throws
 }
 
@@ -54,6 +55,15 @@ actor AuthService: AuthServiceProtocol {
             return session.user.id
         } catch {
             throw AppError.auth(.noSession)
+        }
+    }
+
+    func getCurrentUserEmail() async throws -> String? {
+        do {
+            let session = try await supabase.auth.session
+            return session.user.email
+        } catch {
+            return nil
         }
     }
 
